@@ -8,3 +8,7 @@
 [submodule "libs/glfw"]
 	path = libs/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "libs/glad/glad"]
+	path = libs/glad/glad
+	url = https://github.com/Dav1dde/glad.git
+	branch = c
