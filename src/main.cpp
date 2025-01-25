@@ -4,6 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 #include "shader.h"
 #include "VAO.h"
@@ -12,8 +15,8 @@
 #include "texture.h"
 #include "camera.h"
 
-constexpr unsigned int WIDTH = 800;
-constexpr unsigned int HEIGHT = 600;
+unsigned int WIDTH = 1600;
+unsigned int HEIGHT = 900;
 
 GLfloat vertices[] =
 { //     COORDINATES     /        COLORS      /   TexCoord  //
@@ -35,6 +38,13 @@ GLuint indices[] =
     3, 0, 4
 };
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    WIDTH = width;
+    HEIGHT = height;
+    glViewport(0, 0, width, height);
+}
+
 int main()
 {
     // Setup glfw
@@ -52,6 +62,19 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
+
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplOpenGL3_Init();
 
     gladLoadGL();
 
@@ -94,6 +117,15 @@ int main()
         float deltaTime = curTime - prevTime;
         prevTime = curTime;
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        // ImGui::ShowDemoWindow(); // Show demo window! :)
+
+        ImGui::Begin("Hello world");
+        ImGui::Text("Hello World");
+        ImGui::End();
+
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -110,6 +142,11 @@ int main()
 
         glDrawElements(GL_TRIANGLES, std::size(indices), GL_UNSIGNED_INT, 0);
 
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
         glfwSwapBuffers(window);
 
         glfwPollEvents();
@@ -120,6 +157,10 @@ int main()
     EBO1.Delete();
     mctex.Delete();
     shaderProgram.Delete();
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwDestroyWindow(window);
     glfwTerminate();
