@@ -12,6 +12,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/glad)
 add_subdirectory(libs/stb_image)
+add_subdirectory(libs/glm)
 
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
@@ -44,6 +45,6 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_D
 #        COMMAND ${CMAKE_COMMAND} -E copy_directory
 #        ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/res)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw glad stb_image)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw glad stb_image glm)
 
 
