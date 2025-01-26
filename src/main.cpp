@@ -20,22 +20,50 @@ unsigned int HEIGHT = 900;
 
 GLfloat vertices[] =
 { //     COORDINATES     /        COLORS      /   TexCoord  //
-    -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
-    -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
-     0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
-     0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
-     0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	2.5f, 5.0f
+    // -0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
+    // -0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
+    //  0.5f, 0.0f, -0.5f,     0.83f, 0.70f, 0.44f,	0.0f, 0.0f,
+    //  0.5f, 0.0f,  0.5f,     0.83f, 0.70f, 0.44f,	5.0f, 0.0f,
+    //  0.0f, 0.8f,  0.0f,     0.92f, 0.86f, 0.76f,	2.5f, 5.0f
+    0.0f, 0.0f, 0.0f,     1.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 0.0f,     0.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+    1.0f, 1.0f, 0.0f,     0.0f, 0.0f, 1.0f,    1.0f, 1.0f, 0.0f,
+    0.0f, 1.0f, 0.0f,     1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f,
+
+    0.0f, 0.0f, 1.0f,     0.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+    1.0f, 0.0f, 1.0f,     0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+    1.0f, 1.0f, 1.0f,     0.0f, 0.0f, 0.0f,    0.0f, 1.0f, 0.0f,
+    0.0f, 1.0f, 1.0f,     0.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,
 };
 
 // Indices for vertices order
 GLuint indices[] =
 {
+    // BOTTOM SQUAre
+    0, 1, 5,
+    0, 5, 4,
+
+    // FRONT SQUARE
     0, 1, 2,
     0, 2, 3,
-    0, 1, 4,
-    1, 2, 4,
-    2, 3, 4,
-    3, 0, 4
+
+    // REAR SQUARE
+    4, 5, 6,
+    4, 6, 7,
+
+    // TOP SQUARE
+    2, 3, 6,
+    2, 6, 7,
+
+    // LEFT SQUARE
+    4, 0, 3,
+    4, 3, 7,
+
+    // RIGHT SQUARE
+    1, 5, 2,
+    5, 2, 6,
+
+
 };
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -90,9 +118,9 @@ int main()
     VBO VBO1(vertices, sizeof(vertices));
     EBO EBO1(indices, sizeof(indices));
 
-    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
-    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 9 * sizeof(float), (void*)0);
+    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    VAO1.LinkAttrib(VBO1, 2, 3, GL_FLOAT, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 
     VAO1.Unbind();
     VBO1.Unbind();
@@ -106,7 +134,7 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
-    Camera camera(WIDTH, HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
+    Camera camera(&WIDTH, &HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
 
     double prevTime = glfwGetTime();
 
@@ -116,6 +144,7 @@ int main()
         double curTime = glfwGetTime();
         float deltaTime = curTime - prevTime;
         prevTime = curTime;
+        float FPS = 1.0f / deltaTime;
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -123,7 +152,7 @@ int main()
         // ImGui::ShowDemoWindow(); // Show demo window! :)
 
         ImGui::Begin("Hello world");
-        ImGui::Text("Hello World");
+        ImGui::Text("FPS: %.2f", FPS);
         ImGui::End();
 
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);

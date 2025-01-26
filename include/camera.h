@@ -19,12 +19,12 @@ public:
 
     bool firstClick = true;
 
-    int width, height;
+    unsigned int *width, *height;
 
     float speed = 1.0f;
     float sensitivity = 10'000.0f;
 
-    Camera(int width, int height, glm::vec3 position);
+    Camera(unsigned int* width, unsigned int* height, glm::vec3 position);
 
     void Matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform);
     void Inputs(GLFWwindow* window, float deltaTime);
