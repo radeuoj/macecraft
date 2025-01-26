@@ -25,13 +25,19 @@ std::string get_file_contents(const char *filename)
     throw errno;
 }
 
-Shader::Shader(const char *vertexPath, const char *fragmentPath)
+Shader ShaderFromRes(const char *vertexPath, const char *fragmentPath)
 {
     std::string vertexCode = get_file_contents(vertexPath);
     std::string fragmentCode = get_file_contents(fragmentPath);
 
-    const char *vertexShaderSource = vertexCode.c_str();
-    const char *fragmentShaderSource = fragmentCode.c_str();
+    const char* vertexShaderSource = vertexCode.c_str();
+    const char* fragmentShaderSource = fragmentCode.c_str();
+
+    return Shader(vertexShaderSource, fragmentShaderSource);
+}
+
+Shader::Shader(const char* vertexShaderSource, const char* fragmentShaderSource)
+{
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);

@@ -12,3 +12,6 @@
 	path = libs/glad/glad
 	url = https://github.com/Dav1dde/glad.git
 	branch = c
+[submodule "libs/embed"]
+	path = libs/embed
+	url = https://github.com/batterycenter/embed.git

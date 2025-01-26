@@ -14,6 +14,7 @@ add_subdirectory(libs/glad)
 add_subdirectory(libs/stb_image)
 add_subdirectory(libs/glm)
 add_subdirectory(libs/imgui-docking)
+add_subdirectory(libs/embed)
 
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
@@ -45,6 +46,8 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_D
 #add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
 #        COMMAND ${CMAKE_COMMAND} -E copy_directory
 #        ${CMAKE_SOURCE_DIR}/res/ $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/res)
+b_embed(${CMAKE_PROJECT_NAME} embed/shaders/default.vert)
+b_embed(${CMAKE_PROJECT_NAME} embed/shaders/default.frag)
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE glfw glad stb_image glm imgui)
 

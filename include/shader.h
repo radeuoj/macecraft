@@ -10,7 +10,7 @@ class Shader
 {
 public:
     GLuint ID;
-    Shader(const char* vertexPath, const char* fragmentPath);
+    Shader(const char* vertexShaderSource, const char* fragmentShaderSource);
 
     void Activate();
     void Delete();

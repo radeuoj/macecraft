@@ -15,6 +15,8 @@
 #include "texture.h"
 #include "camera.h"
 
+#include "battery/embed.hpp"
+
 unsigned int WIDTH = 1600;
 unsigned int HEIGHT = 900;
 
@@ -110,7 +112,7 @@ int main()
     glViewport(0, 0, WIDTH, HEIGHT);
 
 
-    Shader shaderProgram(RESOURCES_PATH "shaders/default.vert", RESOURCES_PATH "shaders/default.frag");
+    Shader shaderProgram(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
 
     VAO VAO1;
     VAO1.Bind();
