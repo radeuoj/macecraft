@@ -2,7 +2,7 @@
 	path = libs/glm
 	url = https://github.com/g-truc/glm.git
 [submodule "libs/imgui-docking/imgui"]
-	path = libs/imgui-docking/imgui
+	path = libsgit/imgui-docking/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
 [submodule "libs/glfw"]
