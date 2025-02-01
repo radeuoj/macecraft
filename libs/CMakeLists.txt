@@ -1,4 +1,12 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.20)
+
+# GLAD
+project(glad)
+add_library(glad)
+target_sources(glad PRIVATE glad/src/glad.c)
+target_include_directories(glad PUBLIC glad/include)
+
+# IMGUI
 project(imgui)
 
 add_library(imgui)
@@ -13,6 +21,5 @@ target_sources(imgui PRIVATE
 )
 
 target_include_directories(imgui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui" "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
-
 
 target_link_libraries(imgui PUBLIC glfw glad)

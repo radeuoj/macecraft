@@ -1,17 +1,9 @@
 [submodule "libs/glm"]
 	path = libs/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "libs/imgui-docking/imgui"]
-	path = libs/imgui
-	url = https://github.com/ocornut/imgui.git
-	branch = docking
 [submodule "libs/glfw"]
 	path = libs/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "libs/glad/glad"]
-	path = libs/glad
-	url = https://github.com/Dav1dde/glad.git
-	branch = c
 [submodule "libs/embed"]
 	path = libs/embed
 	url = https://github.com/batterycenter/embed.git
