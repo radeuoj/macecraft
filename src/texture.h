@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <stb_image/stb_image.h>
 
-#include <shader.h>
+#include "shader.h"
 
 class Texture
 {

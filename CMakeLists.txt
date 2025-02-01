@@ -9,11 +9,10 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
+add_subdirectory(libs)
 add_subdirectory(libs/glfw)
-add_subdirectory(libs/glad)
 add_subdirectory(libs/stb_image)
 add_subdirectory(libs/glm)
-add_subdirectory(libs/imgui)
 add_subdirectory(libs/embed)
 
 file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
