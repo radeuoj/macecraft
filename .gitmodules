@@ -6,4 +6,8 @@
 	url = https://github.com/glfw/glfw.git
 [submodule "libs/embed"]
 	path = libs/embed
-	url = https://github.com/batterycenter/embed.git
+	url = https://github.com/batterycenter/embed.gitgit
+[submodule "libs/glad"]
+	path = libs/glad
+	url = https://github.com/Dav1dde/glad.git
+	branch = c
