@@ -112,31 +112,8 @@ int main()
 
     Shader shaderProgram(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
 
-    // VAO VAO1;
-    // VAO1.Bind();
-
-    // VBO VBO1(vertices, sizeof(vertices));
-    // EBO EBO1(indices, sizeof(indices));
-
-    // VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 5 * sizeof(float), (void*)0);
-    // VAO1.LinkAttrib(VBO1, 1, 2, GL_FLOAT, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    // VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 9 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    // VAO1.Unbind();
-    // VBO1.Unbind();
-    // EBO1.Unbind();
-
 
     Renderer renderer;
-
-
-    renderer.RenderVertex({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f});
-    renderer.RenderVertex({1.0f, 0.0f, 0.0f}, {1.0f, 0.0f});
-    renderer.RenderVertex({1.0f, 1.0f, 0.0f}, {1.0f, 1.0f});
-
-    renderer.RenderVertex({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f});
-    renderer.RenderVertex({1.0f, 1.0f, 0.0f}, {1.0f, 1.0f});
-    renderer.RenderVertex({0.0f, 1.0f, 0.0f}, {0.0f, 1.0f});
 
     // Texture
     Texture mctex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -161,12 +138,6 @@ int main()
         ImGui::NewFrame();
         // ImGui::ShowDemoWindow(); // Show demo window! :)
 
-        ImGui::Begin("Hello world");
-        ImGui::Text("FPS: %.2f", FPS);
-        ImGui::Text("position %.2f %.2f %.2f", camera.Position.x, camera.Position.y, camera.Position.z);
-        ImGui::Text("orientation %.2f %.2f %.2f", camera.Orientation.x, camera.Orientation.y, camera.Orientation.z);
-        ImGui::End();
-
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -177,16 +148,27 @@ int main()
         camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
 
-        mctex.Bind();
+        renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mctex);
+
+        // mctex.Bind();
 
 
-        // VAO1.Bind();
+        // renderer.RenderVertex({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f});
+        // renderer.RenderVertex({1.0f, 0.0f, 0.0f}, {1.0f, 0.0f});
+        // renderer.RenderVertex({1.0f, 1.0f, 0.0f}, {1.0f, 1.0f});
+        //
+        // renderer.RenderVertex({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f});
+        // renderer.RenderVertex({1.0f, 1.0f, 0.0f}, {1.0f, 1.0f});
+        // renderer.RenderVertex({0.0f, 1.0f, 0.0f}, {0.0f, 1.0f});
 
 
-        renderer.Flush();
+        // renderer.Flush();
 
-        // glDrawElements(GL_TRIANGLES, std::size(indices), GL_UNSIGNED_INT, 0);
-        // glDrawArrays(GL_TRIANGLES, 0, std::size(vertices));
+        ImGui::Begin("Hello world");
+        ImGui::Text("FPS: %.2f", FPS);
+        ImGui::Text("position %.2f %.2f %.2f", camera.Position.x, camera.Position.y, camera.Position.z);
+        ImGui::Text("orientation %.2f %.2f %.2f", camera.Orientation.x, camera.Orientation.y, camera.Orientation.z);
+        ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -197,10 +179,8 @@ int main()
         glfwPollEvents();
     }
 
-    // VAO1.Delete();
-    // VBO1.Delete();
-    // EBO1.Delete();
-    // mctex.Delete();
+    renderer.Delete();
+    mctex.Delete();
     shaderProgram.Delete();
 
     ImGui_ImplOpenGL3_Shutdown();
