@@ -26,7 +26,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-constexpr int S = 8;
+constexpr int S = 4;
 Chunk chunks[S][S];
 
 int main()
@@ -162,6 +162,17 @@ int main()
             }
         }
 
+        VertexData vertices[] =
+        {
+            { 1, 0, 0, 0, 0, 0 },
+            { 1, 0, 1, 0, 0, 1 },
+            { 1, 0, 0, 1, 0, 2 },
+            { 1, 0, 1, 0, 0, 1 },
+            { 1, 0, 0, 1, 0, 2 },
+            { 1, 0, 1, 1, 0, 3 },
+        };
+
+        renderer.RenderVertices(vertices, std::size(vertices));
 
         renderer.Flush();
 

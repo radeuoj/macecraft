@@ -28,95 +28,95 @@ void Chunk::Render(Renderer& renderer)
                 {
                     glm::vec3 blockPosition = {this->position.x * 16 + i, float(j), this->position.y * 16 + k};
 
-                    if (GetBlock({i, j, k - 1}) == BlockType::AIR)
-                    {
-                        GLfloat vertices[] =
-                        {
-                            blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z,        1.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z,        1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z,        1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z,        0.0f, 1.0f,
-                        };
-
-                        renderer.RenderVertices(vertices, std::size(vertices));
-                    }
-
-                    if (GetBlock({i, j, k + 1}) == BlockType::AIR)
-                    {
-                        GLfloat vertices[] =
-                        {
-                            blockPosition.x,        blockPosition.y,        blockPosition.z + 1.0f, 0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z + 1.0f, 1.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y,        blockPosition.z + 1.0f, 0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z + 1.0f, 0.0f, 1.0f,
-                        };
-
-                        renderer.RenderVertices(vertices, std::size(vertices));
-                    }
-
-                    if (GetBlock({i, j - 1, k}) == BlockType::AIR)
-                    {
-                        GLfloat vertices[] =
-                        {
-                            blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z,        1.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z + 1.0f, 1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z + 1.0f, 1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y,        blockPosition.z + 1.0f, 0.0f, 1.0f,
-                        };
-
-                        renderer.RenderVertices(vertices, std::size(vertices));
-                    }
-
-                    if (GetBlock({i, j + 1, k}) == BlockType::AIR)
-                    {
-                        GLfloat vertices[] =
-                        {
-                            blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z,        0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z,        1.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z,        0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z + 1.0f, 0.0f, 1.0f,
-                        };
-
-                        renderer.RenderVertices(vertices, std::size(vertices));
-                    }
-
-                    if (GetBlock({i - 1, j, k}) == BlockType::AIR)
-                    {
-                        GLfloat vertices[] =
-                        {
-                            blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f,
-                            blockPosition.x,        blockPosition.y,        blockPosition.z + 1.0f, 1.0f, 0.0f,
-                            blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f,
-                            blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f,
-                            blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z,        0.0f, 1.0f,
-                        };
-
-                        renderer.RenderVertices(vertices, std::size(vertices));
-                    }
-
-                    if (GetBlock({i + 1, j, k}) == BlockType::AIR)
-                    {
-                        GLfloat vertices[] =
-                        {
-                            blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z,        1.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z + 1.0f, 0.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 0.0f, 1.0f,
-                            blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z,        1.0f, 0.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 0.0f, 1.0f,
-                            blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z,        1.0f, 1.0f,
-                        };
-
-                        renderer.RenderVertices(vertices, std::size(vertices));
-                    }
+                    // if (GetBlock({i, j, k - 1}) == BlockType::AIR)
+                    // {
+                    //     VertexData vertices[] =
+                    //     {
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z,        1.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z,        1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z,        1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z,        0.0f, 1.0f },
+                    //     };
+                    //
+                    //     renderer.RenderVertices(vertices, std::size(vertices));
+                    // }
+                    //
+                    // if (GetBlock({i, j, k + 1}) == BlockType::AIR)
+                    // {
+                    //     VertexData vertices[] =
+                    //     {
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z + 1.0f, 0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z + 1.0f, 1.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z + 1.0f, 0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z + 1.0f, 0.0f, 1.0f },
+                    //     };
+                    //
+                    //     renderer.RenderVertices(vertices, std::size(vertices));
+                    // }
+                    //
+                    // if (GetBlock({i, j - 1, k}) == BlockType::AIR)
+                    // {
+                    //     VertexData vertices[] =
+                    //     {
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z,        1.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z + 1.0f, 1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z + 1.0f, 1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z + 1.0f, 0.0f, 1.0f },
+                    //     };
+                    //
+                    //     renderer.RenderVertices(vertices, std::size(vertices));
+                    // }
+                    //
+                    // if (GetBlock({i, j + 1, k}) == BlockType::AIR)
+                    // {
+                    //     VertexData vertices[] =
+                    //     {
+                    //         { blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z,        0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z,        1.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z,        0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z + 1.0f, 0.0f, 1.0f },
+                    //     };
+                    //
+                    //     renderer.RenderVertices(vertices, std::size(vertices));
+                    // }
+                    //
+                    // if (GetBlock({i - 1, j, k}) == BlockType::AIR)
+                    // {
+                    //     VertexData vertices[] =
+                    //     {
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f },
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z + 1.0f, 1.0f, 0.0f },
+                    //         { blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y,        blockPosition.z,        0.0f, 0.0f },
+                    //         { blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z + 1.0f, 1.0f, 1.0f },
+                    //         { blockPosition.x,        blockPosition.y + 1.0f, blockPosition.z,        0.0f, 1.0f },
+                    //     };
+                    //
+                    //     renderer.RenderVertices(vertices, std::size(vertices));
+                    // }
+                    //
+                    // if (GetBlock({i + 1, j, k}) == BlockType::AIR)
+                    // {
+                    //     VertexData vertices[] =
+                    //     {
+                    //         { blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z,        1.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z + 1.0f, 0.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 0.0f, 1.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y,        blockPosition.z,        1.0f, 0.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z + 1.0f, 0.0f, 1.0f },
+                    //         { blockPosition.x + 1.0f, blockPosition.y + 1.0f, blockPosition.z,        1.0f, 1.0f },
+                    //     };
+                    //
+                    //     renderer.RenderVertices(vertices, std::size(vertices));
+                    // }
                 }
             }
         }

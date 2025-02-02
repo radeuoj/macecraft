@@ -9,23 +9,32 @@ Renderer::Renderer()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // glBufferData(GL_ARRAY_BUFFER, this->vertices.size(), this->vertices.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
+    glVertexAttribIPointer(0, 2, GL_SHORT, sizeof(VertexData), (void*) offsetof(VertexData, chunk_x));
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+    glVertexAttribIPointer(1, 3, GL_UNSIGNED_BYTE, sizeof(VertexData), (void*) offsetof(VertexData, x));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, sizeof(VertexData), (void*) offsetof(VertexData, texCoords));
+    glEnableVertexAttribArray(2);
+
+    // glVertexAttribIPointer (0, 3, GL_INT, sizeof(VertexData), (void*) offsetof(VertexData, x));
+    // glEnableVertexAttribArray(0);
+    //
+    // glVertexAttribIPointer(1, 2, GL_UNSIGNED_BYTE, sizeof(VertexData), (void*) offsetof(VertexData, texCoords));
+    // glEnableVertexAttribArray(1);
 
     // Unbinding
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Renderer::RenderVertices(GLfloat vertices[], GLsizeiptr size)
+void Renderer::RenderVertices(VertexData vertices[], GLsizeiptr size)
 {
     this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + size);
 }
 
-void Renderer::RenderSpriteVertices(GLfloat vertices[], Texture& texture)
+void Renderer::RenderSpriteVertices(VertexData vertices[])
 {
     this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + 30);
     // this->spriteTextures.push_back(&texture);
@@ -33,7 +42,7 @@ void Renderer::RenderSpriteVertices(GLfloat vertices[], Texture& texture)
 
 void Renderer::RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture)
 {
-    GLfloat vertices[] =
+    VertexData vertices[] =
     { /*                    COORDS                      //  TEXTURE COORDS */
         position.x,          position.y,          position.z, 0.0f, 0.0f,
         position.x + size.x, position.y,          position.z, 1.0f, 0.0f,
@@ -43,7 +52,7 @@ void Renderer::RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture
         position.x,          position.y + size.y, position.z, 0.0f, 1.0f,
     };
 
-    this->RenderSpriteVertices(vertices, texture);
+    this->RenderSpriteVertices(vertices);
 }
 
 void Renderer::RenderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture)
@@ -107,10 +116,10 @@ void Renderer::Flush()
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, this->spriteVertices.size() * sizeof(GLfloat), spriteVertices.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, this->spriteVertices.size() * sizeof(VertexData), spriteVertices.data(), GL_DYNAMIC_DRAW);
 
     // spriteTextures[0]->Bind();
-    glDrawArrays(GL_TRIANGLES, 0, this->spriteVertices.size());
+    glDrawArrays(GL_TRIANGLES, 0, this->spriteVertices.size() * 5);
 
     // for (int i = 0; i < this->spriteTextures.size(); i++)
     // {

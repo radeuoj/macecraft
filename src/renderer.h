@@ -17,7 +17,7 @@ public:
     /**
      * !!!!!!!!!!!!!!!!!!!!!!DO NOT USE!!!!!!!!!!!!
      */
-    void RenderVertices(GLfloat vertices[], GLsizeiptr size);
+    void RenderVertices(VertexData vertices[], GLsizeiptr size);
 
     void RenderTriangleStrip(GLfloat vertices[], GLsizeiptr size);
 
@@ -26,7 +26,7 @@ public:
      * @param vertices MUST HAVE 4 VERTICES OF SIZE 5 GLfloats: 3 for coords, 2 for texcoords
      * @param texture the texture
      */
-    void RenderSpriteVertices(GLfloat vertices[], Texture& texture);
+    void RenderSpriteVertices(VertexData vertices[]);
 
     void RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture);
 
@@ -37,7 +37,7 @@ public:
     void Delete();
 
 private:
-    std::vector<GLfloat> spriteVertices;
+    std::vector<VertexData> spriteVertices;
     // std::vector<Texture*> spriteTextures;
     GLuint VAO{}, VBO{};
 };

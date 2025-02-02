@@ -1,11 +1,13 @@
 #pragma once
 
+#include <glad/glad.h>
+
 struct VertexData
 {
-    int16_t chunk_x;
-    int16_t chunk_y;
-    uint8_t x : 4;
-    uint8_t z : 4;
-    uint8_t y;
-    uint8_t texCoords : 2;
+    GLshort chunk_x;
+    GLshort chunk_y;
+    GLubyte x;
+    GLubyte y;
+    GLubyte z;
+    GLubyte texCoords;
 };
