@@ -9,9 +9,6 @@
 #include <imgui_impl_opengl3.h>
 
 #include "shader.h"
-#include "VAO.h"
-#include "VBO.h"
-#include "EBO.h"
 #include "texture.h"
 #include "camera.h"
 #include "renderer.h"
@@ -20,51 +17,6 @@
 
 unsigned int WIDTH = 1600;
 unsigned int HEIGHT = 900;
-
-GLfloat vertices[] =
-{ //     COORDINATES  /  TexCoord   /        COLORS      /   //
-    0.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-    1.0f, 0.0f, 0.0f,  0.0f,  0.0f,
-    1.0f, 1.0f, 0.0f,  0.0f,  1.0f,
-    0.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-    1.0f, 1.0f, 0.0f,  0.0f,  1.0f,
-    0.0f, 1.0f, 0.0f,  1.0f,  1.0f,
-
-    0.0f, 0.0f, 0.0f,  0.0f,  0.0f,
-    1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-    1.0f, 0.0f, 1.0f,  1.0f,  1.0f,
-    0.0f, 0.0f, 0.0f,  0.0f,  0.0f,
-    1.0f, 0.0f, 1.0f,  1.0f,  1.0f,
-    0.0f, 0.0f, 1.0f,  0.0f,  1.0f,
-
-    0.0f, 0.0f, 1.0f,  0.0f,  0.0f,
-    1.0f, 0.0f, 1.0f,  1.0f,  0.0f,
-    1.0f, 1.0f, 1.0f,  1.0f,  1.0f,
-    0.0f, 0.0f, 1.0f,  0.0f,  0.0f,
-    1.0f, 1.0f, 1.0f,  1.0f,  1.0f,
-    0.0f, 1.0f, 1.0f,  0.0f,  1.0f,
-
-    0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
-    1.0f, 1.0f, 0.0f,  1.0f,  0.0f,
-    1.0f, 1.0f, 1.0f,  1.0f,  1.0f,
-    0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
-    1.0f, 1.0f, 1.0f,  1.0f,  1.0f,
-    0.0f, 1.0f, 1.0f,  0.0f,  1.0f,
-
-    0.0f, 0.0f, 0.0f,  0.0f,  0.0f,
-    0.0f, 0.0f, 1.0f,  1.0f,  0.0f,
-    0.0f, 1.0f, 1.0f,  1.0f,  1.0f,
-    0.0f, 0.0f, 0.0f,  0.0f,  0.0f,
-    0.0f, 1.0f, 1.0f,  1.0f,  1.0f,
-    0.0f, 1.0f, 0.0f,  0.0f,  1.0f,
-
-    1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-    1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
-    1.0f, 1.0f, 1.0f,  0.0f,  1.0f,
-    1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-    1.0f, 1.0f, 1.0f,  0.0f,  1.0f,
-    1.0f, 1.0f, 0.0f,  1.0f,  1.0f,
-};
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -151,19 +103,7 @@ int main()
         // renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mctex);
         renderer.RenderBlock({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, mctex);
 
-        // mctex.Bind();
-
-
-        // renderer.RenderVertex({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f});
-        // renderer.RenderVertex({1.0f, 0.0f, 0.0f}, {1.0f, 0.0f});
-        // renderer.RenderVertex({1.0f, 1.0f, 0.0f}, {1.0f, 1.0f});
-        //
-        // renderer.RenderVertex({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f});
-        // renderer.RenderVertex({1.0f, 1.0f, 0.0f}, {1.0f, 1.0f});
-        // renderer.RenderVertex({0.0f, 1.0f, 0.0f}, {0.0f, 1.0f});
-
-
-        // renderer.Flush();
+        renderer.Flush();
 
         ImGui::Begin("Hello world");
         ImGui::Text("FPS: %.2f", FPS);
@@ -173,7 +113,6 @@ int main()
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 
         glfwSwapBuffers(window);
 
@@ -190,5 +129,6 @@ int main()
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
     return 0;
 }
