@@ -39,7 +39,7 @@ void Renderer::RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture
     texture.Bind();
 
     GLfloat vertices[] =
-    {
+    { /*                    COORDS                      //  TEXTURE COORDS */
         position.x,          position.y,          position.z, 0.0f, 0.0f,
         position.x + size.x, position.y,          position.z, 1.0f, 0.0f,
         position.x + size.x, position.y + size.y, position.z, 1.0f, 1.0f,
@@ -53,23 +53,59 @@ void Renderer::RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture
     texture.Unbind();
 }
 
+void Renderer::RenderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture)
+{
+    texture.Bind();
 
-// void Renderer::RenderVertex(glm::vec3 position, glm::vec2 texturePosition)
-// {
-//     this->vertices.insert(this->vertices.end(), { position.x, position.y, position.z, texturePosition.x, texturePosition.y });
-// }
-//
-// void Renderer::Flush()
-// {
-//     glBindVertexArray(VAO);
-//
-//     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//     glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(float), this->vertices.data(), GL_STATIC_DRAW);
-//
-//     glDrawArrays(GL_TRIANGLES, 0, this->vertices.size());
-//
-//     // this->vertices.clear();
-// }
+    GLfloat vertices[] =
+    { /*                    COORDS                                   //  TEXTURE COORDS */
+        position.x,           position.y,           position.z,           0.0f, 0.0f,
+        position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
+        position.x,           position.y,           position.z,           0.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
+        position.x,           position.y + scale.y, position.z,           0.0f, 1.0f,
+
+        position.x,           position.y,           position.z,           0.0f, 0.0f,
+        position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
+        position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 1.0f,
+        position.x,           position.y,           position.z,           0.0f, 0.0f,
+        position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 1.0f,
+        position.x,           position.y,           position.z + scale.z, 0.0f, 1.0f,
+
+        position.x,           position.y,           position.z + scale.z, 0.0f, 0.0f,
+        position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+        position.x,           position.y,           position.z + scale.z, 0.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+        position.x,           position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
+
+        position.x,           position.y + scale.y, position.z,           0.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z,           1.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+        position.x,           position.y + scale.y, position.z,           0.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+        position.x,           position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
+
+        position.x,           position.y,           position.z,           0.0f, 0.0f,
+        position.x,           position.y,           position.z + scale.z, 1.0f, 0.0f,
+        position.x,           position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+        position.x,           position.y,           position.z,           0.0f, 0.0f,
+        position.x,           position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+        position.x,           position.y + scale.y, position.z,           0.0f, 1.0f,
+
+        position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
+        position.x + scale.x, position.y,           position.z + scale.z, 0.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
+        position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
+        position.x + scale.x, position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
+        position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
+    };
+
+    this->RenderVertices(vertices, std::size(vertices));
+
+    texture.Unbind();
+}
 
 void Renderer::Delete()
 {

@@ -148,7 +148,8 @@ int main()
         camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
 
-        renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mctex);
+        // renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mctex);
+        renderer.RenderBlock({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, mctex);
 
         // mctex.Bind();
 

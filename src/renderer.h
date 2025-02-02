@@ -14,10 +14,9 @@ public:
 
     void RenderVertices(GLfloat vertices[], GLsizeiptr size);
     void RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture);
-    void Flush();
+    void RenderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture);
     void Delete();
 
 private:
-    std::vector<GLfloat> vertices;
     GLuint VAO{}, VBO{};
 };
