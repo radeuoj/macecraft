@@ -35,7 +35,7 @@ void Renderer::RenderVertices(GLfloat vertices[], GLsizeiptr size)
 
 void Renderer::RenderSpriteVertices(GLfloat vertices[], Texture& texture)
 {
-    this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + 20);
+    this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + 30);
     this->spriteTextures.push_back(&texture);
 }
 
@@ -45,8 +45,10 @@ void Renderer::RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture
     { /*                    COORDS                      //  TEXTURE COORDS */
         position.x,          position.y,          position.z, 0.0f, 0.0f,
         position.x + size.x, position.y,          position.z, 1.0f, 0.0f,
-        position.x,          position.y + size.y, position.z, 0.0f, 1.0f,
         position.x + size.x, position.y + size.y, position.z, 1.0f, 1.0f,
+        position.x,          position.y,          position.z, 0.0f, 0.0f,
+        position.x + size.x, position.y + size.y, position.z, 1.0f, 1.0f,
+        position.x,          position.y + size.y, position.z, 0.0f, 1.0f,
     };
 
     this->RenderSpriteVertices(vertices, texture);
@@ -107,6 +109,7 @@ void Renderer::RenderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture
 
 void Renderer::Flush()
 {
+
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -115,20 +118,22 @@ void Renderer::Flush()
     spriteTextures[0]->Bind();
     glDrawArrays(GL_TRIANGLES, 0, this->spriteVertices.size());
 
-    for (int i = 0; i < this->spriteTextures.size(); i++)
-    {
-        spriteTextures[i]->Bind();
-
-        glDrawArrays(GL_TRIANGLES, i * 20, (i + 1) * 20);
-
-        spriteTextures[i]->Unbind();
-    }
+    // for (int i = 0; i < this->spriteTextures.size(); i++)
+    // {
+    //     spriteTextures[i]->Bind();
+    //
+    //     glDrawArrays(GL_TRIANGLES, i * 30, (i + 1) * 30);
+    //
+    //     spriteTextures[i]->Unbind();
+    // }
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // this->spriteVertices.clear();
-    // this->spriteTextures.clear();
+    // printf("%llu vs %llu\n", this->spriteVertices.capacity(), this->spriteVertices.size());
+
+    this->spriteVertices.clear();
+    this->spriteTextures.clear();
 }
 
 void Renderer::RenderTriangleStrip(GLfloat vertices[], GLsizeiptr size)
@@ -139,6 +144,7 @@ void Renderer::RenderTriangleStrip(GLfloat vertices[], GLsizeiptr size)
     glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, size);
+    // glDrawArrays(GL_LINE, 0, size);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

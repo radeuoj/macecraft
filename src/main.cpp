@@ -45,6 +45,9 @@ int main()
 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // VSYNC
+    glfwSwapInterval(1);
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -75,19 +78,7 @@ int main()
     Texture mcTex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
 
 
-    GLfloat vertices[] =
-    {
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-    };
-
-
-
     Camera camera(&WIDTH, &HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
-
-    double prevTime = glfwGetTime();
 
     // for (int i = 0; i < 128; i++)
     // {
@@ -100,13 +91,25 @@ int main()
     //     }
     // }
 
+    double prevTime = glfwGetTime();
+    double lastTime = glfwGetTime();
+    int FPS = 0;
+    int frameCount = 0;
+
     // "Game loop"
     while (!glfwWindowShouldClose(window))
     {
-        double curTime = glfwGetTime();
-        float deltaTime = curTime - prevTime;
-        prevTime = curTime;
-        float FPS = 1.0f / deltaTime;
+        double currentTime = glfwGetTime();
+        float deltaTime = currentTime - prevTime;
+        prevTime = currentTime;
+        frameCount++;
+
+        if (currentTime - lastTime > 1.0)
+        {
+            lastTime = currentTime;
+            FPS = frameCount;
+            frameCount = 0;
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -123,12 +126,20 @@ int main()
         camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
 
-        // renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mctex);
+        // renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mcTex);
 
 
+        for (int i = 0; i < 128; i++)
+        {
+            for (int j = 0; j < 128; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    renderer.RenderBlock({i, k, j}, {1.0f, 1.0f, 1.0f}, dirtTex);
+                }
+            }
+        }
 
-
-        renderer.RenderSpriteVertices(vertices, mcTex);
 
         renderer.Flush();
 
@@ -139,7 +150,7 @@ int main()
 
 
         ImGui::Begin("Hello world");
-        ImGui::Text("FPS: %.2f", FPS);
+        ImGui::Text("FPS: %d", FPS);
         ImGui::Text("position %.2f %.2f %.2f", camera.Position.x, camera.Position.y, camera.Position.z);
         ImGui::Text("orientation %.2f %.2f %.2f", camera.Orientation.x, camera.Orientation.y, camera.Orientation.z);
         ImGui::End();
