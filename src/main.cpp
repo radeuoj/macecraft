@@ -65,17 +65,40 @@ int main()
     Shader shaderProgram(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
 
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
+
     Renderer renderer;
 
     // Texture
-    Texture mctex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+    Texture dirtTex(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+    Texture mcTex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
 
 
-    glEnable(GL_DEPTH_TEST);
+    GLfloat vertices[] =
+    {
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    };
+
+
 
     Camera camera(&WIDTH, &HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
 
     double prevTime = glfwGetTime();
+
+    // for (int i = 0; i < 128; i++)
+    // {
+    //     for (int j = 0; j < 128; j++)
+    //     {
+    //         for (int k = 0; k < 3; k++)
+    //         {
+    //             renderer.RenderBlock({i, k, j}, {1.0f, 1.0f, 1.0f}, dirtTex);
+    //         }
+    //     }
+    // }
 
     // "Game loop"
     while (!glfwWindowShouldClose(window))
@@ -90,7 +113,7 @@ int main()
         ImGui::NewFrame();
         // ImGui::ShowDemoWindow(); // Show demo window! :)
 
-        glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+        glClearColor(0.67f, 0.85f, 0.90f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderProgram.Activate();
@@ -101,9 +124,19 @@ int main()
 
 
         // renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mctex);
-        renderer.RenderBlock({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, mctex);
+
+
+
+
+        renderer.RenderSpriteVertices(vertices, mcTex);
 
         renderer.Flush();
+
+
+
+        // mcTex.Bind();
+
+
 
         ImGui::Begin("Hello world");
         ImGui::Text("FPS: %.2f", FPS);
@@ -120,7 +153,7 @@ int main()
     }
 
     renderer.Delete();
-    mctex.Delete();
+    dirtTex.Delete();
     shaderProgram.Delete();
 
     ImGui_ImplOpenGL3_Shutdown();

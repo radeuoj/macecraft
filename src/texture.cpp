@@ -18,7 +18,50 @@ Texture::Texture(const char *image, GLenum texType, GLenum slot, GLenum format, 
     glTexParameteri(texType, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(texType, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexImage2D(texType, 0, GL_RGB, widthImg, heightImg, 0, GL_RGBA, pixelType, bytes);
+    // glTexImage2D(texType, 0, GL_RGBA, widthImg, heightImg, 0, format, pixelType, bytes);
+
+    if (numColCh == 4)
+        glTexImage2D
+        (
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            widthImg,
+            heightImg,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            bytes
+        );
+    else if (numColCh == 3)
+        glTexImage2D
+        (
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            widthImg,
+            heightImg,
+            0,
+            GL_RGB,
+            GL_UNSIGNED_BYTE,
+            bytes
+        );
+    else if (numColCh == 1)
+        glTexImage2D
+        (
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            widthImg,
+            heightImg,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            bytes
+        );
+    else
+        throw std::invalid_argument("Automatic Texture type recognition failed");
+
     glGenerateMipmap(texType);
 
     stbi_image_free(bytes);
