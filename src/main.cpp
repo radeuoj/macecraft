@@ -26,6 +26,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+constexpr int S = 8;
+Chunk chunks[S][S];
+
 int main()
 {
     // Setup glfw
@@ -93,7 +96,14 @@ int main()
     //     }
     // }
 
-    Chunk chunk({0, 0});
+    for (int i = 0; i < S; i++)
+    {
+        for (int j = 0; j < S; j++)
+        {
+            chunks[i][j] = Chunk({i, j});
+        }
+    }
+
 
     double prevTime = glfwGetTime();
     double lastTime = glfwGetTime();
@@ -144,7 +154,13 @@ int main()
         //     }
         // }
 
-        chunk.Render(renderer);
+        for (int i = 0; i < S; i++)
+        {
+            for (int j = 0; j < S; j++)
+            {
+                chunks[i][j].Render(renderer);
+            }
+        }
 
 
         renderer.Flush();

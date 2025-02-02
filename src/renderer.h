@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include "texture.h"
+#include "vertexdata.h"
 
 class Renderer
 {
