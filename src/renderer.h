@@ -37,6 +37,6 @@ public:
 
 private:
     std::vector<GLfloat> spriteVertices;
-    std::vector<Texture*> spriteTextures;
+    // std::vector<Texture*> spriteTextures;
     GLuint VAO{}, VBO{};
 };
