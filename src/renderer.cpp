@@ -22,15 +22,7 @@ Renderer::Renderer()
 
 void Renderer::RenderVertices(GLfloat vertices[], GLsizeiptr size)
 {
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-
-    glDrawArrays(GL_TRIANGLES, 0, size);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + size);
 }
 
 void Renderer::RenderSpriteVertices(GLfloat vertices[], Texture& texture)

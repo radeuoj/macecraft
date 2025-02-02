@@ -11,6 +11,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "camera.h"
+#include "chunk.h"
 #include "renderer.h"
 
 #include "battery/embed.hpp"
@@ -92,6 +93,8 @@ int main()
     //     }
     // }
 
+    Chunk chunk({0, 0});
+
     double prevTime = glfwGetTime();
     double lastTime = glfwGetTime();
     int FPS = 0;
@@ -130,16 +133,18 @@ int main()
         // renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mcTex);
 
 
-        for (int i = 0; i < 128; i++)
-        {
-            for (int j = 0; j < 128; j++)
-            {
-                for (int k = 0; k < 3; k++)
-                {
-                    renderer.RenderBlock({i, k, j}, {1.0f, 1.0f, 1.0f}, dirtTex);
-                }
-            }
-        }
+        // for (int i = 0; i < 128; i++)
+        // {
+        //     for (int j = 0; j < 128; j++)
+        //     {
+        //         for (int k = 0; k < 3; k++)
+        //         {
+        //             renderer.RenderBlock({i, k, j}, {1.0f, 1.0f, 1.0f}, dirtTex);
+        //         }
+        //     }
+        // }
+
+        chunk.Render(renderer);
 
 
         renderer.Flush();
