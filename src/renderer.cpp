@@ -31,78 +31,84 @@ Renderer::Renderer()
 
 void Renderer::RenderVertices(VertexData vertices[], GLsizeiptr size)
 {
-    this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + size);
+    //TODO: fix / remove
+
+    this->vertices.insert(this->vertices.end(), vertices, vertices + size);
 }
 
 void Renderer::RenderSpriteVertices(VertexData vertices[])
 {
-    this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + 30);
+    //TODO: fix / remove
+
+    // this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + 30);
     // this->spriteTextures.push_back(&texture);
 }
 
 void Renderer::RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture)
 {
-    VertexData vertices[] =
-    { /*                    COORDS                      //  TEXTURE COORDS */
-        position.x,          position.y,          position.z, 0.0f, 0.0f,
-        position.x + size.x, position.y,          position.z, 1.0f, 0.0f,
-        position.x + size.x, position.y + size.y, position.z, 1.0f, 1.0f,
-        position.x,          position.y,          position.z, 0.0f, 0.0f,
-        position.x + size.x, position.y + size.y, position.z, 1.0f, 1.0f,
-        position.x,          position.y + size.y, position.z, 0.0f, 1.0f,
-    };
+    //TODO: fix / remove
 
-    this->RenderSpriteVertices(vertices);
+    // VertexData vertices[] =
+    // { /*                    COORDS                      //  TEXTURE COORDS */
+    //     position.x,          position.y,          position.z, 0.0f, 0.0f,
+    //     position.x + size.x, position.y,          position.z, 1.0f, 0.0f,
+    //     position.x + size.x, position.y + size.y, position.z, 1.0f, 1.0f,
+    //     position.x,          position.y,          position.z, 0.0f, 0.0f,
+    //     position.x + size.x, position.y + size.y, position.z, 1.0f, 1.0f,
+    //     position.x,          position.y + size.y, position.z, 0.0f, 1.0f,
+    // };
+    //
+    // this->RenderSpriteVertices(vertices);
 }
 
 void Renderer::RenderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture)
 {
-    GLfloat vertices[] =
-    { /*                    COORDS                                   //  TEXTURE COORDS */
-        position.x,           position.y,           position.z,           0.0f, 0.0f,
-        position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
-        position.x,           position.y,           position.z,           0.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
-        position.x,           position.y + scale.y, position.z,           0.0f, 1.0f,
-
-        position.x,           position.y,           position.z,           0.0f, 0.0f,
-        position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
-        position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 1.0f,
-        position.x,           position.y,           position.z,           0.0f, 0.0f,
-        position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 1.0f,
-        position.x,           position.y,           position.z + scale.z, 0.0f, 1.0f,
-
-        position.x,           position.y,           position.z + scale.z, 0.0f, 0.0f,
-        position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
-        position.x,           position.y,           position.z + scale.z, 0.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
-        position.x,           position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
-
-        position.x,           position.y + scale.y, position.z,           0.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z,           1.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
-        position.x,           position.y + scale.y, position.z,           0.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
-        position.x,           position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
-
-        position.x,           position.y,           position.z,           0.0f, 0.0f,
-        position.x,           position.y,           position.z + scale.z, 1.0f, 0.0f,
-        position.x,           position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
-        position.x,           position.y,           position.z,           0.0f, 0.0f,
-        position.x,           position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
-        position.x,           position.y + scale.y, position.z,           0.0f, 1.0f,
-
-        position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
-        position.x + scale.x, position.y,           position.z + scale.z, 0.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
-        position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
-        position.x + scale.x, position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
-        position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
-    };
-
-    this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + std::size(vertices));
+    // GLfloat vertices[] =
+    // { /*                    COORDS                                   //  TEXTURE COORDS */
+    //     position.x,           position.y,           position.z,           0.0f, 0.0f,
+    //     position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
+    //     position.x,           position.y,           position.z,           0.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
+    //     position.x,           position.y + scale.y, position.z,           0.0f, 1.0f,
+    //
+    //     position.x,           position.y,           position.z,           0.0f, 0.0f,
+    //     position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
+    //     position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 1.0f,
+    //     position.x,           position.y,           position.z,           0.0f, 0.0f,
+    //     position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 1.0f,
+    //     position.x,           position.y,           position.z + scale.z, 0.0f, 1.0f,
+    //
+    //     position.x,           position.y,           position.z + scale.z, 0.0f, 0.0f,
+    //     position.x + scale.x, position.y,           position.z + scale.z, 1.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+    //     position.x,           position.y,           position.z + scale.z, 0.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+    //     position.x,           position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
+    //
+    //     position.x,           position.y + scale.y, position.z,           0.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z,           1.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+    //     position.x,           position.y + scale.y, position.z,           0.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+    //     position.x,           position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
+    //
+    //     position.x,           position.y,           position.z,           0.0f, 0.0f,
+    //     position.x,           position.y,           position.z + scale.z, 1.0f, 0.0f,
+    //     position.x,           position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+    //     position.x,           position.y,           position.z,           0.0f, 0.0f,
+    //     position.x,           position.y + scale.y, position.z + scale.z, 1.0f, 1.0f,
+    //     position.x,           position.y + scale.y, position.z,           0.0f, 1.0f,
+    //
+    //     position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
+    //     position.x + scale.x, position.y,           position.z + scale.z, 0.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
+    //     position.x + scale.x, position.y,           position.z,           1.0f, 0.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z + scale.z, 0.0f, 1.0f,
+    //     position.x + scale.x, position.y + scale.y, position.z,           1.0f, 1.0f,
+    // };
+    //
+    // this->spriteVertices.insert(this->spriteVertices.end(), vertices, vertices + std::size(vertices));
 
     // for (int i = 0; i < 6; i++)
     // {s
@@ -116,10 +122,10 @@ void Renderer::Flush()
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, this->spriteVertices.size() * sizeof(VertexData), spriteVertices.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(VertexData), vertices.data(), GL_DYNAMIC_DRAW);
 
     // spriteTextures[0]->Bind();
-    glDrawArrays(GL_TRIANGLES, 0, this->spriteVertices.size() * 5);
+    glDrawArrays(GL_TRIANGLES, 0, this->vertices.size() * 5);
 
     // for (int i = 0; i < this->spriteTextures.size(); i++)
     // {
@@ -135,22 +141,24 @@ void Renderer::Flush()
 
     // printf("%llu vs %llu\n", this->spriteVertices.capacity(), this->spriteVertices.size());
 
-    this->spriteVertices.clear();
+    this->vertices.clear();
     // this->spriteTextures.clear();
 }
 
 void Renderer::RenderTriangleStrip(GLfloat vertices[], GLsizeiptr size)
 {
-    glBindVertexArray(VAO);
+    //TODO: fix / remove
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, size);
-    // glDrawArrays(GL_LINE, 0, size);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindVertexArray(VAO);
+    //
+    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // glBufferData(GL_ARRAY_BUFFER, size * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+    //
+    // glDrawArrays(GL_TRIANGLE_STRIP, 0, size);
+    // // glDrawArrays(GL_LINE, 0, size);
+    //
+    // glBindVertexArray(0);
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void Renderer::Delete()

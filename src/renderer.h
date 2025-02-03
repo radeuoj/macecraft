@@ -36,8 +36,9 @@ public:
 
     void Delete();
 
+    std::vector<VertexData> vertices;
+
 private:
-    std::vector<VertexData> spriteVertices;
     // std::vector<Texture*> spriteTextures;
     GLuint VAO{}, VBO{};
 };

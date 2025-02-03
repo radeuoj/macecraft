@@ -10,10 +10,10 @@ class Chunk
 {
 public:
     Chunk() = default;
-    Chunk(glm::uvec2 position);
+    Chunk(glm::i16vec2 position);
     void Render(Renderer& renderer);
     BlockType GetBlock(glm::uvec3 pos);
 private:
-    glm::uvec2 position = glm::uvec2(0);
+    glm::i16vec2 position = glm::i16vec2(0);
     BlockType blocks[16][256][16] { BlockType::AIR };
 };

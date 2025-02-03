@@ -13,6 +13,7 @@
 #include "camera.h"
 #include "chunk.h"
 #include "renderer.h"
+#include "vertexdata.h"
 
 #include "battery/embed.hpp"
 
@@ -74,12 +75,15 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CW);
 
     Renderer renderer;
 
     // Texture
     Texture dirtTex(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
-    Texture mcTex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+    // Texture mcTex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
 
     dirtTex.Bind();
 
@@ -162,17 +166,17 @@ int main()
             }
         }
 
-        VertexData vertices[] =
-        {
-            { 1, 0, 0, 0, 0, 0 },
-            { 1, 0, 1, 0, 0, 1 },
-            { 1, 0, 0, 1, 0, 2 },
-            { 1, 0, 1, 0, 0, 1 },
-            { 1, 0, 0, 1, 0, 2 },
-            { 1, 0, 1, 1, 0, 3 },
-        };
-
-        renderer.RenderVertices(vertices, std::size(vertices));
+        // VertexData vertices[] =
+        // {
+        //     { 0, 0, 0, 0, 0, texcoords(0, 0) },
+        //     { 0, 0, 0, 1, 0, texcoords(0, 1) },
+        //     { 0, 0, 1, 0, 0, texcoords(1, 0) },
+        //     { 0, 0, 0, 1, 0, texcoords(0, 1) },
+        //     { 0, 0, 1, 1, 0, texcoords(1, 1) },
+        //     { 0, 0, 1, 0, 0, texcoords(1, 0) },
+        // };
+        //
+        // renderer.RenderVertices(vertices, std::size(vertices));
 
         renderer.Flush();
 
