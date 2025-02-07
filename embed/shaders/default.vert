@@ -1,10 +1,8 @@
 #version 330 core
 
-#extension GL_NV_gpu_shader5 : enable
-
-layout (location = 0) in i16vec2 aChunkPos;
-layout (location = 1) in u8vec3 aPos;
-layout (location = 2) in uint8_t aTex;
+layout (location = 0) in ivec2 aChunkPos;
+layout (location = 1) in uvec3 aPos;
+layout (location = 2) in int aTex;
 //layout (location = 1) in vec3 aColor;
 
 //out vec3 color;
@@ -19,5 +17,5 @@ void main()
 //    vec3 faPos = vec3(float(aPos.x), float(aPos.y), float(aPos.z));
     gl_Position = camMatrix * vec4(vec3(aChunkPos.x, 0.0, aChunkPos.y) * 16 + vec3(aPos), 1.0);
 //    color = aColor;
-    texCoords = vec2(int(aTex) % 2, int(aTex) / 2 % 2);
+    texCoords = vec2(aTex % 2, aTex / 2 % 2);
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.20)
 project(macecraft)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -8,6 +8,7 @@ option(RELEASE "Make this a production build" OFF)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(B_EMBED_SILENCE_DEVMODE_WARNING ON CACHE BOOL "" FORCE)
 
 add_subdirectory(libs)
 add_subdirectory(libs/glfw)
