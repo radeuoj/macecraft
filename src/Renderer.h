@@ -16,6 +16,7 @@ public:
 
     /**
      * !!!!!!!!!!!!!!!!!!!!!!DO NOT USE!!!!!!!!!!!!
+     * @deprecated dont use
      */
     void renderVertices(VertexData vertices[], GLsizeiptr size);
 
@@ -28,7 +29,6 @@ public:
      */
     void renderSpriteVertices(VertexData vertices[]);
 
-    [[deprecated("Use renderVertices instead")]]
     void renderSprite(glm::vec3 position, glm::vec2 size, Texture& texture);
 
     void renderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture);

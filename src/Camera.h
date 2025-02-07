@@ -11,22 +11,27 @@
 
 #include "Shader.h"
 
-class Camera {
-public:
-    glm::vec3 position;
-    glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+namespace Macecraft
+{
 
-    float speed = 1.0f;
-    float sensitivity = 100.0f;
+    class Camera {
+    public:
+        glm::vec3 position = glm::vec3(0.0f, 0.0f, 2.0f);
+        glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    Camera(unsigned int* width, unsigned int* height, glm::vec3 position);
+        float speed = 1.0f;
+        float sensitivity = 100.0f;
 
-    void matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform);
-    void inputs(GLFWwindow* window, float deltaTime);
+        Camera(int &width, int &height);
 
-private:
-    unsigned int *m_Width, *m_Height;
+        void matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform);
+        void inputs(GLFWwindow* window, float deltaTime);
 
-    bool m_FirstClick = true;
-};
+    private:
+        int &m_Width, &m_Height;
+
+        bool m_FirstClick = true;
+    };
+
+}
