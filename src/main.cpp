@@ -8,12 +8,12 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include "shader.h"
-#include "texture.h"
-#include "camera.h"
-#include "chunk.h"
-#include "renderer.h"
-#include "vertexdata.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "Camera.h"
+#include "Chunk.h"
+#include "Renderer.h"
+#include "VertexData.h"
 
 #include "battery/embed.hpp"
 
@@ -85,7 +85,7 @@ int main()
     Texture dirtTex(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
     // Texture mcTex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
 
-    dirtTex.Bind();
+    dirtTex.bind();
 
     Camera camera(&WIDTH, &HEIGHT, glm::vec3(0.0f, 0.0f, 2.0f));
 
@@ -137,11 +137,11 @@ int main()
         glClearColor(0.67f, 0.85f, 0.90f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shaderProgram.Activate();
+        shaderProgram.activate();
 
 
-        camera.Inputs(window, deltaTime);
-        camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
+        camera.inputs(window, deltaTime);
+        camera.matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
 
         // renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mcTex);
@@ -162,7 +162,7 @@ int main()
         {
             for (int j = 0; j < S; j++)
             {
-                chunks[i][j].Render(renderer);
+                chunks[i][j].render(renderer);
             }
         }
 
@@ -178,7 +178,7 @@ int main()
         //
         // renderer.RenderVertices(vertices, std::size(vertices));
 
-        renderer.Flush();
+        renderer.flush();
 
 
 
@@ -188,8 +188,8 @@ int main()
 
         ImGui::Begin("Hello world");
         ImGui::Text("FPS: %d", FPS);
-        ImGui::Text("position %.2f %.2f %.2f", camera.Position.x, camera.Position.y, camera.Position.z);
-        ImGui::Text("orientation %.2f %.2f %.2f", camera.Orientation.x, camera.Orientation.y, camera.Orientation.z);
+        ImGui::Text("position %.2f %.2f %.2f", camera.position.x, camera.position.y, camera.position.z);
+        ImGui::Text("orientation %.2f %.2f %.2f", camera.orientation.x, camera.orientation.y, camera.orientation.z);
         ImGui::End();
 
         ImGui::Render();

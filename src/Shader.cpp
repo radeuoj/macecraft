@@ -1,4 +1,4 @@
-#include "shader.h"
+#include "Shader.h"
 
 #include <iostream>
 
@@ -59,7 +59,7 @@ Shader::Shader(const char* vertexShaderSource, const char* fragmentShaderSource)
     glDeleteShader(fragmentShader);
 }
 
-void Shader::Activate()
+void Shader::activate()
 {
     glUseProgram(ID);
 }

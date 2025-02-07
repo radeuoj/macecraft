@@ -1,4 +1,4 @@
-#include "texture.h"
+#include "Texture.h"
 
 Texture::Texture(const char *image, GLenum texType, GLenum slot, GLenum format, GLenum pixelType)
 {
@@ -71,16 +71,16 @@ Texture::Texture(const char *image, GLenum texType, GLenum slot, GLenum format, 
 void Texture::texUnit(Shader& shader, const char *uniform, GLuint unit)
 {
     GLuint tex0Uni = glGetUniformLocation(shader.ID, uniform);
-    shader.Activate();
+    shader.activate();
     glUniform1i(tex0Uni, unit);
 }
 
-void Texture::Bind()
+void Texture::bind()
 {
     glBindTexture(type, ID);
 }
 
-void Texture::Unbind()
+void Texture::unbind()
 {
     glBindTexture(type, 0);
 }

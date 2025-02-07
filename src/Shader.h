@@ -12,7 +12,7 @@ public:
     GLuint ID;
     Shader(const char* vertexShaderSource, const char* fragmentShaderSource);
 
-    void Activate();
+    void activate();
     void Delete();
 
 private:

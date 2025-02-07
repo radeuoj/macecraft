@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "chunk.h"
+#include "Chunk.h"
 
 class World
 {
@@ -10,5 +10,5 @@ public:
     World();
 
 private:
-    std::vector<Chunk> chunks;
+    std::vector<Chunk> m_Chunks;
 };

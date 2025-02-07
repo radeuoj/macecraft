@@ -1,12 +1,12 @@
-#include "renderer.h"
+#include "Renderer.h"
 
 Renderer::Renderer()
 {
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    glGenVertexArrays(1, &m_VAO);
+    glBindVertexArray(m_VAO);
 
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glGenBuffers(1, &m_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
     // glBufferData(GL_ARRAY_BUFFER, this->vertices.size(), this->vertices.data(), GL_STATIC_DRAW);
 
     glVertexAttribIPointer(0, 2, GL_SHORT, sizeof(VertexData), (void*) offsetof(VertexData, chunk_x));
@@ -29,14 +29,14 @@ Renderer::Renderer()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Renderer::RenderVertices(VertexData vertices[], GLsizeiptr size)
+void Renderer::renderVertices(VertexData vertices[], GLsizeiptr size)
 {
     //TODO: fix / remove
 
     this->vertices.insert(this->vertices.end(), vertices, vertices + size);
 }
 
-void Renderer::RenderSpriteVertices(VertexData vertices[])
+void Renderer::renderSpriteVertices(VertexData vertices[])
 {
     //TODO: fix / remove
 
@@ -44,7 +44,7 @@ void Renderer::RenderSpriteVertices(VertexData vertices[])
     // this->spriteTextures.push_back(&texture);
 }
 
-void Renderer::RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture)
+void Renderer::renderSprite(glm::vec3 position, glm::vec2 size, Texture& texture)
 {
     //TODO: fix / remove
 
@@ -61,7 +61,7 @@ void Renderer::RenderSprite(glm::vec3 position, glm::vec2 size, Texture& texture
     // this->RenderSpriteVertices(vertices);
 }
 
-void Renderer::RenderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture)
+void Renderer::renderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture)
 {
     // GLfloat vertices[] =
     // { /*                    COORDS                                   //  TEXTURE COORDS */
@@ -116,12 +116,12 @@ void Renderer::RenderBlock(glm::vec3 position, glm::vec3 scale, Texture& texture
     // }
 }
 
-void Renderer::Flush()
+void Renderer::flush()
 {
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(m_VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
     glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(VertexData), vertices.data(), GL_DYNAMIC_DRAW);
 
     // spriteTextures[0]->Bind();
@@ -145,7 +145,7 @@ void Renderer::Flush()
     // this->spriteTextures.clear();
 }
 
-void Renderer::RenderTriangleStrip(GLfloat vertices[], GLsizeiptr size)
+void Renderer::renderTriangleStrip(GLfloat vertices[], GLsizeiptr size)
 {
     //TODO: fix / remove
 
@@ -163,8 +163,8 @@ void Renderer::RenderTriangleStrip(GLfloat vertices[], GLsizeiptr size)
 
 void Renderer::Delete()
 {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &m_VAO);
+    glDeleteBuffers(1, &m_VBO);
 }
 
 
