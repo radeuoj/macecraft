@@ -1,10 +1,25 @@
 #include "Game.h"
 
+#include <iostream>
+
+#include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+#include "Camera.h"
+#include "Shader.h"
+#include "Texture.h"
+#include "World.h"
+#include "Renderer.h"
+
+#include "battery/embed.hpp"
+
 namespace Macecraft
 {
 
-    constexpr int S = 4;
-    Chunk chunks[S][S];
+    // constexpr int S = 4;
+    // Chunk chunks[S][S];
 
     Game::Game(): m_Camera(width, height)
     {
@@ -31,13 +46,14 @@ namespace Macecraft
         }
         glfwMakeContextCurrent(m_Window);
 
-        // glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height)
-        // {
-        //     //TODO: aici
-        //     width = width;
-        //     height = height;
-        //     glViewport(0, 0, width, height);
-        // });
+        glfwSetWindowUserPointer(m_Window, this);
+        glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+        {
+            Game *game = static_cast<Game*>(glfwGetWindowUserPointer(window));
+            game->width = width;
+            game->height = height;
+            glViewport(0, 0, width, height);
+        });
 
         // VSYNC
         glfwSwapInterval(1);
@@ -80,6 +96,8 @@ namespace Macecraft
 
     void Game::run()
     {
+        World world;
+
         Shader shaderProgram(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
 
         Renderer renderer;
@@ -101,13 +119,13 @@ namespace Macecraft
         //     }
         // }
 
-        for (int i = 0; i < S; i++)
-        {
-            for (int j = 0; j < S; j++)
-            {
-                chunks[i][j] = Chunk({i, j});
-            }
-        }
+        // for (int i = 0; i < S; i++)
+        // {
+        //     for (int j = 0; j < S; j++)
+        //     {
+        //         chunks[i][j] = Chunk({i, j});
+        //     }
+        // }
 
 
         double prevTime = glfwGetTime();
@@ -159,12 +177,17 @@ namespace Macecraft
             //     }
             // }
 
-            for (int i = 0; i < S; i++)
+            // for (int i = 0; i < S; i++)
+            // {
+            //     for (int j = 0; j < S; j++)
+            //     {
+            //         chunks[i][j].render(renderer);
+            //     }
+            // }
+
+            for (Chunk chunk : world.chunks)
             {
-                for (int j = 0; j < S; j++)
-                {
-                    chunks[i][j].render(renderer);
-                }
+                chunk.render(renderer);
             }
 
             // VertexData vertices[] =

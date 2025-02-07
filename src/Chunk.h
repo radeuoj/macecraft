@@ -1,19 +1,28 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <glad/glad.h>
 
 #include "BlockType.h"
 #include "Renderer.h"
 
-class Chunk
+namespace Macecraft
 {
-public:
-    Chunk() = default;
-    Chunk(glm::i16vec2 position);
-    void render(Renderer& renderer);
-    BlockType getBlock(glm::uvec3 pos);
-private:
-    glm::i16vec2 m_Position = glm::i16vec2(0);
-    BlockType m_Blocks[16][256][16] { BlockType::AIR };
-};
+    class World;
+
+    class Chunk
+    {
+    public:
+        static constexpr int SIZE = 16;
+        static constexpr int HEIGHT = 256;
+
+        Chunk(World& world, glm::i16vec2 position);
+        void render(Renderer& renderer);
+        BlockType getBlock(glm::uvec3 pos);
+        glm::i16vec2 getPosition();
+    private:
+        World& m_World;
+        glm::i16vec2 m_Position = glm::i16vec2(0);
+        BlockType m_Blocks[16][256][16] { BlockType::AIR };
+    };
+
+}

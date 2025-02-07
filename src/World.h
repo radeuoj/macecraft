@@ -4,11 +4,17 @@
 
 #include "Chunk.h"
 
-class World
+namespace Macecraft
 {
-public:
-    World();
 
-private:
-    std::vector<Chunk> m_Chunks;
-};
+    class World
+    {
+    public:
+        std::vector<Chunk> chunks;
+
+        World();
+
+    };
+
+}
+
