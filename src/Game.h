@@ -29,6 +29,7 @@ private:
     Renderer m_GlobalRenderer;
     Shader m_DefaultShader;
     std::unique_ptr<World> m_World;
+    // World m_World;
 
     int m_FPS = 0;
 

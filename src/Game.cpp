@@ -107,7 +107,7 @@ namespace Macecraft
 
         dirtTex.bind();
 
-        for (Chunk chunk : m_World->chunks)
+        for (Chunk& chunk : m_World->chunks)
         {
             chunk.render();
         }
@@ -138,15 +138,15 @@ namespace Macecraft
             m_DefaultShader.activate();
 
             m_Camera.inputs(m_Window, deltaTime);
-            m_Camera.matrix(45.0f, 0.1f, 100.0f, m_DefaultShader, "camMatrix");
+            m_Camera.matrix(45.0f, 0.1f, 1000.0f, m_DefaultShader, "camMatrix");
 
             update(deltaTime);
 
             m_GlobalRenderer.flush();
 
-            printf("position %.2f %.2f %.2f\n", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
+            // printf("position %.2f %.2f %.2f\n", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
 
-            // updateImGui(deltaTime);
+            updateImGui(deltaTime);
 
             glfwSwapBuffers(m_Window);
 
@@ -158,7 +158,7 @@ namespace Macecraft
 
     void Game::update(float deltaTime)
     {
-        for (Chunk chunk : m_World->chunks)
+        for (Chunk& chunk : m_World->chunks)
         {
             chunk.m_Renderer.flush();
         }

@@ -16,6 +16,8 @@ namespace Macecraft
     public:
         Renderer() = default;
 
+        Renderer(const Renderer& other);
+
         void init();
 
         ~Renderer();
@@ -26,6 +28,6 @@ namespace Macecraft
 
     private:
         GLuint m_VAO, m_VBO;
-        bool m_isInitialized = false;
+        mutable bool m_isInitialized = false;
     };
 }

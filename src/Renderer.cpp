@@ -26,18 +26,32 @@ namespace Macecraft
         m_isInitialized = true;
     }
 
+    Renderer::Renderer(const Renderer& other): vertices(other.vertices), m_VAO(other.m_VAO), m_VBO(other.m_VBO)
+    {
+        if (other.m_isInitialized)
+        {
+            m_isInitialized = true;
+            other.m_isInitialized = false;
+        }
+
+    }
+
     void Renderer::flush()
     {
 
         glBindVertexArray(m_VAO);
 
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+        // glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexData), vertices.data(), GL_STATIC_DRAW);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexData), vertices.data(), GL_STATIC_DRAW);
 
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
         glBindVertexArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        // if (!vertices.empty())
+        //     printf("%d %d %d %d %d %d\n", vertices.data()[0].x, vertices.data()[0].y, vertices.data()[0].z, vertices.data()[0].chunk_x, vertices.data()[0].chunk_y, vertices.data()[0].texCoords);
 
         // vertices.clear();
     }

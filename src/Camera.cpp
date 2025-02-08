@@ -53,7 +53,7 @@ namespace Macecraft
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         {
-            speed = 4.0f;
+            speed = 20.0f;
         }
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
