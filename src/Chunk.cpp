@@ -1,5 +1,7 @@
 #include "Chunk.h"
 
+#include <cstring>
+
 namespace Macecraft
 {
     Chunk::Chunk(World* world, glm::i16vec2 position): m_World(world), m_Position(position)
