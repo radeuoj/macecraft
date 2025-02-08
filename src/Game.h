@@ -32,6 +32,7 @@ private:
     // World m_World;
 
     int m_FPS = 0;
+    float m_FrameTime = 0;
 
     // TODO: remove
     Texture dirtTex;

@@ -26,8 +26,12 @@ namespace Macecraft
         m_isInitialized = true;
     }
 
-    Renderer::Renderer(const Renderer& other): vertices(other.vertices), m_VAO(other.m_VAO), m_VBO(other.m_VBO)
+    Renderer::Renderer(Renderer&& other) noexcept
     {
+        vertices = other.vertices;
+        m_VAO = other.m_VAO;
+        m_VBO = other.m_VBO;
+
         if (other.m_isInitialized)
         {
             m_isInitialized = true;

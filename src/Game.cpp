@@ -116,6 +116,7 @@ namespace Macecraft
         double lastTime = glfwGetTime();
         m_FPS = 0;
         int frameCount = 0;
+        float frameTimeTotal = 0;
 
         // "Game loop"
         while (!glfwWindowShouldClose(m_Window))
@@ -129,7 +130,9 @@ namespace Macecraft
             {
                 lastTime = currentTime;
                 m_FPS = frameCount;
+                m_FrameTime = frameTimeTotal / float(frameCount) * 1000.0f;
                 frameCount = 0;
+                frameTimeTotal = 0;
             }
 
             glClearColor(0.67f, 0.85f, 0.90f, 1.0f);
@@ -147,6 +150,8 @@ namespace Macecraft
             // printf("position %.2f %.2f %.2f\n", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
 
             updateImGui(deltaTime);
+
+            frameTimeTotal += glfwGetTime() - prevTime;
 
             glfwSwapBuffers(m_Window);
 
@@ -172,7 +177,7 @@ namespace Macecraft
         // ImGui::ShowDemoWindow(); // Show demo window! :)
 
         ImGui::Begin("Hello world");
-        ImGui::Text("FPS: %d", m_FPS);
+        ImGui::Text("FPS: %d time: %.2fms", m_FPS, m_FrameTime);
         ImGui::Text("position %.2f %.2f %.2f", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
         ImGui::Text("orientation %.2f %.2f %.2f", m_Camera.orientation.x, m_Camera.orientation.y, m_Camera.orientation.z);
         ImGui::End();

@@ -18,9 +18,17 @@ namespace Macecraft
         m_Renderer.init();
     }
 
-    Chunk::Chunk(const Chunk &other):m_Renderer(other.m_Renderer), m_World(other.m_World), m_Position(other.m_Position)
+    Chunk::Chunk(Chunk&& other) noexcept:
+    m_Renderer(std::move(other.m_Renderer)),
+    m_World(other.m_World),
+    m_Position(other.m_Position)
+    // m_Blocks(other.m_Blocks)
     {
-        memcpy(m_Blocks, other.m_Blocks, SIZE * SIZE * HEIGHT);
+        // m_Renderer = std::move(other.m_Renderer);
+        // m_Position = other.m_Position;
+        // m_World = other.m_World;
+        // m_Blocks = std::move(other.m_Blocks);
+        memcpy(m_Blocks, other.m_Blocks, SIZE * HEIGHT * SIZE);
     }
 
 
