@@ -9,19 +9,23 @@
 #include "Texture.h"
 #include "VertexData.h"
 
-class Renderer
+namespace Macecraft
 {
-public:
-    Renderer() = default;
+    class Renderer
+    {
+    public:
+        Renderer() = default;
 
-    void init();
+        void init();
 
-    ~Renderer();
+        ~Renderer();
 
-    void flush();
+        void flush();
 
-    std::vector<VertexData> vertices;
+        std::vector<VertexData> vertices;
 
-private:
-    GLuint m_VAO, m_VBO;
-};
+    private:
+        GLuint m_VAO, m_VBO;
+        bool m_isInitialized = false;
+    };
+}

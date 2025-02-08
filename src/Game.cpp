@@ -29,6 +29,8 @@ namespace Macecraft
         m_GlobalRenderer.init();
         m_DefaultShader.init(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
         dirtTex.init(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+        m_World = std::make_unique<World>();
+        m_World->init();
     }
 
     void Game::initGLFW()
@@ -105,6 +107,11 @@ namespace Macecraft
 
         dirtTex.bind();
 
+        for (Chunk chunk : m_World->chunks)
+        {
+            chunk.render();
+        }
+
         double prevTime = glfwGetTime();
         double lastTime = glfwGetTime();
         m_FPS = 0;
@@ -137,7 +144,9 @@ namespace Macecraft
 
             m_GlobalRenderer.flush();
 
-            updateImGui(deltaTime);
+            printf("position %.2f %.2f %.2f\n", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
+
+            // updateImGui(deltaTime);
 
             glfwSwapBuffers(m_Window);
 
@@ -149,9 +158,9 @@ namespace Macecraft
 
     void Game::update(float deltaTime)
     {
-        for (Chunk chunk : m_World.chunks)
+        for (Chunk chunk : m_World->chunks)
         {
-            chunk.render(m_GlobalRenderer);
+            chunk.m_Renderer.flush();
         }
     }
 

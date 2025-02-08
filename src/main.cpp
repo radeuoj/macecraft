@@ -2,9 +2,8 @@
 
 int main()
 {
-    Macecraft::Game* game = new Macecraft::Game();
-    game->run();
-    delete game;
+    Macecraft::Game game;
+    game.run();
 
     return 0;
 }

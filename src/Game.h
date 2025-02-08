@@ -28,7 +28,7 @@ private:
     Camera m_Camera{width, height};
     Renderer m_GlobalRenderer;
     Shader m_DefaultShader;
-    World m_World;
+    std::unique_ptr<World> m_World;
 
     int m_FPS = 0;
 

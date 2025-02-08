@@ -12,7 +12,8 @@ namespace Macecraft
     public:
         std::vector<Chunk> chunks;
 
-        World();
+        World() = default;
+        void init();
 
     };
 

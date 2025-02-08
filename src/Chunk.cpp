@@ -14,9 +14,11 @@ namespace Macecraft
                 }
             }
         }
+
+        m_Renderer.init();
     }
 
-    void Chunk::render(Renderer& renderer)
+    void Chunk::render()
     {
         for (int i = 0; i < SIZE; i++)
         {
@@ -33,72 +35,74 @@ namespace Macecraft
                         // BACK
                         if (getBlock({i, j, k - 1}) == BlockType::AIR)
                         {
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(0, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, blockPosition.z, texcoords(1, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(1, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, blockPosition.z, texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(0, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, blockPosition.z, texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(1, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, blockPosition.z, texcoords(1, 0) });
                         }
 
                         // FRONT
                         if (getBlock({i, j, k + 1}) == BlockType::AIR)
                         {
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(0, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(1, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(0, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(1, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 0) });
                         }
 
                         //  BOTTOM
                         if (getBlock({i, j - 1, k}) == BlockType::AIR)
                         {
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, blockPosition.z, texcoords(0, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(1, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, blockPosition.z, texcoords(0, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(1, 0) });
                         }
 
                         // TOP
                         if (getBlock({i, j + 1, k}) == BlockType::AIR)
                         {
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(1, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(1, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(1, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(1, 0) });
                         }
 
                         // LEFT
                         if (getBlock({i - 1, j, k}) == BlockType::AIR)
                         {
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, blockPosition.z, texcoords(0, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(1, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, blockPosition.z, texcoords(0, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(1, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(1, 0) });
                         }
 
                         // RIGHT
                         if (getBlock({i + 1, j, k}) == BlockType::AIR)
                         {
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(0, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(1, 0) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(1, 1) });
-                            renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), texcoords(0, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(1, 0) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), texcoords(0, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, texcoords(1, 1) });
+                            m_Renderer.vertices.push_back({ this->m_Position.x, this->m_Position.y, GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, texcoords(1, 0) });
                         }
                     }
                 }
             }
         }
+
+        // m_Renderer.flush();
     }
 
     BlockType Chunk::getBlock(glm::uvec3 pos)
