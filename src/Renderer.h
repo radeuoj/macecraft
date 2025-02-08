@@ -12,7 +12,11 @@
 class Renderer
 {
 public:
-    Renderer();
+    Renderer() = default;
+
+    void init();
+
+    ~Renderer();
 
     /**
      * !!!!!!!!!!!!!!!!!!!!!!DO NOT USE!!!!!!!!!!!!
@@ -35,11 +39,8 @@ public:
 
     void flush();
 
-    void Delete();
-
     std::vector<VertexData> vertices;
 
 private:
-    // std::vector<Texture*> spriteTextures;
-    GLuint m_VAO{}, m_VBO{};
+    GLuint m_VAO, m_VBO;
 };

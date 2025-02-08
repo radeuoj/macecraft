@@ -11,7 +11,6 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "World.h"
-#include "Renderer.h"
 
 #include "battery/embed.hpp"
 
@@ -21,11 +20,15 @@ namespace Macecraft
     // constexpr int S = 4;
     // Chunk chunks[S][S];
 
-    Game::Game(): m_Camera(width, height)
+    Game::Game()
     {
         initGLFW();
         initImGui();
         initOpenGL();
+
+        m_GlobalRenderer.init();
+        m_DefaultShader.init(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
+        dirtTex.init(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
     }
 
     void Game::initGLFW()
@@ -96,41 +99,15 @@ namespace Macecraft
 
     void Game::run()
     {
-        World world;
-
-        Shader shaderProgram(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
-
-        Renderer renderer;
-
         // Texture
-        Texture dirtTex(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+        // Texture dirtTex(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
         // Texture mcTex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
 
         dirtTex.bind();
 
-        // for (int i = 0; i < 128; i++)
-        // {
-        //     for (int j = 0; j < 128; j++)
-        //     {
-        //         for (int k = 0; k < 3; k++)
-        //         {
-        //             renderer.RenderBlock({i, k, j}, {1.0f, 1.0f, 1.0f}, dirtTex);
-        //         }
-        //     }
-        // }
-
-        // for (int i = 0; i < S; i++)
-        // {
-        //     for (int j = 0; j < S; j++)
-        //     {
-        //         chunks[i][j] = Chunk({i, j});
-        //     }
-        // }
-
-
         double prevTime = glfwGetTime();
         double lastTime = glfwGetTime();
-        int FPS = 0;
+        m_FPS = 0;
         int frameCount = 0;
 
         // "Game loop"
@@ -144,88 +121,54 @@ namespace Macecraft
             if (currentTime - lastTime > 1.0)
             {
                 lastTime = currentTime;
-                FPS = frameCount;
+                m_FPS = frameCount;
                 frameCount = 0;
             }
-
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-            // ImGui::ShowDemoWindow(); // Show demo window! :)
 
             glClearColor(0.67f, 0.85f, 0.90f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            shaderProgram.activate();
-
+            m_DefaultShader.activate();
 
             m_Camera.inputs(m_Window, deltaTime);
-            m_Camera.matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
+            m_Camera.matrix(45.0f, 0.1f, 100.0f, m_DefaultShader, "camMatrix");
 
+            update(deltaTime);
 
-            // renderer.RenderSprite({0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, mcTex);
+            m_GlobalRenderer.flush();
 
-
-            // for (int i = 0; i < 128; i++)
-            // {
-            //     for (int j = 0; j < 128; j++)
-            //     {
-            //         for (int k = 0; k < 3; k++)
-            //         {
-            //             renderer.RenderBlock({i, k, j}, {1.0f, 1.0f, 1.0f}, dirtTex);
-            //         }
-            //     }
-            // }
-
-            // for (int i = 0; i < S; i++)
-            // {
-            //     for (int j = 0; j < S; j++)
-            //     {
-            //         chunks[i][j].render(renderer);
-            //     }
-            // }
-
-            for (Chunk chunk : world.chunks)
-            {
-                chunk.render(renderer);
-            }
-
-            // VertexData vertices[] =
-            // {
-            //     { 0, 0, 0, 0, 0, texcoords(0, 0) },
-            //     { 0, 0, 0, 1, 0, texcoords(0, 1) },
-            //     { 0, 0, 1, 0, 0, texcoords(1, 0) },
-            //     { 0, 0, 0, 1, 0, texcoords(0, 1) },
-            //     { 0, 0, 1, 1, 0, texcoords(1, 1) },
-            //     { 0, 0, 1, 0, 0, texcoords(1, 0) },
-            // };
-            //
-            // renderer.RenderVertices(vertices, std::size(vertices));
-
-            renderer.flush();
-
-
-
-            // mcTex.Bind();
-
-
-
-            ImGui::Begin("Hello world");
-            ImGui::Text("FPS: %d", FPS);
-            ImGui::Text("position %.2f %.2f %.2f", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
-            ImGui::Text("orientation %.2f %.2f %.2f", m_Camera.orientation.x, m_Camera.orientation.y, m_Camera.orientation.z);
-            ImGui::End();
-
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            updateImGui(deltaTime);
 
             glfwSwapBuffers(m_Window);
 
             glfwPollEvents();
         }
 
-        renderer.Delete();
         dirtTex.Delete();
-        shaderProgram.Delete();
+    }
+
+    void Game::update(float deltaTime)
+    {
+        for (Chunk chunk : m_World.chunks)
+        {
+            chunk.render(m_GlobalRenderer);
+        }
+    }
+
+    void Game::updateImGui(float deltaTime)
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        // ImGui::ShowDemoWindow(); // Show demo window! :)
+
+        ImGui::Begin("Hello world");
+        ImGui::Text("FPS: %d", m_FPS);
+        ImGui::Text("position %.2f %.2f %.2f", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
+        ImGui::Text("orientation %.2f %.2f %.2f", m_Camera.orientation.x, m_Camera.orientation.y, m_Camera.orientation.z);
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 } // Macecraft

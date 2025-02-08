@@ -10,10 +10,11 @@ class Shader
 {
 public:
     GLuint ID;
-    Shader(const char* vertexShaderSource, const char* fragmentShaderSource);
+    Shader() = default;
+    void init(const char* vertexShaderSource, const char* fragmentShaderSource);
+    ~Shader();
 
     void activate();
-    void Delete();
 
 private:
     void compileErrors(unsigned int shader, const char* type);

@@ -33,10 +33,12 @@ Shader ShaderFromRes(const char *vertexPath, const char *fragmentPath)
     const char* vertexShaderSource = vertexCode.c_str();
     const char* fragmentShaderSource = fragmentCode.c_str();
 
-    return Shader(vertexShaderSource, fragmentShaderSource);
+    Shader shader;
+    shader.init(vertexShaderSource, fragmentShaderSource);
+    return shader;
 }
 
-Shader::Shader(const char* vertexShaderSource, const char* fragmentShaderSource)
+void Shader::init(const char* vertexShaderSource, const char* fragmentShaderSource)
 {
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -64,7 +66,7 @@ void Shader::activate()
     glUseProgram(ID);
 }
 
-void Shader::Delete()
+Shader::~Shader()
 {
     glDeleteProgram(ID);
 }

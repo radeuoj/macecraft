@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer()
+void Renderer::init()
 {
     glGenVertexArrays(1, &m_VAO);
     glBindVertexArray(m_VAO);
@@ -161,7 +161,7 @@ void Renderer::renderTriangleStrip(GLfloat vertices[], GLsizeiptr size)
     // glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Renderer::Delete()
+Renderer::~Renderer()
 {
     glDeleteVertexArrays(1, &m_VAO);
     glDeleteBuffers(1, &m_VBO);
