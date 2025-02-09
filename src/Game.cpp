@@ -31,8 +31,7 @@ namespace Macecraft
         m_DefaultShader.init(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
         // dirtTex.init(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
         // Texture test;
-        std::cout << typeid(b::embed<"embed/textures/dirt.png">().str()).name() << std::endl << std::endl;
-        dirtTex.initFromBytes((unsigned char*)b::embed<"embed/textures/dirt.png.bytes">().data(), GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+        dirtTex.initFromBytes((unsigned char*)b::embed<"embed/textures/dirt.png.bytes">().data(), 32, 32, 3, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
         m_World = std::make_unique<World>();
         m_World->init();
     }

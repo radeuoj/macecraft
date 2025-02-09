@@ -13,8 +13,12 @@ public:
     GLenum type;
 
     Texture() = default;
-    void init(const char* image, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
-    void initFromBytes(unsigned char* bytes, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
+
+    /**
+     * @deprecated not sure if it still works
+     */
+    [[deprecated]] void initFromFile(const char* image, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
+    void initFromBytes(unsigned char* bytes, int width, int height, int channels, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
 
     void texUnit(Shader& shader, const char* uniform, GLuint unit);
     void bind();
