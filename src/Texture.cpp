@@ -1,5 +1,7 @@
 #include "Texture.h"
 
+#include <iostream>
+
 void Texture::init(const char *image, GLenum texType, GLenum slot, GLenum format, GLenum pixelType)
 {
     type = texType;
@@ -7,6 +9,8 @@ void Texture::init(const char *image, GLenum texType, GLenum slot, GLenum format
     int widthImg, heightImg, numColCh;
     stbi_set_flip_vertically_on_load(true);
     unsigned char* bytes = stbi_load(image, &widthImg, &heightImg, &numColCh, 0);
+
+    std::cout << bytes << std::endl << std::endl << std::endl;
 
     glGenTextures(1, &ID);
     glActiveTexture(slot);
@@ -65,6 +69,71 @@ void Texture::init(const char *image, GLenum texType, GLenum slot, GLenum format
     glGenerateMipmap(texType);
 
     stbi_image_free(bytes);
+    glBindTexture(texType, 0);
+}
+
+void Texture::initFromBytes(unsigned char* bytes, GLenum texType, GLenum slot, GLenum format, GLenum pixelType)
+{
+    type = texType;
+
+    int widthImg = 32, heightImg = 32;
+
+    std::cout << bytes << "\n\n";
+
+    glGenTextures(1, &ID);
+    glActiveTexture(slot);
+    glBindTexture(texType, ID);
+
+    glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(texType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexParameteri(texType, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(texType, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // glTexImage2D(texType, 0, GL_RGBA, widthImg, heightImg, 0, format, pixelType, bytes);
+
+    // if (numColCh == 4)
+    //     glTexImage2D
+    //     (
+    //         GL_TEXTURE_2D,
+    //         0,
+    //         GL_RGBA,
+    //         widthImg,
+    //         heightImg,
+    //         0,
+    //         GL_RGBA,
+    //         GL_UNSIGNED_BYTE,
+    //         bytes
+    //     );
+    // else if (numColCh == 3)
+    //     glTexImage2D
+    //     (
+    //         GL_TEXTURE_2D,
+    //         0,
+    //         GL_RGBA,
+    //         widthImg,
+    //         heightImg,
+    //         0,
+    //         GL_RGB,
+    //         GL_UNSIGNED_BYTE,
+    //         bytes
+    //     );
+
+    glTexImage2D
+    (
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA,
+        widthImg,
+        heightImg,
+        0,
+        GL_RGB,
+        GL_UNSIGNED_BYTE,
+        bytes
+    );
+
+    glGenerateMipmap(texType);
+
     glBindTexture(texType, 0);
 }
 

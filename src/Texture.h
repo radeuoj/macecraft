@@ -4,6 +4,7 @@
 #include <stb_image/stb_image.h>
 
 #include "Shader.h"
+#include <vector>
 
 class Texture
 {
@@ -13,6 +14,7 @@ public:
 
     Texture() = default;
     void init(const char* image, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
+    void initFromBytes(unsigned char* bytes, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
 
     void texUnit(Shader& shader, const char* uniform, GLuint unit);
     void bind();

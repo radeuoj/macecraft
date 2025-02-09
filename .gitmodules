@@ -15,3 +15,6 @@
 	path = libs/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "libs/cmrc"]
+	path = libs/cmrc
+	url = https://github.com/vector-of-bool/cmrc.git

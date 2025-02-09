@@ -3,7 +3,7 @@ project(macecraft)
 
 set(CMAKE_CXX_STANDARD 20)
 
-option(RELEASE "Make this a production build" OFF)
+option(RELEASE "Make this a production build" ON)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -12,6 +12,7 @@ set(B_EMBED_SILENCE_DEVMODE_WARNING ON CACHE BOOL "" FORCE)
 
 add_subdirectory(libs)
 add_subdirectory(libs/glfw)
+add_subdirectory(libs/stb_to_file)
 add_subdirectory(libs/stb_image)
 add_subdirectory(libs/glm)
 add_subdirectory(libs/embed)
@@ -20,14 +21,26 @@ file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/
 
 add_executable(${CMAKE_PROJECT_NAME} ${MY_SOURCES})
 
-if (RELEASE)
-    target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./res/")
-else ()
-    target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/res/")
-endif ()
+#if (RELEASE)
+#    target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="./res/")
+#else ()
+#    target_compile_definitions("${CMAKE_PROJECT_NAME}" PUBLIC RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/res/")
+#endif ()
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
+#include(libs/cmrc/CMakeRC.cmake)
+#
+#cmrc_add_resource_library(embed embed/textures/dirt.png)
+
+#execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes)
+add_custom_command(
+        TARGET ${CMAKE_PROJECT_NAME}
+        PRE_BUILD
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes
+)
+
+b_embed(${CMAKE_PROJECT_NAME} embed/textures/dirt.png.bytes)
 b_embed(${CMAKE_PROJECT_NAME} embed/shaders/default.vert)
 b_embed(${CMAKE_PROJECT_NAME} embed/shaders/default.frag)
 
