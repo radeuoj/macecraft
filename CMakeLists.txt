@@ -3,7 +3,7 @@ project(macecraft)
 
 set(CMAKE_CXX_STANDARD 20)
 
-option(RELEASE "Make this a production build" OFF)
+option(RELEASE "Make this a production build" ON)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -23,7 +23,10 @@ add_executable(${CMAKE_PROJECT_NAME} ${MY_SOURCES})
 
 if (WIN32 AND RELEASE)
     if (MSVC)
+        set_property(TARGET ${CMAKE_PROJECT_NAME} glfw glad stb_image glm imgui PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
         set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup") #no console
+#        set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded")
+#        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     else ()
         set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES LINK_FLAGS "-mwindows") #no console
     endif ()
