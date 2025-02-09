@@ -10,14 +10,14 @@ namespace Macecraft
         glGenBuffers(1, &m_VBO);
         glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
-        glVertexAttribIPointer(0, 2, GL_SHORT, sizeof(VertexData), (void*) offsetof(VertexData, chunk_x));
+        // glVertexAttribIPointer(0, 2, GL_SHORT, sizeof(VertexData), (void*) offsetof(VertexData, chunk_x));
+        // glEnableVertexAttribArray(0);
+
+        glVertexAttribIPointer(0, 3, GL_UNSIGNED_BYTE, sizeof(VertexData), (void*) offsetof(VertexData, x));
         glEnableVertexAttribArray(0);
 
-        glVertexAttribIPointer(1, 3, GL_UNSIGNED_BYTE, sizeof(VertexData), (void*) offsetof(VertexData, x));
+        glVertexAttribIPointer(1, 1, GL_UNSIGNED_BYTE, sizeof(VertexData), (void*) offsetof(VertexData, texCoords));
         glEnableVertexAttribArray(1);
-
-        glVertexAttribIPointer(2, 1, GL_UNSIGNED_BYTE, sizeof(VertexData), (void*) offsetof(VertexData, texCoords));
-        glEnableVertexAttribArray(2);
 
         // Unbinding
         glBindVertexArray(0);

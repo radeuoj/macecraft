@@ -165,7 +165,7 @@ namespace Macecraft
     {
         for (Chunk& chunk : m_World->chunks)
         {
-            chunk.m_Renderer.flush();
+            chunk.flush(m_DefaultShader);
         }
     }
 

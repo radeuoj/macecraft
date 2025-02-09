@@ -19,6 +19,7 @@ namespace Macecraft
         Chunk(const Chunk& other) = delete;
         Chunk(Chunk&& other) noexcept;
         void render();
+        void flush(Shader& shader);
         BlockType getBlock(glm::ivec3 pos);
         glm::i16vec2 getPosition();
         Renderer m_Renderer;
