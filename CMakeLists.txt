@@ -34,10 +34,10 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_D
 #cmrc_add_resource_library(embed embed/textures/dirt.png)
 
 #execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes)
+
 add_custom_command(
-        TARGET ${CMAKE_PROJECT_NAME}
-        PRE_BUILD
         COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes
 )
 
 b_embed(${CMAKE_PROJECT_NAME} embed/textures/dirt.png.bytes)
