@@ -15,6 +15,8 @@ namespace Macecraft
         World() = default;
         void init();
 
+        BlockType getBlock(glm::ivec3 pos);
+
     };
 
 }

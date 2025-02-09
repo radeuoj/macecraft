@@ -18,4 +18,25 @@ namespace Macecraft
         }
     }
 
+    /**
+     * is inefficient
+     */
+    BlockType World::getBlock(glm::ivec3 pos)
+    {
+        // Getting the chunk coords
+        glm::ivec3 localPos = glm::ivec3(pos.x & (Chunk::SIZE - 1), pos.y, pos.z & (Chunk::SIZE - 1));
+        glm::ivec2 chunkPos = glm::ivec2((pos.x - localPos.x) / Chunk::SIZE, (pos.z - localPos.z) / Chunk::SIZE);
+
+        auto it = std::ranges::find_if(chunks.begin(), chunks.end(), [&chunkPos](Chunk& chunk) -> bool
+        {
+            return chunk.getPosition().x == chunkPos.x && chunk.getPosition().y == chunkPos.y;
+        });
+
+        if (it == chunks.end())
+            return BlockType::AIR;
+
+        return it->getBlock(localPos);
+    }
+
+
 }

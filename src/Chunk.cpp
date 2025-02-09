@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include "World.h"
+
 namespace Macecraft
 {
     Chunk::Chunk(World* world, glm::i16vec2 position): m_World(world), m_Position(position)
@@ -121,16 +123,19 @@ namespace Macecraft
         // m_Renderer.flush();
     }
 
-    BlockType Chunk::getBlock(glm::uvec3 pos)
+    BlockType Chunk::getBlock(glm::ivec3 pos)
     {
         using enum BlockType;
 
-        if (pos.x < 0 || pos.x >= SIZE)
+        if (pos.y < 0 || pos.y >= HEIGHT)
             return AIR;
-        if (pos.y < 0 || pos.y >= SIZE)
-            return AIR;
-        if (pos.z < 0 || pos.z >= SIZE)
-            return AIR;
+
+        if (pos.x < 0 || pos.x >= SIZE || pos.z < 0 || pos.z >= SIZE)
+        {
+            pos.x += m_Position.x * SIZE;
+            pos.z += m_Position.y * SIZE;
+            return m_World->getBlock(pos);
+        }
 
         return this->m_Blocks[pos.x][pos.y][pos.z];
     }
