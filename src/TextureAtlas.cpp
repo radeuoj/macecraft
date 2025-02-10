@@ -14,11 +14,12 @@ namespace Macecraft
         using enum BlockType;
 
         m_TextureData[DIRT] = BlockData(texcoords(0, 0));
+        m_TextureData[GRASS] = BlockData(texcoords(1, 0), texcoords(1, 0), texcoords(1, 0), texcoords(1, 0), texcoords(2, 0), texcoords(0, 0));
     }
 
-    uint8_t TextureAtlas::getTextureLocation(BlockType block, BlockDirection direction, bool x, bool y)
+    uint8_t TextureAtlas::getTextureLocation(BlockType block, BlockDirection direction, uint8_t x, uint8_t y)
     {
-        return m_TextureData[block][direction] + x + (y * m_SpriteHeight);
+        return m_TextureData[block][direction] + x + y * 16;
     }
 
     void TextureAtlas::bind()

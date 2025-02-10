@@ -45,12 +45,20 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_D
 
 #execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes)
 
+file(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.raw ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/debug.raw)
+
 add_custom_command(
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.raw
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.raw
 )
 
-b_embed(${CMAKE_PROJECT_NAME} embed/textures/dirt.png.bytes)
+add_custom_command(
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/debug.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/debug.raw
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/debug.raw
+)
+
+b_embed(${CMAKE_PROJECT_NAME} embed/textures/dirt.raw)
+b_embed(${CMAKE_PROJECT_NAME} embed/textures/debug.raw)
 b_embed(${CMAKE_PROJECT_NAME} embed/shaders/default.vert)
 b_embed(${CMAKE_PROJECT_NAME} embed/shaders/default.frag)
 

@@ -4,6 +4,7 @@
 
 #include "BlockType.h"
 #include "Renderer.h"
+#include "TextureAtlas.h"
 
 namespace Macecraft
 {
@@ -20,7 +21,7 @@ namespace Macecraft
         Chunk(Chunk&& other) noexcept;
 
         void renderWhenPossible();
-        void flush(Shader& shader);
+        void flush(Shader& shader, TextureAtlas* atlas);
         BlockType getBlock(glm::ivec3 pos);
         glm::i16vec2 getPosition();
 
@@ -31,7 +32,7 @@ namespace Macecraft
         BlockType m_Blocks[SIZE][HEIGHT][SIZE] { BlockType::AIR };
         bool m_ShouldRender = true;
 
-        void render();
+        void render(TextureAtlas* atlas);
     };
 
 }

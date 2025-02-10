@@ -16,7 +16,7 @@ namespace Macecraft
         void bind();
         void unbind();
 
-        uint8_t getTextureLocation(BlockType block, BlockDirection direction, bool x, bool y);
+        uint8_t getTextureLocation(BlockType block, BlockDirection direction, uint8_t x, uint8_t y);
     private:
         int m_ImageWidth = 0, m_ImageHeight = 0;
         int m_SpriteWidth = 0, m_SpriteHeight = 0;
@@ -25,14 +25,14 @@ namespace Macecraft
 
         inline uint8_t texcoords(uint8_t x, uint8_t y)
         {
-            return x + m_SpriteHeight * y;
+            return x + 16 * y;
         }
     };
 
-    inline GLubyte texcoords(GLubyte x, GLubyte y)
-    {
-        // return (x * 16) + y;
-        return x + 2 * y;
-    }
+    // inline GLubyte texcoords(GLubyte x, GLubyte y)
+    // {
+    //     // return (x * 16) + y;
+    //     return x + 2 * y;
+    // }
 
 } // Macecraft
