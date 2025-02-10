@@ -5,6 +5,8 @@
 
 #include "World.h"
 
+#include "TextureAtlas.h"
+
 namespace Macecraft
 {
     Chunk::Chunk(World* world, glm::i16vec2 position): m_World(world), m_Position(position)
@@ -36,9 +38,16 @@ namespace Macecraft
         memcpy(m_Blocks, other.m_Blocks, SIZE * HEIGHT * SIZE);
     }
 
+    void Chunk::renderWhenPossible()
+    {
+        m_ShouldRender = true;
+    }
 
     void Chunk::render()
     {
+        m_ShouldRender = false;
+        m_Renderer.vertices.clear();
+
         for (int i = 0; i < SIZE; i++)
         {
             for (int j = 0; j < HEIGHT; j++)
@@ -126,6 +135,8 @@ namespace Macecraft
 
     void Chunk::flush(Shader &shader)
     {
+        if (m_ShouldRender) render();
+
         glUniform2i(glGetUniformLocation(shader.ID, "chunkPos"), m_Position.x, m_Position.y);
         m_Renderer.flush();
     }

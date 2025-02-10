@@ -14,4 +14,5 @@ void main()
     gl_Position = camMatrix * vec4(vec3(chunkPos.x, 0.0, chunkPos.y) * 16 + vec3(aPos), 1.0);
 
     texCoords = vec2(aTex % 2, aTex / 2 % 2);
+//    texCoords = vec2(float(aTex % 2) / 16, float(aTex / 2 % 2) / 16);
 }

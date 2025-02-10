@@ -7,6 +7,7 @@
 
 #include "Camera.h"
 #include "Renderer.h"
+#include "TextureAtlas.h"
 #include "World.h"
 
 namespace Macecraft
@@ -32,6 +33,7 @@ private:
     Shader m_DefaultShader;
     std::unique_ptr<World> m_World;
     // World m_World;
+    std::unique_ptr<TextureAtlas> m_DefaultAtlas;
 
     int m_FPS = 0;
     float m_FrameTime = 0;

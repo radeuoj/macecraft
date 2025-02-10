@@ -31,7 +31,10 @@ namespace Macecraft
         m_DefaultShader.init(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
         // dirtTex.init(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
         // Texture test;
-        dirtTex.initFromBytes((unsigned char*)b::embed<"embed/textures/dirt.png.bytes">().data(), 32, 32, 3, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+        dirtTex.initFromBytes((unsigned char*)b::embed<"embed/textures/dirt.png.bytes">().data(), 256, 256, 3, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+        m_DefaultAtlas = std::make_unique<TextureAtlas>((unsigned char*)b::embed<"embed/textures/dirt.png.bytes">().data(), 256, 256, 3, 16, 16);
+        m_DefaultAtlas->bind();
+
         m_World = std::make_unique<World>();
         m_World->init();
     }
@@ -108,11 +111,11 @@ namespace Macecraft
         // Texture dirtTex(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
         // Texture mcTex(RESOURCES_PATH "textures/mc.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
 
-        dirtTex.bind();
+        // dirtTex.bind();
 
         for (Chunk& chunk : m_World->chunks)
         {
-            chunk.render();
+            chunk.renderWhenPossible();
         }
 
         double prevTime = glfwGetTime();

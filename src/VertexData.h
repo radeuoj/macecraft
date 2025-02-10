@@ -10,9 +10,3 @@ struct VertexData
     GLubyte texCoords;
 };
 
-inline GLubyte texcoords(GLubyte x, GLubyte y)
-{
-    // return (x * 16) + y;
-    return x + 2 * y;
-}
-
