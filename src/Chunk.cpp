@@ -66,6 +66,8 @@ namespace Macecraft
     {
         if (!m_IsGenerated) return;
 
+        if (!m_World->areNeighboursGenerated(m_Position)) return;
+
         m_ShouldRender = false;
         m_Renderer.vertices.clear();
 
