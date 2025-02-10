@@ -20,6 +20,8 @@ namespace Macecraft
         Chunk(const Chunk& other) = delete;
         Chunk(Chunk&& other) noexcept;
 
+        bool isGenerated();
+        void generate();
         void renderWhenPossible();
         void flush(Shader& shader, TextureAtlas* atlas);
         BlockType getBlock(glm::ivec3 pos);
@@ -31,6 +33,7 @@ namespace Macecraft
         glm::i16vec2 m_Position = glm::i16vec2(0);
         BlockType m_Blocks[SIZE][HEIGHT][SIZE] { BlockType::AIR };
         bool m_ShouldRender = true;
+        bool m_IsGenerated = false;
 
         void render(TextureAtlas* atlas);
     };

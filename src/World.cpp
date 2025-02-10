@@ -5,16 +5,50 @@ namespace Macecraft
 
     void World::init()
     {
-        // TODO: ADD COPY CONSTRUCTOR TO CHUNKS ASAP CUZ ITS MESSING EVERYTHING UPPP OHH I HATE THIS
-        // chunks.reserve(65);
+        // constexpr int S = 16;
+        // for (int i = 0; i < S; i++)
+        // {
+        //     for (int j = 0; j < S; j++)
+        //     {
+        //         // chunks.push_back(Chunk(*this, {i, j}));
+        //         chunks.emplace_back(this, glm::i16vec2(i, j));
+        //     }
+        // }
+    }
+
+    void World::renderChunks(Shader& shader, TextureAtlas* atlas)
+    {
+        for (Chunk& chunk : chunks)
+        {
+            chunk.flush(shader, atlas);
+        }
+    }
+
+    void World::generateChunksIfNeeded()
+    {
         constexpr int S = 16;
         for (int i = 0; i < S; i++)
         {
             for (int j = 0; j < S; j++)
             {
-                // chunks.push_back(Chunk(*this, {i, j}));
-                chunks.emplace_back(this, glm::i16vec2(i, j));
+                auto it = std::ranges::find_if(chunks.begin(), chunks.end(), [&i, &j](Chunk& chunk) -> bool
+                {
+                    return chunk.getPosition().x == i && chunk.getPosition().y == j;
+                });
+
+                // If its not rendered yet
+                if (it == chunks.end())
+                {
+                    chunks.emplace_back(this, glm::i16vec2(i, j));
+                    m_ChunkGenerationQueue.push(chunks.size() - 1);
+                }
             }
+        }
+
+        if (!m_ChunkGenerationQueue.empty())
+        {
+            chunks[m_ChunkGenerationQueue.front()].generate();
+            m_ChunkGenerationQueue.pop();
         }
     }
 

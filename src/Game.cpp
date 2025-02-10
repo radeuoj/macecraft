@@ -113,10 +113,10 @@ namespace Macecraft
 
         // dirtTex.bind();
 
-        for (Chunk& chunk : m_World->chunks)
-        {
-            chunk.renderWhenPossible();
-        }
+        // for (Chunk& chunk : m_World->chunks)
+        // {
+        //     chunk.renderWhenPossible();
+        // }
 
         double prevTime = glfwGetTime();
         double lastTime = glfwGetTime();
@@ -169,10 +169,8 @@ namespace Macecraft
 
     void Game::update(float deltaTime)
     {
-        for (Chunk& chunk : m_World->chunks)
-        {
-            chunk.flush(m_DefaultShader, m_DefaultAtlas.get());
-        }
+        m_World->generateChunksIfNeeded();
+        m_World->renderChunks(m_DefaultShader, m_DefaultAtlas.get());
     }
 
     void Game::updateImGui(float deltaTime)

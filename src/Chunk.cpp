@@ -10,25 +10,6 @@ namespace Macecraft
 {
     Chunk::Chunk(World* world, glm::i16vec2 position): m_World(world), m_Position(position)
     {
-        for (int i = 0; i < SIZE; i++)
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                for (int k = 0; k < SIZE; k++)
-                {
-                    this->m_Blocks[i][j][k] = BlockType::DIRT;
-                }
-            }
-        }
-
-        for (int i = 0; i < SIZE; i++)
-        {
-            for (int k = 0; k < SIZE; k++)
-            {
-                this->m_Blocks[i][5][k] = BlockType::GRASS;
-            }
-        }
-
         m_Renderer.init();
     }
 
@@ -45,6 +26,35 @@ namespace Macecraft
         memcpy(m_Blocks, other.m_Blocks, SIZE * HEIGHT * SIZE);
     }
 
+    bool Chunk::isGenerated()
+    {
+        return m_IsGenerated;
+    }
+
+    void Chunk::generate()
+    {
+        for (int i = 0; i < SIZE; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                for (int k = 0; k < SIZE; k++)
+                {
+                    m_Blocks[i][j][k] = BlockType::DIRT;
+                }
+            }
+        }
+
+        for (int i = 0; i < SIZE; i++)
+        {
+            for (int k = 0; k < SIZE; k++)
+            {
+                this->m_Blocks[i][5][k] = BlockType::GRASS;
+            }
+        }
+
+        m_IsGenerated = true;
+    }
+
     void Chunk::renderWhenPossible()
     {
         m_ShouldRender = true;
@@ -54,6 +64,8 @@ namespace Macecraft
 
     void Chunk::render(TextureAtlas* atlas)
     {
+        if (!m_IsGenerated) return;
+
         m_ShouldRender = false;
         m_Renderer.vertices.clear();
 
@@ -74,7 +86,6 @@ namespace Macecraft
                         // BACK
                         if (getBlock({i, j, k - 1}) == BlockType::AIR)
                         {
-                            // atlas->getTextureLocation(m_Blocks[i][j][k], ZN,
                             m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->getTextureLocation(m_Blocks[i][j][k], ZN, 0, 0)) });
                             m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->getTextureLocation(m_Blocks[i][j][k], ZN, 0, 1)) });
                             m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->getTextureLocation(m_Blocks[i][j][k], ZN, 1, 0)) });
@@ -147,6 +158,8 @@ namespace Macecraft
 
     void Chunk::flush(Shader &shader, TextureAtlas* atlas)
     {
+        if (!m_IsGenerated) return;
+
         if (m_ShouldRender) render(atlas);
 
         glUniform2i(glGetUniformLocation(shader.ID, "chunkPos"), m_Position.x, m_Position.y);
@@ -157,6 +170,8 @@ namespace Macecraft
     BlockType Chunk::getBlock(glm::ivec3 pos)
     {
         using enum BlockType;
+
+        if (!m_IsGenerated) return AIR;
 
         if (pos.y < 0 || pos.y >= HEIGHT)
             return AIR;
