@@ -3,7 +3,7 @@ project(macecraft)
 
 set(CMAKE_CXX_STANDARD 20)
 
-option(RELEASE "Make this a production build" ON)
+option(RELEASE "Make this a production build" OFF)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -47,7 +47,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_D
 #execute_process(COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes)
 
 add_custom_command(
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes
+        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.png.bytes
 )
 
