@@ -12,7 +12,6 @@ set(B_EMBED_SILENCE_DEVMODE_WARNING ON CACHE BOOL "" FORCE)
 
 add_subdirectory(libs)
 add_subdirectory(libs/glfw)
-add_subdirectory(libs/stb_to_file)
 add_subdirectory(libs/stb_image)
 add_subdirectory(libs/glm)
 add_subdirectory(libs/embed)
