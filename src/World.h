@@ -18,7 +18,7 @@ namespace Macecraft
         World() = default;
         void init();
         void generateChunksIfNeeded();
-        void addChunkIfDoesntExist(glm::ivec2 pos);
+        bool addChunkIfDoesntExist(glm::ivec2 pos);
         bool areNeighboursGenerated(glm::ivec2 pos);
         void renderChunks(Shader& shader, TextureAtlas* atlas);
 

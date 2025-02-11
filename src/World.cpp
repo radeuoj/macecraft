@@ -24,6 +24,8 @@ namespace Macecraft
         }
     }
 
+    std::queue<glm::ivec2> queue;
+
     void World::generateChunksIfNeeded()
     {
         // constexpr int S = 16;
@@ -71,18 +73,97 @@ namespace Macecraft
         //     }
         // }
 
-        constexpr int S = 8;
-        for (int i = 0; i < S; i++)
+        //constexpr int S = 32;
+        //for (int i = 0; i < S; i++)
+        //{
+        //    for (int j = 0; j < S; j++)
+        //    {
+        //        // If its not rendered yet
+        //        addChunkIfDoesntExist(glm::ivec2(i, j));
+        //    }
+        //}
+
+        
+        queue.emplace(0, 0); // This would basically be player position
+
+        /*addChunkIfDoesntExist(glm::ivec2(0, 0));
+        queue.emplace(1, 0);
+        queue.emplace(-1, 0);
+        queue.emplace(0, 1);
+        queue.emplace(0, -1);*/
+
+        int i = 2;
+        while (i > 0 && !queue.empty() && chunks.size() < 3096)
         {
-            for (int j = 0; j < S; j++)
+            glm::ivec2 pos = queue.front();
+            queue.pop();
+
+            bool alreadyExists = addChunkIfDoesntExist(pos);
+
+            if (alreadyExists)
+                continue;
+
+            if (pos.x == 0 && pos.y == 0)
             {
-                // If its not rendered yet
-                if (chunks.find(glm::ivec2(i, j)) == chunks.end())
-                {
-                    chunks.insert(std::make_pair(glm::ivec2(i, j), Chunk(this, glm::ivec2(i, j))));
-                    m_ChunkGenerationQueue.emplace(i, j);
-                }
+                queue.emplace(1, pos.y);
+                queue.emplace(-1, pos.y);
+                queue.emplace(pos.x, 1);
+                queue.emplace(pos.x, -1);
             }
+
+            if (pos.x == 0 && pos.y > 0)
+            {
+                queue.emplace(pos.x, pos.y + 1);
+                queue.emplace(pos.x - 1, pos.y);
+                queue.emplace(pos.x + 1, pos.y);
+            }
+
+            if (pos.x == 0 && pos.y < 0)
+            {
+                queue.emplace(pos.x, pos.y - 1);
+                queue.emplace(pos.x - 1, pos.y);
+                queue.emplace(pos.x + 1, pos.y);
+            }
+
+            if (pos.x > 0 && pos.y == 0)
+            {
+                queue.emplace(pos.x + 1, pos.y);
+                queue.emplace(pos.x - 1, pos.y - 1);
+                queue.emplace(pos.x, pos.y + 1);
+            }
+
+            if (pos.x < 0 && pos.y == 0)
+            {
+                queue.emplace(pos.x - 1, pos.y);
+                queue.emplace(pos.x, pos.y) - 1;
+                queue.emplace(pos.x, pos.y + 1);
+            }
+
+            if (pos.x < 0 && pos.y > 0)
+            {
+                queue.emplace(pos.x - 1, pos.y);
+                queue.emplace(pos.x, pos.y + 1);
+            }
+
+            if (pos.x > 0 && pos.y > 0)
+            {
+                queue.emplace(pos.x + 1, pos.y);
+                queue.emplace(pos.x, pos.y + 1);
+            }
+
+            if (pos.x > 0 && pos.y < 0)
+            {
+                queue.emplace(pos.x + 1, pos.y);
+                queue.emplace(pos.x, pos.y - 1);
+            }
+
+            if (pos.x < 0 && pos.y < 0)
+            {
+                queue.emplace(pos.x - 1, pos.y);
+                queue.emplace(pos.x, pos.y - 1);
+            }
+
+            i--;
         }
 
         if (!m_ChunkGenerationQueue.empty())
@@ -92,25 +173,21 @@ namespace Macecraft
         }
     }
 
-    // void World::addChunkIfDoesntExist(glm::ivec2 pos)
-    // {
-    //     auto it = std::ranges::find_if(chunks.begin(), chunks.end(), [&pos](auto& chunk) -> bool
-    //     {
-    //         return glm::ivec2(chunk.second.getPosition()) == pos;
-    //     });
-    //
-    //     if (it == chunks.end())
-    //     {
-    //         // chunks[pos] = std::move(Chunk(this, pos));
-    //         // chunks.insert(std::make_pair(pos, std::move(Chunk(this, pos))));
-    //         // chunks.emplace(std::make_pair(pos, Chunk(this, pos)));
-    //         // chunks[pos] = std::make_unique<Chunk>(this, pos);
-    //         // chunks.insert(std::make_pair(pos, std::make_unique<Chunk>(this, pos)));
-    //         // chunks.insert_or_assign(pos, Chunk(this, pos));
-    //         chunks.insert(std::make_pair(pos.x, Chunk(this, pos)));
-    //         m_ChunkGenerationQueue.push(pos);
-    //     }
-    // }
+    /**
+     * @return wether it already existed
+     */
+    bool World::addChunkIfDoesntExist(glm::ivec2 pos)
+    {
+        if (chunks.find(pos) == chunks.end())
+        {
+            chunks.insert(std::make_pair(pos, Chunk(this, pos)));
+            m_ChunkGenerationQueue.push(pos);
+
+            return false;
+        }
+
+        return true;
+    }
 
     bool World::areNeighboursGenerated(glm::ivec2 pos)
     {

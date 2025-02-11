@@ -22,7 +22,6 @@ public:
     ~Game();
 
     void run();
-    void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 private:
     GLFWwindow* m_Window = nullptr;

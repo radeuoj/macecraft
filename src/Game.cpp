@@ -184,6 +184,7 @@ namespace Macecraft
         ImGui::Text("FPS: %d time: %.2fms", m_FPS, m_FrameTime);
         ImGui::Text("position %.2f %.2f %.2f", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
         ImGui::Text("orientation %.2f %.2f %.2f", m_Camera.orientation.x, m_Camera.orientation.y, m_Camera.orientation.z);
+        ImGui::Text("%d chunks loaded (hopefully)", m_World->chunks.size());
         ImGui::End();
 
         ImGui::Render();
