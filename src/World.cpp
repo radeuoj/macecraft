@@ -26,7 +26,7 @@ namespace Macecraft
 
     std::queue<glm::ivec2> queue;
 
-    void World::generateChunksIfNeeded()
+    void World::generateChunksIfNeeded(glm::vec3 playerPosition)
     {
         // constexpr int S = 16;
         // for (int i = 0; i < S; i++)
@@ -84,7 +84,7 @@ namespace Macecraft
         //}
 
         
-        queue.emplace(0, 0); // This would basically be player position
+        queue.emplace(playerPosition.x, playerPosition.z); // This would basically be player position
 
         /*addChunkIfDoesntExist(glm::ivec2(0, 0));
         queue.emplace(1, 0);
@@ -93,15 +93,32 @@ namespace Macecraft
         queue.emplace(0, -1);*/
 
         int i = 2;
-        while (i > 0 && !queue.empty() && chunks.size() < 3096)
+        while (i-- > 0 && !queue.empty()) //  && chunks.size() < 1024
         {
             glm::ivec2 pos = queue.front();
             queue.pop();
+
+            glm::vec2 xz = glm::vec2(chunkPosToWorldPos(pos, glm::vec3(Chunk::SIZE / 2)).x, chunkPosToWorldPos(pos, glm::vec3(Chunk::SIZE / 2)).y);
+
+            if (squareDistance(xz, glm::vec2(playerPosition.x, playerPosition.z)) > 400)
+            {
+                deleteChunkIfExists(pos);
+                continue;
+            }
+
+            if (squareDistance(xz, glm::vec2(playerPosition.x, playerPosition.z)) > 300)
+            {
+                // Not rendered yet but too far so we push it back to the queue as we might need it
+                queue.push(pos);
+                continue;
+            }
 
             bool alreadyExists = addChunkIfDoesntExist(pos);
 
             if (alreadyExists)
                 continue;
+
+            // TODO: remove from queue if it's really that far
 
             if (pos.x == 0 && pos.y == 0)
             {
@@ -128,14 +145,14 @@ namespace Macecraft
             if (pos.x > 0 && pos.y == 0)
             {
                 queue.emplace(pos.x + 1, pos.y);
-                queue.emplace(pos.x - 1, pos.y - 1);
+                queue.emplace(pos.x, pos.y - 1);
                 queue.emplace(pos.x, pos.y + 1);
             }
 
             if (pos.x < 0 && pos.y == 0)
             {
                 queue.emplace(pos.x - 1, pos.y);
-                queue.emplace(pos.x, pos.y) - 1;
+                queue.emplace(pos.x, pos.y - 1);
                 queue.emplace(pos.x, pos.y + 1);
             }
 
@@ -163,7 +180,7 @@ namespace Macecraft
                 queue.emplace(pos.x, pos.y - 1);
             }
 
-            i--;
+            // i--;
         }
 
         if (!m_ChunkGenerationQueue.empty())
@@ -171,6 +188,21 @@ namespace Macecraft
             chunks.at(m_ChunkGenerationQueue.front()).generate();
             m_ChunkGenerationQueue.pop();
         }
+    }
+
+    float World::squareDistance(const glm::vec2 a, const glm::vec2 b)
+    {
+        return max(abs(a.x - b.x), abs(a.y - b.y));
+    }
+
+    glm::vec3 World::chunkPosToWorldPos(const glm::ivec2 chunkPos, const glm::vec3 pos)
+    {
+        return glm::vec3(chunkPos.x * Chunk::SIZE + pos.x, pos.y, chunkPos.y * Chunk::SIZE + pos.y);
+    }
+
+    void World::deleteChunkIfExists(glm::ivec2 pos)
+    {
+        chunks.erase(pos);
     }
 
     /**

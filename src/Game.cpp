@@ -169,7 +169,7 @@ namespace Macecraft
 
     void Game::update(float deltaTime)
     {
-        m_World->generateChunksIfNeeded();
+        m_World->generateChunksIfNeeded(m_Camera.position);
         m_World->renderChunks(m_DefaultShader, m_DefaultAtlas.get());
     }
 
