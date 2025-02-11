@@ -2,16 +2,18 @@
 
 #include <vector>
 #include <queue>
+#include <unordered_map>
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/hash.hpp"
 
 #include "Chunk.h"
 
 namespace Macecraft
 {
-
     class World
     {
     public:
-        std::vector<Chunk> chunks;
+        std::unordered_map<glm::ivec2, Chunk> chunks;
 
         World() = default;
         void init();
@@ -26,7 +28,7 @@ namespace Macecraft
         /**
          * index of chunk in chunks vector
          */
-        std::queue<int> m_ChunkGenerationQueue;
+        std::queue<glm::ivec2> m_ChunkGenerationQueue;
 
     };
 

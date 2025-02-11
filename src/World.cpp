@@ -18,7 +18,7 @@ namespace Macecraft
 
     void World::renderChunks(Shader& shader, TextureAtlas* atlas)
     {
-        for (Chunk& chunk : chunks)
+        for (auto& [pos, chunk] : chunks)
         {
             chunk.flush(shader, atlas);
         }
@@ -51,46 +51,66 @@ namespace Macecraft
         //     m_ChunkGenerationQueue.pop();
         // }
 
-        std::queue<glm::ivec2> bfs;
-        bfs.emplace(0, 0);
+        // std::queue<glm::ivec2> bfs;
+        // bfs.emplace(0, 0);
+        //
+        // addChunkIfDoesntExist(glm::ivec2(0, 0));
+        //
+        // while (!bfs.empty() && chunks.size() < 128)
+        // {
+        //     auto pos = bfs.front();
+        //     bfs.pop();
+        //
+        //     for (int i = -1; i <= 1; i++)
+        //     {
+        //         for (int j = -1; j <= 1; j++)
+        //         {
+        //             addChunkIfDoesntExist(pos + glm::ivec2(i, j));
+        //             bfs.push(pos + glm::ivec2(i, j));
+        //         }
+        //     }
+        // }
 
-        addChunkIfDoesntExist(glm::ivec2(0, 0));
-
-        while (!bfs.empty() && chunks.size() < 128)
+        constexpr int S = 8;
+        for (int i = 0; i < S; i++)
         {
-            auto pos = bfs.front();
-            bfs.pop();
-
-            for (int i = -1; i <= 1; i++)
+            for (int j = 0; j < S; j++)
             {
-                for (int j = -1; j <= 1; j++)
+                // If its not rendered yet
+                if (chunks.find(glm::ivec2(i, j)) == chunks.end())
                 {
-                    addChunkIfDoesntExist(pos + glm::ivec2(i, j));
-                    bfs.push(pos + glm::ivec2(i, j));
+                    chunks.insert(std::make_pair(glm::ivec2(i, j), Chunk(this, glm::ivec2(i, j))));
+                    m_ChunkGenerationQueue.emplace(i, j);
                 }
             }
         }
 
         if (!m_ChunkGenerationQueue.empty())
         {
-            chunks[m_ChunkGenerationQueue.front()].generate();
+            chunks.at(m_ChunkGenerationQueue.front()).generate();
             m_ChunkGenerationQueue.pop();
         }
     }
 
-    void World::addChunkIfDoesntExist(glm::ivec2 pos)
-    {
-        auto it = std::ranges::find_if(chunks.begin(), chunks.end(), [&pos](Chunk& chunk) -> bool
-        {
-            return glm::ivec2(chunk.getPosition()) == pos;
-        });
-
-        if (it == chunks.end())
-        {
-            chunks.emplace_back(this, pos);
-            m_ChunkGenerationQueue.push(chunks.size() - 1);
-        }
-    }
+    // void World::addChunkIfDoesntExist(glm::ivec2 pos)
+    // {
+    //     auto it = std::ranges::find_if(chunks.begin(), chunks.end(), [&pos](auto& chunk) -> bool
+    //     {
+    //         return glm::ivec2(chunk.second.getPosition()) == pos;
+    //     });
+    //
+    //     if (it == chunks.end())
+    //     {
+    //         // chunks[pos] = std::move(Chunk(this, pos));
+    //         // chunks.insert(std::make_pair(pos, std::move(Chunk(this, pos))));
+    //         // chunks.emplace(std::make_pair(pos, Chunk(this, pos)));
+    //         // chunks[pos] = std::make_unique<Chunk>(this, pos);
+    //         // chunks.insert(std::make_pair(pos, std::make_unique<Chunk>(this, pos)));
+    //         // chunks.insert_or_assign(pos, Chunk(this, pos));
+    //         chunks.insert(std::make_pair(pos.x, Chunk(this, pos)));
+    //         m_ChunkGenerationQueue.push(pos);
+    //     }
+    // }
 
     bool World::areNeighboursGenerated(glm::ivec2 pos)
     {
@@ -98,13 +118,10 @@ namespace Macecraft
         {
             for (int j = -1; j <= 1; j++)
             {
-                auto it = std::ranges::find_if(chunks.begin(), chunks.end(), [&pos, &i, &j](Chunk& chunk) -> bool
-                {
-                    return glm::ivec2(chunk.getPosition()) == pos + glm::ivec2(i, j);
-                });
+                auto it = chunks.find(pos + glm::ivec2(i, j));
 
                 if (it == chunks.end()) return false;
-                if (!it->isGenerated()) return false;
+                if (!it->second.isGenerated()) return false;
             }
         }
 
@@ -120,15 +137,12 @@ namespace Macecraft
         glm::ivec3 localPos = glm::ivec3(pos.x & (Chunk::SIZE - 1), pos.y, pos.z & (Chunk::SIZE - 1));
         glm::ivec2 chunkPos = glm::ivec2((pos.x - localPos.x) / Chunk::SIZE, (pos.z - localPos.z) / Chunk::SIZE);
 
-        auto it = std::ranges::find_if(chunks.begin(), chunks.end(), [&chunkPos](Chunk& chunk) -> bool
-        {
-            return chunk.getPosition().x == chunkPos.x && chunk.getPosition().y == chunkPos.y;
-        });
+        auto it = chunks.find(chunkPos);
 
         if (it == chunks.end())
             return BlockType::AIR;
 
-        return it->getBlock(localPos);
+        return it->second.getBlock(localPos);
     }
 
 
