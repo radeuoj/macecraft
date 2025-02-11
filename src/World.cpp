@@ -24,169 +24,64 @@ namespace Macecraft
         }
     }
 
-    std::queue<glm::ivec2> queue;
-
     void World::generateChunksIfNeeded(glm::vec3 playerPosition)
     {
-        // constexpr int S = 16;
-        // for (int i = 0; i < S; i++)
-        // {
-        //     for (int j = 0; j < S; j++)
-        //     {
-        //         auto it = std::ranges::find_if(chunks.begin(), chunks.end(), [&i, &j](Chunk& chunk) -> bool
-        //         {
-        //             return chunk.getPosition().x == i && chunk.getPosition().y == j;
-        //         });
-        //
-        //         // If its not rendered yet
-        //         if (it == chunks.end())
-        //         {
-        //             chunks.emplace_back(this, glm::i16vec2(i, j));
-        //             m_ChunkGenerationQueue.push(chunks.size() - 1);
-        //         }
-        //     }
-        // }
-        //
-        // if (!m_ChunkGenerationQueue.empty())
-        // {
-        //     chunks[m_ChunkGenerationQueue.front()].generate();
-        //     m_ChunkGenerationQueue.pop();
-        // }
+        glm::ivec2 playerChunk = worldPosToChunkPos(playerPosition).first;
+        m_ChunkGenerationCounter = 0;
 
-        // std::queue<glm::ivec2> bfs;
-        // bfs.emplace(0, 0);
-        //
-        // addChunkIfDoesntExist(glm::ivec2(0, 0));
-        //
-        // while (!bfs.empty() && chunks.size() < 128)
-        // {
-        //     auto pos = bfs.front();
-        //     bfs.pop();
-        //
-        //     for (int i = -1; i <= 1; i++)
-        //     {
-        //         for (int j = -1; j <= 1; j++)
-        //         {
-        //             addChunkIfDoesntExist(pos + glm::ivec2(i, j));
-        //             bfs.push(pos + glm::ivec2(i, j));
-        //         }
-        //     }
-        // }
+        safeGenerateChunk(playerChunk);
 
-        //constexpr int S = 32;
-        //for (int i = 0; i < S; i++)
-        //{
-        //    for (int j = 0; j < S; j++)
-        //    {
-        //        // If its not rendered yet
-        //        addChunkIfDoesntExist(glm::ivec2(i, j));
-        //    }
-        //}
-
-        
-        queue.emplace(playerPosition.x, playerPosition.z); // This would basically be player position
-
-        /*addChunkIfDoesntExist(glm::ivec2(0, 0));
-        queue.emplace(1, 0);
-        queue.emplace(-1, 0);
-        queue.emplace(0, 1);
-        queue.emplace(0, -1);*/
-
-        int i = 2;
-        while (i-- > 0 && !queue.empty()) //  && chunks.size() < 1024
+        for (int dist = 1; dist <= CHUNK_RENDER_DISTANCE; dist++)
         {
-            glm::ivec2 pos = queue.front();
-            queue.pop();
+            // 1 0
+            safeGenerateChunk(playerChunk + glm::ivec2(dist, 0));
 
-            glm::vec2 xz = glm::vec2(chunkPosToWorldPos(pos, glm::vec3(Chunk::SIZE / 2)).x, chunkPosToWorldPos(pos, glm::vec3(Chunk::SIZE / 2)).y);
-
-            if (squareDistance(xz, glm::vec2(playerPosition.x, playerPosition.z)) > 400)
+            for (int i = 1; i < dist; i++)
             {
-                deleteChunkIfExists(pos);
-                continue;
+                safeGenerateChunk(playerChunk + glm::ivec2(dist, i));
+                safeGenerateChunk(playerChunk + glm::ivec2(dist, -i));
             }
 
-            if (squareDistance(xz, glm::vec2(playerPosition.x, playerPosition.z)) > 300)
+            // -1 0
+            safeGenerateChunk(playerChunk + glm::ivec2(-dist, 0));
+
+            for (int i = 1; i < dist; i++)
             {
-                // Not rendered yet but too far so we push it back to the queue as we might need it
-                queue.push(pos);
-                continue;
+                safeGenerateChunk(playerChunk + glm::ivec2(-dist, i));
+                safeGenerateChunk(playerChunk + glm::ivec2(-dist, -i));
             }
 
-            bool alreadyExists = addChunkIfDoesntExist(pos);
+            // 0 1
+            safeGenerateChunk(playerChunk + glm::ivec2(0, dist));
 
-            if (alreadyExists)
-                continue;
-
-            // TODO: remove from queue if it's really that far
-
-            if (pos.x == 0 && pos.y == 0)
+            for (int i = 1; i < dist; i++)
             {
-                queue.emplace(1, pos.y);
-                queue.emplace(-1, pos.y);
-                queue.emplace(pos.x, 1);
-                queue.emplace(pos.x, -1);
+                safeGenerateChunk(playerChunk + glm::ivec2(i, dist));
+                safeGenerateChunk(playerChunk + glm::ivec2(-i, dist));
             }
 
-            if (pos.x == 0 && pos.y > 0)
+            // 0 -1
+            safeGenerateChunk(playerChunk + glm::ivec2(0, -dist));
+
+            for (int i = 1; i < dist; i++)
             {
-                queue.emplace(pos.x, pos.y + 1);
-                queue.emplace(pos.x - 1, pos.y);
-                queue.emplace(pos.x + 1, pos.y);
+                safeGenerateChunk(playerChunk + glm::ivec2(i, -dist));
+                safeGenerateChunk(playerChunk + glm::ivec2(-i, -dist));
             }
 
-            if (pos.x == 0 && pos.y < 0)
-            {
-                queue.emplace(pos.x, pos.y - 1);
-                queue.emplace(pos.x - 1, pos.y);
-                queue.emplace(pos.x + 1, pos.y);
-            }
-
-            if (pos.x > 0 && pos.y == 0)
-            {
-                queue.emplace(pos.x + 1, pos.y);
-                queue.emplace(pos.x, pos.y - 1);
-                queue.emplace(pos.x, pos.y + 1);
-            }
-
-            if (pos.x < 0 && pos.y == 0)
-            {
-                queue.emplace(pos.x - 1, pos.y);
-                queue.emplace(pos.x, pos.y - 1);
-                queue.emplace(pos.x, pos.y + 1);
-            }
-
-            if (pos.x < 0 && pos.y > 0)
-            {
-                queue.emplace(pos.x - 1, pos.y);
-                queue.emplace(pos.x, pos.y + 1);
-            }
-
-            if (pos.x > 0 && pos.y > 0)
-            {
-                queue.emplace(pos.x + 1, pos.y);
-                queue.emplace(pos.x, pos.y + 1);
-            }
-
-            if (pos.x > 0 && pos.y < 0)
-            {
-                queue.emplace(pos.x + 1, pos.y);
-                queue.emplace(pos.x, pos.y - 1);
-            }
-
-            if (pos.x < 0 && pos.y < 0)
-            {
-                queue.emplace(pos.x - 1, pos.y);
-                queue.emplace(pos.x, pos.y - 1);
-            }
-
-            // i--;
+            safeGenerateChunk(playerChunk + glm::ivec2(dist, dist));
+            safeGenerateChunk(playerChunk + glm::ivec2(-dist, dist));
+            safeGenerateChunk(playerChunk + glm::ivec2(dist, -dist));
+            safeGenerateChunk(playerChunk + glm::ivec2(-dist, -dist));
         }
+    }
 
-        if (!m_ChunkGenerationQueue.empty())
+    void World::safeGenerateChunk(glm::ivec2 pos)
+    {
+        if (m_ChunkGenerationCounter < CHUNK_GENERATION_LIMIT_PER_FRAME && !addChunkIfDoesntExist(pos))
         {
-            chunks.at(m_ChunkGenerationQueue.front()).generate();
-            m_ChunkGenerationQueue.pop();
+            chunks.at(pos).generate();
+            m_ChunkGenerationCounter++;
         }
     }
 
@@ -200,13 +95,34 @@ namespace Macecraft
         return glm::vec3(chunkPos.x * Chunk::SIZE + pos.x, pos.y, chunkPos.y * Chunk::SIZE + pos.y);
     }
 
+    std::pair<glm::ivec2, glm::vec3> World::worldPosToChunkPos(glm::vec3 pos)
+    {
+        glm::ivec2 chunkPos = glm::ivec2(0);
+        glm::vec3 localPos = glm::vec3(0);
+
+        chunkPos.x = int(pos.x) / Chunk::SIZE;
+        chunkPos.y = int(pos.z) / Chunk::SIZE;
+
+        if (pos.x < 0)
+            chunkPos.x -= 1;
+
+        if (pos.z < 0)
+            chunkPos.y -= 1;
+
+        localPos.x = pos.x - chunkPos.x * Chunk::SIZE;
+        localPos.z = pos.z - chunkPos.y * Chunk::SIZE;
+        localPos.y = pos.y;
+
+        return std::make_pair(chunkPos, localPos);
+    }
+
     void World::deleteChunkIfExists(glm::ivec2 pos)
     {
         chunks.erase(pos);
     }
 
     /**
-     * @return wether it already existed
+     * @return if it already existed
      */
     bool World::addChunkIfDoesntExist(glm::ivec2 pos)
     {
