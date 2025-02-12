@@ -165,6 +165,7 @@ namespace Macecraft
             }
         }
 
+        m_Renderer.bindVertices();
         // m_Renderer.flush();
     }
 

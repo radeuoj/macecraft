@@ -22,6 +22,7 @@ namespace Macecraft
 
         ~Renderer();
 
+        void bindVertices();
         void flush();
 
         std::vector<VertexData> vertices;

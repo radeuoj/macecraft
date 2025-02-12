@@ -14,7 +14,7 @@ namespace Macecraft
     {
     public:
         static constexpr int CHUNK_GENERATION_LIMIT_PER_FRAME = 2;
-        static constexpr int CHUNK_RENDER_DISTANCE = 10;
+        static constexpr int CHUNK_RENDER_DISTANCE = 20;
 
         std::unordered_map<glm::ivec2, Chunk> chunks;
 
