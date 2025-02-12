@@ -16,7 +16,7 @@ namespace Macecraft
         // }
     }
 
-    void World::renderChunks(Shader& shader, TextureAtlas* atlas)
+    void World::renderChunks(Shader& shader, TextureAtlas* atlas, glm::vec3 playerPosition)
     {
         for (auto& [pos, chunk] : chunks)
         {
@@ -85,7 +85,22 @@ namespace Macecraft
         }
     }
 
+    void World::cleanupChunks(glm::vec3 playerPosition)
+    {
+        glm::ivec2 playerChunkPos = worldPosToChunkPos(playerPosition).first;
+        std::erase_if(chunks, [&playerChunkPos](auto& kv) -> bool
+        {
+            return squareDistance(kv.first, playerChunkPos) > CHUNK_RENDER_DISTANCE + CHUNK_RENDER_DISTANCE_ERROR;
+        });
+    }
+
+
     float World::squareDistance(const glm::vec2 a, const glm::vec2 b)
+    {
+        return max(abs(a.x - b.x), abs(a.y - b.y));
+    }
+
+    int World::squareDistance(const glm::ivec2 a, const glm::ivec2 b)
     {
         return max(abs(a.x - b.x), abs(a.y - b.y));
     }

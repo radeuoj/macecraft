@@ -45,6 +45,7 @@ private:
     void initOpenGL();
 
     void update(float deltaTime);
+    void updateOncePerSecond();
     void updateImGui(float deltaTime);
 };
 

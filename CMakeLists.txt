@@ -3,6 +3,7 @@ project(macecraft)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# TODO: make this get the build type, debug or release so i dont have to delete the cmake cache every time
 option(RELEASE "Make this a production build" OFF)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)

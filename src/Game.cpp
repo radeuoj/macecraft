@@ -134,11 +134,16 @@ namespace Macecraft
 
             if (currentTime - lastTime > 1.0)
             {
-                lastTime = currentTime;
+                lastTime += 1.0;
                 m_FPS = frameCount;
                 m_FrameTime = frameTimeTotal / float(frameCount) * 1000.0f;
                 frameCount = 0;
                 frameTimeTotal = 0;
+
+                updateOncePerSecond();
+
+
+
             }
 
             glClearColor(0.67f, 0.85f, 0.90f, 1.0f);
@@ -170,7 +175,12 @@ namespace Macecraft
     void Game::update(float deltaTime)
     {
         m_World->generateChunksIfNeeded(m_Camera.position);
-        m_World->renderChunks(m_DefaultShader, m_DefaultAtlas.get());
+        m_World->renderChunks(m_DefaultShader, m_DefaultAtlas.get(), m_Camera.position);
+    }
+
+    void Game::updateOncePerSecond()
+    {
+        m_World->cleanupChunks(m_Camera.position);
     }
 
     void Game::updateImGui(float deltaTime)
