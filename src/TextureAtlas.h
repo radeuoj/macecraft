@@ -11,7 +11,7 @@ namespace Macecraft
     class TextureAtlas
     {
     public:
-        TextureAtlas(unsigned char *bytes,int imageWidth, int imageHeight, int channels, int spriteWidth, int spriteHeight);
+        TextureAtlas(unsigned char *image, int imageLength, int spriteWidth, int spriteHeight);
 
         void bind();
         void unbind();

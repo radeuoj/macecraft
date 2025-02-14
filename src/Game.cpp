@@ -32,7 +32,8 @@ namespace Macecraft
         m_DefaultShader.init(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
         m_DefaultShader.activate();
 
-        m_DefaultAtlas = std::make_unique<TextureAtlas>((unsigned char*)b::embed<"embed/textures/dirt.raw">().data(), 256, 256, 3, 16, 16);
+        m_DefaultAtlas = std::make_unique<TextureAtlas>((unsigned char*)b::embed<"embed/textures/dirt.png">().data(),
+            b::embed<"embed/textures/dirt.png">().length(), 16, 16);
         m_DefaultAtlas->bind();
 
         m_World = std::make_unique<World>();

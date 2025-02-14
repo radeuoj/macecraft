@@ -17,7 +17,7 @@ add_subdirectory(libs/stb_image)
 add_subdirectory(libs/glm)
 add_subdirectory(libs/embed)
 
-file(GLOB_RECURSE MY_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
+file(GLOB MY_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
 add_executable(${CMAKE_PROJECT_NAME} ${MY_SOURCES})
 
@@ -34,18 +34,18 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_D
 
 file(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.raw ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/debug.raw)
 
-add_custom_command(
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.raw
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.raw
-)
+#add_custom_command(
+#        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/dirt.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.raw
+#        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/dirt.raw
+#)
+#
+#add_custom_command(
+#        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/debug.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/debug.raw
+#        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/debug.raw
+#)
 
-add_custom_command(
-        COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/scripts/image_to_raw.py ${CMAKE_CURRENT_SOURCE_DIR}/res/textures/debug.png ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/debug.raw
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/embed/textures/debug.raw
-)
-
-b_embed(${CMAKE_PROJECT_NAME} embed/textures/dirt.raw)
-b_embed(${CMAKE_PROJECT_NAME} embed/textures/debug.raw)
+b_embed(${CMAKE_PROJECT_NAME} embed/textures/dirt.png)
+b_embed(${CMAKE_PROJECT_NAME} embed/textures/debug.png)
 b_embed(${CMAKE_PROJECT_NAME} embed/shaders/default.vert)
 b_embed(${CMAKE_PROJECT_NAME} embed/shaders/default.frag)
 
