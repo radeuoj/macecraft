@@ -2,4 +2,5 @@ cmake-*/
 out/
 .vs/
 .idea/
+.vscode/
 CMakeSettings.json
