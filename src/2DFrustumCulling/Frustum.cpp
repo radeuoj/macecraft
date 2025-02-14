@@ -16,6 +16,14 @@ void Frustum::updateFromCamera(const Camera& camera)
 
     nearPlane = {frontMultFar, glm::dot(glm::vec2(camera.position.x, camera.position.z), frontMultFar) + camera.nearPlane};
 
+    auto rightPlaneNormal = glm::rotate(frontMultFar, glm::radians(90 - camera.fov));
+    rightPlane = {rightPlaneNormal,
+        glm::dot(glm::vec2(camera.position.x, camera.position.z), rightPlaneNormal)};
+
+    auto leftPlaneNormal = glm::rotate(frontMultFar, glm::radians(-90 + camera.fov));
+    leftPlane = {leftPlaneNormal,
+        glm::dot(glm::vec2(camera.position.x, camera.position.z), leftPlaneNormal)};
+
     // std::cout << nearPlane.normal.x << ' ' << nearPlane.normal.y << ' ' << nearPlane.distance << std::endl;
 }
 

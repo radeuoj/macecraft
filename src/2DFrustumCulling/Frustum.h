@@ -7,7 +7,7 @@ namespace Macecraft {
 
 struct Frustum
 {
-    Line nearPlane;
+    Line nearPlane, rightPlane, leftPlane;
 
     void updateFromCamera(const Camera& camera);
 };

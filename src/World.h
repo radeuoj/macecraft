@@ -50,6 +50,7 @@ namespace Macecraft
          */
         std::queue<glm::ivec2> m_ChunkGenerationQueue;
         int m_ChunkGenerationCounter = 0;
+        int m_ChunkRenderCounter = 0;
         TextureAtlas* m_Atlas = nullptr;
 
     };

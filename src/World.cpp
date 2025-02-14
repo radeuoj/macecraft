@@ -26,10 +26,14 @@ namespace Macecraft
     void World::renderChunks(Shader& shader, glm::vec3 playerPosition, const Frustum& frustum)
     {
         chunksFlushedThisFrame = 0;
+        m_ChunkRenderCounter = 0;
 
         for (auto& [pos, chunk] : chunks)
         {
             // std::cout << "Chunk " << pos.x << " " << pos.y << " Renderered " << chunk.isOnFrustum(frustum) << '\n';
+
+            chunk.renderIfNeeded(m_Atlas);
+
             if (ENABLE_FRUSTUM_CULLING)
             {
                 if (chunk.isOnFrustum(frustum))
@@ -105,6 +109,9 @@ namespace Macecraft
             chunks.at(pos).generate(m_Atlas);
             m_ChunkGenerationCounter++;
         }
+
+
+
     }
 
     void World::cleanupChunks(glm::vec3 playerPosition)

@@ -62,14 +62,17 @@ namespace Macecraft
         }
 
         m_IsGenerated = true;
-
-        if (m_ShouldRender)
-            render(atlas);
     }
 
     void Chunk::renderWhenPossible()
     {
         m_ShouldRender = true;
+    }
+
+    void Chunk::renderIfNeeded(TextureAtlas* atlas)
+    {
+        if (m_ShouldRender)
+            render(atlas);
     }
 
     void Chunk::render(TextureAtlas* atlas)
@@ -173,7 +176,7 @@ namespace Macecraft
     {
         if (!m_IsGenerated) return;
 
-        if (m_ShouldRender) render(atlas);
+        // if (m_ShouldRender) render(atlas);
 
         glUniform2i(glGetUniformLocation(shader.ID, "chunkPos"), m_Position.x, m_Position.y);
         m_Renderer.flush();
@@ -181,7 +184,9 @@ namespace Macecraft
 
     bool Chunk::isOnFrustum(const Frustum& frustum)
     {
-        return isOnOrForwardOfLine(frustum.nearPlane);
+        return isOnOrForwardOfLine(frustum.nearPlane)
+        && isOnOrForwardOfLine(frustum.rightPlane)
+        && isOnOrForwardOfLine(frustum.leftPlane);
     }
 
     bool Chunk::isOnOrForwardOfLine(const Line &line)
