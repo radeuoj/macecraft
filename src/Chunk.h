@@ -1,5 +1,6 @@
 #pragma once
 
+#include "2DFrustumCulling/Frustum.h"
 #include <glm/glm.hpp>
 
 #include "BlockType.h"
@@ -21,11 +22,13 @@ namespace Macecraft
         Chunk(Chunk&& other) noexcept;
 
         bool isGenerated();
-        void generate();
+        void generate(TextureAtlas* atlas);
         void renderWhenPossible();
         void flush(Shader& shader, TextureAtlas* atlas);
         BlockType getBlock(glm::ivec3 pos);
         glm::i16vec2 getPosition();
+        bool isOnFrustum(const Frustum& frustum);
+        bool isOnOrForwardOfLine(const Line& line);
 
         Renderer m_Renderer;
     private:

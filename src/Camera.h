@@ -20,13 +20,17 @@ namespace Macecraft
         glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
+        float nearPlane = 0.0f, farPlane = 0.0f, fov = 45.0f;
+
         float speed = 1.0f;
         float sensitivity = 100.0f;
 
         Camera(int &width, int &height);
 
-        void matrix(float FOVdeg, float nearPlane, float farPlane, Shader& shader, const char* uniform);
+        void matrix(float FOVdeg, float _nearPlane, float _farPlane, Shader& shader, const char* uniform);
         void inputs(GLFWwindow* window, float deltaTime);
+
+        float getAspectRatio() const;
 
     private:
         int &m_Width, &m_Height;

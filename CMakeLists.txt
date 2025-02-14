@@ -17,7 +17,8 @@ add_subdirectory(libs/stb_image)
 add_subdirectory(libs/glm)
 add_subdirectory(libs/embed)
 
-file(GLOB MY_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
+#file(GLOB_RECURSE MY_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/**/*.h")
+file(GLOB_RECURSE MY_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h")
 
 add_executable(${CMAKE_PROJECT_NAME} ${MY_SOURCES})
 

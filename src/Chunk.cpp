@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <cstring>
-#include <glm/glm.hpp>
 
 #include "World.h"
 
@@ -41,7 +40,7 @@ namespace Macecraft
         return m_IsGenerated;
     }
 
-    void Chunk::generate()
+    void Chunk::generate(TextureAtlas* atlas)
     {
         for (int i = 0; i < SIZE; i++)
         {
@@ -63,14 +62,15 @@ namespace Macecraft
         }
 
         m_IsGenerated = true;
+
+        if (m_ShouldRender)
+            render(atlas);
     }
 
     void Chunk::renderWhenPossible()
     {
         m_ShouldRender = true;
     }
-
-    bool test = true;
 
     void Chunk::render(TextureAtlas* atlas)
     {
@@ -179,6 +179,21 @@ namespace Macecraft
         m_Renderer.flush();
     }
 
+    bool Chunk::isOnFrustum(const Frustum& frustum)
+    {
+        return isOnOrForwardOfLine(frustum.nearPlane);
+    }
+
+    bool Chunk::isOnOrForwardOfLine(const Line &line)
+    {
+        constexpr float EXTENT = float(SIZE); // TODO: magic number
+
+        // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
+        const float r = EXTENT * (abs(line.normal.x) + abs(line.normal.y));
+
+        return -r <= line.getSignedDistanceToPlane(m_Position * short(SIZE));
+
+    }
 
     BlockType Chunk::getBlock(glm::ivec3 pos)
     {

@@ -1,7 +1,14 @@
 #include "World.h"
 
+#include <iostream>
+
 namespace Macecraft
 {
+
+    World::World(TextureAtlas* atlas): m_Atlas(atlas)
+    {
+
+    }
 
     void World::init()
     {
@@ -16,11 +23,26 @@ namespace Macecraft
         // }
     }
 
-    void World::renderChunks(Shader& shader, TextureAtlas* atlas, glm::vec3 playerPosition)
+    void World::renderChunks(Shader& shader, glm::vec3 playerPosition, const Frustum& frustum)
     {
+        chunksFlushedThisFrame = 0;
+
         for (auto& [pos, chunk] : chunks)
         {
-            chunk.flush(shader, atlas);
+            // std::cout << "Chunk " << pos.x << " " << pos.y << " Renderered " << chunk.isOnFrustum(frustum) << '\n';
+            if (ENABLE_FRUSTUM_CULLING)
+            {
+                if (chunk.isOnFrustum(frustum))
+                {
+                    chunk.flush(shader, m_Atlas);
+                    chunksFlushedThisFrame++;
+                }
+            }
+            else
+            {
+                chunk.flush(shader, m_Atlas);
+                chunksFlushedThisFrame++;
+            }
         }
     }
 
@@ -80,7 +102,7 @@ namespace Macecraft
     {
         if (m_ChunkGenerationCounter < CHUNK_GENERATION_LIMIT_PER_FRAME && !addChunkIfDoesntExist(pos))
         {
-            chunks.at(pos).generate();
+            chunks.at(pos).generate(m_Atlas);
             m_ChunkGenerationCounter++;
         }
     }

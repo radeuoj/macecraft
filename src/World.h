@@ -3,10 +3,16 @@
 #include <vector>
 #include <queue>
 #include <unordered_map>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
-#include "glm/gtx/hash.hpp"
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vector_angle.hpp>
+#include <glm/gtx/hash.hpp>
 
 #include "Chunk.h"
+#include "2DFrustumCulling/Frustum.h"
 
 namespace Macecraft
 {
@@ -19,12 +25,15 @@ namespace Macecraft
 
         std::unordered_map<glm::ivec2, Chunk> chunks;
 
-        World() = default;
+        bool ENABLE_FRUSTUM_CULLING = true;
+        int chunksFlushedThisFrame = 0;
+
+        World(TextureAtlas* atlas);
         void init();
         void generateChunksIfNeeded(glm::vec3 playerPosition);
         bool addChunkIfDoesntExist(glm::ivec2 pos);
         bool areNeighboursGenerated(glm::ivec2 pos);
-        void renderChunks(Shader& shader, TextureAtlas* atlas, glm::vec3 playerPosition);
+        void renderChunks(Shader& shader, glm::vec3 playerPosition, const Frustum& frustum);
         static float squareDistance(glm::vec2 a, glm::vec2 b);
         static int squareDistance(glm::ivec2 a, glm::ivec2 b);
         static glm::vec3 chunkPosToWorldPos(glm::ivec2 chunkPos, glm::vec3 pos);
@@ -41,6 +50,7 @@ namespace Macecraft
          */
         std::queue<glm::ivec2> m_ChunkGenerationQueue;
         int m_ChunkGenerationCounter = 0;
+        TextureAtlas* m_Atlas = nullptr;
 
     };
 

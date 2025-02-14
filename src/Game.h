@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "2DFrustumCulling/Frustum.h"
 #include "Camera.h"
 #include "Renderer.h"
 #include "TextureAtlas.h"
@@ -33,6 +34,7 @@ private:
     std::unique_ptr<World> m_World;
     // World m_World;
     std::unique_ptr<TextureAtlas> m_DefaultAtlas;
+    Frustum m_Frustum;
 
     int m_FPS = 0;
     float m_FrameTime = 0;

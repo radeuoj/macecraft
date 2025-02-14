@@ -8,8 +8,12 @@ namespace Macecraft
         this->position = position;
     }
 
-    void Camera::matrix(float FOVdeg, float nearPlane, float farPlane, Shader &shader, const char *uniform)
+    void Camera::matrix(float FOVdeg, float _nearPlane, float _farPlane, Shader &shader, const char *uniform)
     {
+        nearPlane = _nearPlane;
+        farPlane = _farPlane;
+        fov = FOVdeg;
+
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 proj = glm::mat4(1.0f);
 
@@ -95,6 +99,11 @@ namespace Macecraft
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             m_FirstClick = true;
         }
+    }
+
+    float Camera::getAspectRatio() const
+    {
+        return float(m_Width) / float(m_Height);
     }
 
 }

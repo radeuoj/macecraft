@@ -36,7 +36,7 @@ namespace Macecraft
             b::embed<"embed/textures/dirt.png">().length(), 16, 16);
         m_DefaultAtlas->bind();
 
-        m_World = std::make_unique<World>();
+        m_World = std::make_unique<World>(m_DefaultAtlas.get());
         m_World->init();
     }
 
@@ -174,8 +174,10 @@ namespace Macecraft
 
     void Game::update(float deltaTime)
     {
+
+        m_Frustum.updateFromCamera(m_Camera);
         m_World->generateChunksIfNeeded(m_Camera.position);
-        m_World->renderChunks(m_DefaultShader, m_DefaultAtlas.get(), m_Camera.position);
+        m_World->renderChunks(m_DefaultShader, m_Camera.position, m_Frustum);
     }
 
     void Game::updateOncePerSecond()
@@ -195,6 +197,9 @@ namespace Macecraft
         ImGui::Text("position %.2f %.2f %.2f", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
         ImGui::Text("orientation %.2f %.2f %.2f", m_Camera.orientation.x, m_Camera.orientation.y, m_Camera.orientation.z);
         ImGui::Text("%d chunks loaded (hopefully)", m_World->chunks.size());
+        ImGui::Text("%d chunks flushed this frame", m_World->chunksFlushedThisFrame);
+        ImGui::Text("Normal: %.2f %.2f Distance %.2f", m_Frustum.nearPlane.normal.x, m_Frustum.nearPlane.normal.y, m_Frustum.nearPlane.distance);
+        ImGui::Checkbox("Enable frustum culling", &m_World->ENABLE_FRUSTUM_CULLING);
         ImGui::End();
 
         ImGui::Render();
