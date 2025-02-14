@@ -28,10 +28,10 @@ namespace Macecraft
         initOpenGL();
 
         m_GlobalRenderer.init();
+
         m_DefaultShader.init(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
-        // dirtTex.init(RESOURCES_PATH "textures/dirt.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
-        // Texture test;
-        // dirtTex.initFromBytes((unsigned char*)b::embed<"embed/textures/dirt.png.bytes">().data(), 256, 256, 3, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+        m_DefaultShader.activate();
+
         m_DefaultAtlas = std::make_unique<TextureAtlas>((unsigned char*)b::embed<"embed/textures/dirt.raw">().data(), 256, 256, 3, 16, 16);
         m_DefaultAtlas->bind();
 
@@ -118,6 +118,7 @@ namespace Macecraft
         //     chunk.renderWhenPossible();
         // }
 
+
         double prevTime = glfwGetTime();
         double lastTime = glfwGetTime();
         m_FPS = 0;
@@ -148,8 +149,6 @@ namespace Macecraft
 
             glClearColor(0.67f, 0.85f, 0.90f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            m_DefaultShader.activate();
 
             m_Camera.inputs(m_Window, deltaTime);
             m_Camera.matrix(45.0f, 0.1f, 1000.0f, m_DefaultShader, "camMatrix");

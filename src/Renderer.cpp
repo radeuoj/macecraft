@@ -57,7 +57,7 @@ namespace Macecraft
 
         glBindVertexArray(m_VAO);
 
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+        // glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 

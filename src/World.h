@@ -14,7 +14,7 @@ namespace Macecraft
     {
     public:
         static constexpr int CHUNK_GENERATION_LIMIT_PER_FRAME = 2;
-        static constexpr int CHUNK_RENDER_DISTANCE = 10;
+        static constexpr int CHUNK_RENDER_DISTANCE = 30;
         static constexpr int CHUNK_RENDER_DISTANCE_ERROR = 2; // if a chunk is more than CHUNK_RENDER_DISTANCE + CHUNK_RENDER_DISTANCE_ERROR away from the player, it will be deleted
 
         std::unordered_map<glm::ivec2, Chunk> chunks;
