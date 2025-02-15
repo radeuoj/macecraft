@@ -30,7 +30,6 @@ project "Macecraft"
         "glfw",
         "imgui",
         "stb_image",
-        "opengl32.lib",
     }
     
     includedirs {

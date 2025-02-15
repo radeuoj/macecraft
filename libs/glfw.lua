@@ -3,6 +3,8 @@
     	language "C"
     	staticruntime "on"
     	warnings "off"
+    	
+    	defines "BUILD_SHARED_LIBS=1"
     
     	files
     	{
