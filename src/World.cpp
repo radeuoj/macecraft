@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+#undef max
+#undef min
+
 namespace Macecraft
 {
 
@@ -126,12 +129,12 @@ namespace Macecraft
 
     float World::squareDistance(const glm::vec2 a, const glm::vec2 b)
     {
-        return max(abs(a.x - b.x), abs(a.y - b.y));
+        return std::max(abs(a.x - b.x), abs(a.y - b.y));
     }
 
     int World::squareDistance(const glm::ivec2 a, const glm::ivec2 b)
     {
-        return max(abs(a.x - b.x), abs(a.y - b.y));
+        return std::max(abs(a.x - b.x), abs(a.y - b.y));
     }
 
     glm::vec3 World::chunkPosToWorldPos(const glm::ivec2 chunkPos, const glm::vec3 pos)
