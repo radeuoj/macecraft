@@ -29,7 +29,6 @@ project "Macecraft"
         "glad",
         "glfw",
         "imgui",
-        "glm",
         "stb_image"
     }
     
