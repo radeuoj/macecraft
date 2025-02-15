@@ -6,3 +6,10 @@ build/
 .idea/
 .vscode/
 CMakeSettings.json
+*.v*proj
+*.v*proj.filters
+*.v*proj.user
+*.sln
+imgui.ini
+obj/
+bin/

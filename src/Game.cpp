@@ -12,7 +12,6 @@
 #include "Texture.h"
 #include "World.h"
 
-#include "battery/embed.hpp"
 #include <typeinfo>
 
 namespace Macecraft
@@ -29,11 +28,11 @@ namespace Macecraft
 
         m_GlobalRenderer.init();
 
-        m_DefaultShader.init(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
+        //m_DefaultShader.init(b::embed<"embed/shaders/default.vert">().data(), b::embed<"embed/shaders/default.frag">().data());
+        m_DefaultShader = ShaderFromRes("embed/shaders/default.vert", "embed/shaders/default.frag");
         m_DefaultShader.activate();
 
-        m_DefaultAtlas = std::make_unique<TextureAtlas>((unsigned char*)b::embed<"embed/textures/dirt.png">().data(),
-            b::embed<"embed/textures/dirt.png">().length(), 16, 16);
+        m_DefaultAtlas = std::make_unique<TextureAtlas>("embed/textures/dirt.png", 16, 16);
         m_DefaultAtlas->bind();
 
         m_World = std::make_unique<World>(m_DefaultAtlas.get());

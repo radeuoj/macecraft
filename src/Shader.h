@@ -19,3 +19,5 @@ public:
 private:
     void compileErrors(unsigned int shader, const char* type);
 };
+
+Shader ShaderFromRes(const char* vertexPath, const char* fragmentPath);
