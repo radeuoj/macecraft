@@ -29,7 +29,8 @@ project "Macecraft"
         "glad",
         "glfw",
         "imgui",
-        "stb_image"
+        "stb_image",
+        "opengl32.lib",
     }
     
     includedirs {
