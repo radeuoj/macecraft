@@ -3,8 +3,6 @@
     	language "C"
     	staticruntime "on"
     	warnings "off"
-    	
-    	defines "BUILD_SHARED_LIBS=1"
     
     	files
     	{
@@ -25,6 +23,8 @@
     		"glfw/src/vulkan.c",
     		"glfw/src/window.c",
     	}
+    	
+    	includedirs "glfw/src"
     
     	filter "system:linux"
     		pic "On"
@@ -44,8 +44,11 @@
     			"glfw/src/glx_context.c",
     			"glfw/src/egl_context.c",
     			"glfw/src/osmesa_context.c",
-    			"glfw/src/linux_joystick.c"
+    			"glfw/src/linux_joystick.c",
+    			"glfw/src/posix_poll.c",
     		}
+    	
+    	    libdirs { os.findlib("X11") }
     
     		defines
     		{
