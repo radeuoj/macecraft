@@ -21,6 +21,23 @@ include "libs"
 project "Macecraft"
     kind "ConsoleApp"
     language "C++"
-    targetdir "bin/%{cfg.buildcfg}"
+    --targetdir "bin/%{cfg.buildcfg}"
 
     files { "src/**.h", "src/**.cpp" }
+    
+    links {
+        "glad",
+        "glfw",
+        "imgui",
+        "glm",
+        "stb_image"
+    }
+    
+    includedirs {
+        "libs/glad/include",
+        "libs/glfw/include",
+        "libs/imgui",
+        "libs/imgui/backends",
+        "libs/glm",
+        "libs/stb_image/include"
+    }

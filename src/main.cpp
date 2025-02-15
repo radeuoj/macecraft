@@ -1,8 +1,9 @@
-#include <iostream>
+#include "Game.h"
 
 int main()
 {
-    std::cout << "Hello world\n";
+    Macecraft::Game game;
+    game.run();
 
     return 0;
 }
