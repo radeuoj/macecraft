@@ -8,9 +8,10 @@ namespace Macecraft {
 struct Frustum
 {
     
-    Plane nearPlane, rightPlane, leftPlane, topPlane, bottomPlane;
-    
-    void UpdateFromCamera(const Camera& camera);
+    Plane nearPlane, farPlane, rightPlane, leftPlane, topPlane, bottomPlane;
+
+    [[deprecated]] void UpdateFromCamera(const Camera& camera);
+    void UpdateFromViewProjMatrix(const glm::mat4& viewproj);
 
 };
 

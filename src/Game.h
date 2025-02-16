@@ -23,6 +23,7 @@ public:
     ~Game();
 
     void Run();
+    Camera testCamera{width, height, 45, 0.1, 1000};
 
 private:
     GLFWwindow* m_Window = nullptr;

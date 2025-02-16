@@ -30,7 +30,7 @@ public:
     BlockType GetBlock(glm::ivec3 pos);
     glm::i16vec2 GetPosition();
     bool IsOnFrustum(const Frustum& frustum);
-    bool IsOnOrForwardOfLine(const Plane& plane);
+    bool IsOnOrForwardOfPlane(const Plane& plane);
 
     // TODO: not good
     Renderer m_Renderer;

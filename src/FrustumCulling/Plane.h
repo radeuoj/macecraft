@@ -16,9 +16,11 @@ struct Plane
     glm::vec3 normal = glm::vec3(0.0f);
     float distance = 0.0f;
 
-    float GetSignedDistanceToPlane(const glm::vec3& point) const
+    void Normalize()
     {
-        return glm::dot(normal, point) - distance;
+        float length = glm::length(normal);
+        normal /= length;
+        distance /= length;
     }
 
 };

@@ -19,8 +19,9 @@ void Camera::Matrix(const Shader* shader, const char *uniform)
 
     view = glm::lookAt(position, position + orientation, up);
     proj = glm::perspective(glm::radians(fov), (float)m_Width / m_Height, nearPlane, farPlane);
+    viewproj = proj * view * 0.5f;
 
-    glUniformMatrix4fv(glGetUniformLocation(shader->GetID(), uniform), 1, GL_FALSE, glm::value_ptr(proj * view * 0.5f));
+    glUniformMatrix4fv(glGetUniformLocation(shader->GetID(), uniform), 1, GL_FALSE, glm::value_ptr(viewproj));
 }
 
 void Camera::Inputs(GLFWwindow *window, float deltaTime)

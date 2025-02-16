@@ -168,21 +168,33 @@ void Chunk::Flush(const Shader* shader, const TextureAtlas* atlas)
 
 bool Chunk::IsOnFrustum(const Frustum& frustum)
 {
-    return IsOnOrForwardOfLine(frustum.nearPlane)
-    && IsOnOrForwardOfLine(frustum.rightPlane)
-    && IsOnOrForwardOfLine(frustum.leftPlane);
+    return IsOnOrForwardOfPlane(frustum.nearPlane)
+    && IsOnOrForwardOfPlane(frustum.farPlane)
+    && IsOnOrForwardOfPlane(frustum.rightPlane)
+    && IsOnOrForwardOfPlane(frustum.leftPlane)
+    && IsOnOrForwardOfPlane(frustum.bottomPlane)
+    && IsOnOrForwardOfPlane(frustum.topPlane);
+    
 }
 
-bool Chunk::IsOnOrForwardOfLine(const Plane &plane)
+bool Chunk::IsOnOrForwardOfPlane(const Plane &plane)
 {
-    constexpr float EXTENTXZ = float(SIZE / 2);
-    constexpr float EXTENTY = float(HEIGHT / 2);
+    glm::vec3 minp = glm::vec3(m_Position.x * SIZE, 0, m_Position.y * SIZE);
+    glm::vec3 maxp = minp + glm::vec3(SIZE, HEIGHT, SIZE);
 
-    // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
-    const float r = EXTENTXZ * abs(plane.normal.x) + EXTENTY * abs(plane.normal.y) + EXTENTXZ * abs(plane.normal.z);
+    glm::vec3 p = minp;
 
-    return -r <= plane.GetSignedDistanceToPlane(glm::vec3(m_Position.x * SIZE + EXTENTXZ, EXTENTY, m_Position.y * SIZE + EXTENTXZ));
+    // This finds the point most in the direction of the planes normal
+    // this helps to find if the outmost point of the chunk is in front of the say plane
+    // in this case we consider the chunk to be in front of the plane
+    if (plane.normal.x >= 0)
+        p.x = maxp.x;
+    if (plane.normal.y >= 0)
+        p.y = maxp.y;
+    if (plane.normal.z >= 0)
+        p.z = maxp.z;
 
+    return glm::dot(plane.normal, p) + plane.distance >= 0;
 }
 
 BlockType Chunk::GetBlock(glm::ivec3 pos)
