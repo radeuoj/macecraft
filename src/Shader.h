@@ -13,6 +13,8 @@ class Shader
 {
 public:
     Shader(const char* vertexShaderSource, const char* fragmentShaderSource);
+    Shader(const Shader& other) = delete;
+    Shader(Shader&& other) = delete;
     ~Shader();
 
     void Activate();

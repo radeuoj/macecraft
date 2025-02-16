@@ -9,6 +9,7 @@ CMakeSettings.json
 *.v*proj
 *.v*proj.filters
 *.v*proj.user
+*.user
 *.sln
 imgui.ini
 obj/
