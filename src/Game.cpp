@@ -136,9 +136,6 @@ void Game::Run()
         m_Camera.Inputs(m_Window, deltaTime);
         m_Camera.Matrix(m_DefaultShader.get(), "camMatrix");
 
-        if (glfwGetKey(m_Window, GLFW_KEY_H) == GLFW_PRESS)
-            testCamera.orientation = m_Camera.orientation;
-        testCamera.Matrix(m_DefaultShader.get(), "testMatrix");
         // m_Frustum.UpdateFromCamera(m_Camera);
         m_Frustum.UpdateFromViewProjMatrix(m_Camera.viewproj);
         
@@ -181,13 +178,6 @@ void Game::UpdateImGui(float deltaTime)
     ImGui::Text("%d chunks flushed this frame", m_World->chunksFlushedThisFrame);
     ImGui::Text("Normal: %.2f %.2f Distance %.2f", m_Frustum.nearPlane.normal.x, m_Frustum.nearPlane.normal.y, m_Frustum.nearPlane.distance);
     ImGui::Checkbox("Enable frustum culling", &m_World->ENABLE_FRUSTUM_CULLING);
-    ImGui::End();
-
-    ImGui::Begin("Test Camera");
-    ImGui::SliderFloat3("Position", (float*)&testCamera.position, -100.0f, 100.0f);
-    ImGui::SliderFloat3("Orientation", (float*)&testCamera.orientation, -1.0f, 1.0f);
-    if (ImGui::Button("Copy position"))
-        testCamera.position = m_Camera.position;
     ImGui::End();
     
     ImGui::Render();
