@@ -16,7 +16,7 @@ struct Line
     glm::vec2 normal = glm::vec2(0.0f, 0.0f);
     float distance = 0.0f;
 
-    float getSignedDistanceToPlane(const glm::vec2 point) const
+    float GetSignedDistanceToPlane(const glm::vec2 point) const
     {
         return glm::dot(normal, point) - distance;
     }

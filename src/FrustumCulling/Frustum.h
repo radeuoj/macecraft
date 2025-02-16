@@ -9,7 +9,7 @@ struct Frustum
 {
     Line nearPlane, rightPlane, leftPlane;
 
-    void updateFromCamera(const Camera& camera);
+    void UpdateFromCamera(const Camera& camera);
 };
 
 } // Macecraft

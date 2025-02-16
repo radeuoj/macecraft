@@ -5,7 +5,7 @@
 namespace Macecraft
 {
 
-void Frustum::updateFromCamera(const Camera& camera)
+void Frustum::UpdateFromCamera(const Camera& camera)
 {
     float aspect = camera.getAspectRatio();
     const float halfVSide = camera.farPlane * tanf(camera.fov * 0.5f);
