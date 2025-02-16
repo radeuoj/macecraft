@@ -19,7 +19,15 @@ void World::RenderChunks(const Shader* shader, const glm::vec3& playerPosition, 
 
     for (auto& [pos, chunk] : chunks)
     {
-        chunk.RenderIfNeeded(m_Atlas);
+        if (chunk.ShouldRender() && AreNeighboursGenerated(pos))
+        {
+            chunk.RenderIfNeeded(m_Atlas,
+                &chunks.at(pos + glm::ivec2(1, 0)),
+                &chunks.at(pos + glm::ivec2(-1, 0)),
+                &chunks.at(pos + glm::ivec2(0, 1)),
+                &chunks.at(pos + glm::ivec2(0, -1))
+            );
+        }
 
         if (ENABLE_FRUSTUM_CULLING)
         {
@@ -160,7 +168,7 @@ bool World::AddChunkIfDoesntExist(const glm::ivec2& pos)
 {
     if (chunks.find(pos) == chunks.end())
     {
-        chunks.insert(std::make_pair(pos, Chunk(this, pos)));
+        chunks.insert(std::make_pair(pos, Chunk(pos)));
 
         return false;
     }
@@ -198,7 +206,7 @@ BlockType World::GetBlock(const glm::ivec3& pos)
     if (it == chunks.end())
         return BlockType::AIR;
 
-    return it->second.GetBlock(localPos);
+    return it->second.GetBlock(localPos.x, localPos.y, localPos.z);
 }
 
 
