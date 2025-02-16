@@ -3,22 +3,22 @@
 namespace Macecraft
 {
 
-Camera::Camera(int &width, int &height): m_Width(width), m_Height(height)
+Camera::Camera(int &width, int &height, float FOVdeg, float _nearPlane, float _farPlane):
+    m_Width(width),
+    m_Height(height),
+    fov(FOVdeg),
+    nearPlane(_nearPlane),
+    farPlane(_farPlane)
 {
-    this->position = position;
 }
 
-void Camera::Matrix(float FOVdeg, float _nearPlane, float _farPlane, const Shader* shader, const char *uniform)
+void Camera::Matrix(const Shader* shader, const char *uniform)
 {
-    nearPlane = _nearPlane;
-    farPlane = _farPlane;
-    fov = FOVdeg;
-
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 proj = glm::mat4(1.0f);
 
     view = glm::lookAt(position, position + orientation, up);
-    proj = glm::perspective(glm::radians(FOVdeg), (float)m_Width / m_Height, nearPlane, farPlane);
+    proj = glm::perspective(glm::radians(fov), (float)m_Width / m_Height, nearPlane, farPlane);
 
     glUniformMatrix4fv(glGetUniformLocation(shader->GetID(), uniform), 1, GL_FALSE, glm::value_ptr(proj * view * 0.5f));
 }

@@ -4,27 +4,31 @@
 
 namespace Macecraft
 {
-
-void Frustum::UpdateFromCamera(const Camera& camera)
+    /**
+     * <a href="https://cgvr.cs.uni-bremen.de/teaching/cg_literatur/lighthouse3d_view_frustum_culling/index.html" >More details here (Bremen University)</a>
+     */
+    void Frustum::UpdateFromCamera(const Camera& camera)
 {
     float aspect = camera.GetAspectRatio();
-    const float halfVSide = camera.farPlane * tanf(camera.fov * 0.5f);
-    const float halfHSide = halfVSide * aspect;
-    const glm::vec3 frontMultFar3d = camera.farPlane * camera.orientation;
+    const float hfar = 2 * camera.farPlane * glm::tan(glm::radians(camera.fov * 0.5f));
+    const float wfar = hfar * aspect;
 
-    const glm::vec2 frontMultFar = glm::normalize(glm::vec2(frontMultFar3d.x, frontMultFar3d.z));
+    glm::vec3 right = glm::cross(camera.orientation, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::vec3 up = glm::cross(camera.orientation, -right);
 
-    nearPlane = {frontMultFar, glm::dot(glm::vec2(camera.position.x, camera.position.z), frontMultFar) + camera.nearPlane};
+    glm::vec3 vectorPartOfRightPlane = glm::normalize(camera.orientation * camera.farPlane + wfar / 2 * right);
+    glm::vec3 vectorPartOfLeftPlane = glm::normalize(camera.orientation * camera.farPlane - wfar / 2 * right);
+    glm::vec3 vectorPartOfTopPlane = glm::normalize(camera.orientation * camera.farPlane + hfar / 2 * up);
+    glm::vec3 vectorPartOfBottomPlane = glm::normalize(camera.orientation * camera.farPlane - hfar / 2 * up);
 
-    auto rightPlaneNormal = glm::rotate(frontMultFar, glm::radians(90 - camera.fov));
-    rightPlane = {rightPlaneNormal,
-        glm::dot(glm::vec2(camera.position.x, camera.position.z), rightPlaneNormal)};
+    glm::vec3 rightPlaneNormal = glm::cross(vectorPartOfRightPlane, -up);
+    glm::vec3 leftPlaneNormal = glm::cross(vectorPartOfLeftPlane, up);
+    glm::vec3 topPlaneNormal = glm::cross(vectorPartOfTopPlane, -right);
+    glm::vec3 bottomPlaneNormal = glm::cross(vectorPartOfBottomPlane, right);
 
-    auto leftPlaneNormal = glm::rotate(frontMultFar, glm::radians(-90 + camera.fov));
-    leftPlane = {leftPlaneNormal,
-        glm::dot(glm::vec2(camera.position.x, camera.position.z), leftPlaneNormal)};
-
-    // std::cout << nearPlane.normal.x << ' ' << nearPlane.normal.y << ' ' << nearPlane.distance << std::endl;
+    nearPlane = { camera.orientation, glm::dot(camera.position, camera.orientation) + camera.nearPlane };
+    rightPlane = { rightPlaneNormal, glm::dot(camera.position, rightPlaneNormal) };
+    leftPlane = { leftPlaneNormal, glm::dot(camera.position, leftPlaneNormal) };
 }
 
 

@@ -25,9 +25,9 @@ public:
     float speed = 1.0f;
     float sensitivity = 100.0f;
 
-    Camera(int &width, int &height);
+    Camera(int &width, int &height, float FOVdeg, float _nearPlane, float _farPlane);
 
-    void Matrix(float FOVdeg, float _nearPlane, float _farPlane, const Shader* shader, const char* uniform);
+    void Matrix(const Shader* shader, const char* uniform);
     void Inputs(GLFWwindow* window, float deltaTime);
 
     float GetAspectRatio() const;

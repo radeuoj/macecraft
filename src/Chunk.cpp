@@ -173,14 +173,15 @@ bool Chunk::IsOnFrustum(const Frustum& frustum)
     && IsOnOrForwardOfLine(frustum.leftPlane);
 }
 
-bool Chunk::IsOnOrForwardOfLine(const Line &line)
+bool Chunk::IsOnOrForwardOfLine(const Plane &plane)
 {
-    constexpr float EXTENT = float(SIZE); // TODO: magic number
+    constexpr float EXTENTXZ = float(SIZE / 2);
+    constexpr float EXTENTY = float(HEIGHT / 2);
 
     // https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
-    const float r = EXTENT * (abs(line.normal.x) + abs(line.normal.y));
+    const float r = EXTENTXZ * abs(plane.normal.x) + EXTENTY * abs(plane.normal.y) + EXTENTXZ * abs(plane.normal.z);
 
-    return -r <= line.GetSignedDistanceToPlane(m_Position * short(SIZE));
+    return -r <= plane.GetSignedDistanceToPlane(glm::vec3(m_Position.x * SIZE + EXTENTXZ, EXTENTY, m_Position.y * SIZE + EXTENTXZ));
 
 }
 

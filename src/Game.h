@@ -28,7 +28,7 @@ private:
     GLFWwindow* m_Window = nullptr;
     const char* m_WindowTitle = "Macecraft";
 
-    Camera m_Camera{width, height};
+    Camera m_Camera{width, height, 45.0f, 0.1f, 1000.0f};
     std::unique_ptr<Shader> m_DefaultShader;
     std::unique_ptr<World> m_World;
     std::unique_ptr<TextureAtlas> m_DefaultAtlas;

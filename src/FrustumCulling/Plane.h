@@ -10,13 +10,13 @@
 namespace Macecraft
 {
 
-struct Line
+struct Plane
 {
 
-    glm::vec2 normal = glm::vec2(0.0f, 0.0f);
+    glm::vec3 normal = glm::vec3(0.0f);
     float distance = 0.0f;
 
-    float GetSignedDistanceToPlane(const glm::vec2 point) const
+    float GetSignedDistanceToPlane(const glm::vec3& point) const
     {
         return glm::dot(normal, point) - distance;
     }

@@ -1,15 +1,17 @@
 #pragma once
 
-#include "Line.h"
+#include "Plane.h"
 #include "../Camera.h"
 
 namespace Macecraft {
 
 struct Frustum
 {
-    Line nearPlane, rightPlane, leftPlane;
-
+    
+    Plane nearPlane, rightPlane, leftPlane, topPlane, bottomPlane;
+    
     void UpdateFromCamera(const Camera& camera);
+
 };
 
 } // Macecraft

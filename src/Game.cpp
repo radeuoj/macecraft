@@ -133,7 +133,7 @@ void Game::Run()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_Camera.Inputs(m_Window, deltaTime);
-        m_Camera.Matrix(45.0f, 0.1f, 1000.0f, m_DefaultShader.get(), "camMatrix");
+        m_Camera.Matrix(m_DefaultShader.get(), "camMatrix");
         
         m_Frustum.UpdateFromCamera(m_Camera);
 
