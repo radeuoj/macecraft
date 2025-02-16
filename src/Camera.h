@@ -16,17 +16,20 @@ namespace Macecraft
 
 class Camera {
 public:
+    inline static float NORMAL_SPEED = 11.0f;
+    inline static float SPRINT_SPEED = 100.0f;
+    
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 2.0f);
     glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 viewproj = glm::mat4(1.0f);
 
-    float nearPlane = 0.0f, farPlane = 0.0f, fov = 45.0f;
+    float nearPlane = 0.1f, farPlane = 1000.0f, fov = 60.0f;
 
-    float speed = 1.0f;
+    float speed = NORMAL_SPEED;
     float sensitivity = 100.0f;
 
-    Camera(int &width, int &height, float FOVdeg, float _nearPlane, float _farPlane);
+    Camera(int &width, int &height);
 
     void Matrix(const Shader* shader, const char* uniform);
     void Inputs(GLFWwindow* window, float deltaTime);

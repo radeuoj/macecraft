@@ -3,12 +3,9 @@
 namespace Macecraft
 {
 
-Camera::Camera(int &width, int &height, float FOVdeg, float _nearPlane, float _farPlane):
+Camera::Camera(int &width, int &height):
     m_Width(width),
-    m_Height(height),
-    fov(FOVdeg),
-    nearPlane(_nearPlane),
-    farPlane(_farPlane)
+    m_Height(height)
 {
 }
 
@@ -19,31 +16,33 @@ void Camera::Matrix(const Shader* shader, const char *uniform)
 
     view = glm::lookAt(position, position + orientation, up);
     proj = glm::perspective(glm::radians(fov), (float)m_Width / m_Height, nearPlane, farPlane);
-    viewproj = proj * view * 0.5f;
+    viewproj = proj * view;
 
     glUniformMatrix4fv(glGetUniformLocation(shader->GetID(), uniform), 1, GL_FALSE, glm::value_ptr(viewproj));
 }
 
 void Camera::Inputs(GLFWwindow *window, float deltaTime)
 {
+    glm::vec3 horizontalOrientation = glm::normalize(glm::vec3(orientation.x, 0.0f, orientation.z));
+    
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        position += speed * orientation * deltaTime;
+        position += speed * horizontalOrientation * deltaTime;
     }
 
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        position += speed * -orientation * deltaTime;
+        position += speed * -horizontalOrientation * deltaTime;
     }
 
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        position += speed * -glm::normalize(glm::cross(orientation, up)) * deltaTime;
+        position += speed * -glm::normalize(glm::cross(horizontalOrientation, up)) * deltaTime;
     }
 
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        position += speed * glm::normalize(glm::cross(orientation, up)) * deltaTime;
+        position += speed * glm::normalize(glm::cross(horizontalOrientation, up)) * deltaTime;
     }
 
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
@@ -58,16 +57,16 @@ void Camera::Inputs(GLFWwindow *window, float deltaTime)
 
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
-        speed = 100.0f;
+        speed = SPRINT_SPEED;
     }
 
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
     {
-        speed = 1.0f;
+        speed = NORMAL_SPEED;
     }
 
-    // if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+    // if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
     {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 

@@ -178,6 +178,9 @@ void Game::UpdateImGui(float deltaTime)
     ImGui::Text("%d chunks flushed this frame", m_World->chunksFlushedThisFrame);
     ImGui::Text("Normal: %.2f %.2f Distance %.2f", m_Frustum.nearPlane.normal.x, m_Frustum.nearPlane.normal.y, m_Frustum.nearPlane.distance);
     ImGui::Checkbox("Enable frustum culling", &m_World->ENABLE_FRUSTUM_CULLING);
+    ImGui::NewLine();
+
+    ImGui::SliderFloat("Sprint speed", &Camera::SPRINT_SPEED, 0.0f, 1000.0f);
     ImGui::End();
     
     ImGui::Render();
