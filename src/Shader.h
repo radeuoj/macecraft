@@ -4,18 +4,25 @@
 #include <string>
 #include <fstream>
 
+namespace Macecraft
+{
+    
 std::string get_file_contents(const char* filename);
 
 class Shader
 {
 public:
-    GLuint ID;
-    Shader() = default;
-    void init(const char* vertexShaderSource, const char* fragmentShaderSource);
+    Shader(const char* vertexShaderSource, const char* fragmentShaderSource);
     ~Shader();
 
-    void activate();
+    void Activate();
+    GLuint GetID() const;
 
 private:
-    void compileErrors(unsigned int shader, const char* type);
+    GLuint m_ID;
+    
+    void CompileErrors(unsigned int shader, const char* type);
 };
+    
+}
+

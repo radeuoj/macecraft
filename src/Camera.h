@@ -14,28 +14,28 @@
 namespace Macecraft
 {
 
-    class Camera {
-    public:
-        glm::vec3 position = glm::vec3(0.0f, 0.0f, 2.0f);
-        glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+class Camera {
+public:
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 2.0f);
+    glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        float nearPlane = 0.0f, farPlane = 0.0f, fov = 45.0f;
+    float nearPlane = 0.0f, farPlane = 0.0f, fov = 45.0f;
 
-        float speed = 1.0f;
-        float sensitivity = 100.0f;
+    float speed = 1.0f;
+    float sensitivity = 100.0f;
 
-        Camera(int &width, int &height);
+    Camera(int &width, int &height);
 
-        void matrix(float FOVdeg, float _nearPlane, float _farPlane, Shader& shader, const char* uniform);
-        void inputs(GLFWwindow* window, float deltaTime);
+    void Matrix(float FOVdeg, float _nearPlane, float _farPlane, const Shader* shader, const char* uniform);
+    void Inputs(GLFWwindow* window, float deltaTime);
 
-        float getAspectRatio() const;
+    float GetAspectRatio() const;
 
-    private:
-        int &m_Width, &m_Height;
+private:
+    int &m_Width, &m_Height;
 
-        bool m_FirstClick = true;
-    };
+    bool m_FirstClick = true;
+};
 
 }

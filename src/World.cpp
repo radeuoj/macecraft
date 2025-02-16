@@ -13,7 +13,7 @@ World::World(TextureAtlas* atlas): m_Atlas(atlas)
 
 }
 
-void World::RenderChunks(const Shader& shader, const glm::vec3& playerPosition, const Frustum& frustum)
+void World::RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum& frustum)
 {
     chunksFlushedThisFrame = 0;
 

@@ -2,54 +2,55 @@
 
 namespace Macecraft
 {
-    TextureAtlas::TextureAtlas(unsigned char *image, int imageLength, int spriteWidth, int spriteHeight):
-    m_SpriteWidth(spriteWidth),
-    m_SpriteHeight(spriteHeight),
-    m_Texture()
-    {
-        m_Texture.initFromImage(image, imageLength, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+TextureAtlas::TextureAtlas(unsigned char *image, int imageLength, int spriteWidth, int spriteHeight):
+m_SpriteWidth(spriteWidth),
+m_SpriteHeight(spriteHeight)
+{
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* bytes = stbi_load_from_memory(image, imageLength, &m_ImageWidth, &m_ImageHeight, &m_ImageChannels, 0);
 
-        // TODO: magic numbers
-        m_ImageWidth = 256;
-        m_ImageHeight = 256;
+    InitFromBytes(bytes);
 
-        using enum BlockType;
+    stbi_image_free(bytes);
+}
 
-        m_TextureData[DIRT] = BlockData(texcoords(0, 0));
-        m_TextureData[GRASS] = BlockData(texcoords(1, 0), texcoords(1, 0), texcoords(1, 0), texcoords(1, 0), texcoords(2, 0), texcoords(0, 0));
-    }
-    
-    TextureAtlas::TextureAtlas(const char* path, int spriteWidth, int spriteHeight):
-    m_SpriteWidth(spriteWidth),
-    m_SpriteHeight(spriteHeight),
-    m_Texture()
-    {
-        m_Texture.initFromFile(path, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+TextureAtlas::TextureAtlas(const char* path, int spriteWidth, int spriteHeight):
+m_SpriteWidth(spriteWidth),
+m_SpriteHeight(spriteHeight)
+{
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* bytes = stbi_load(path, &m_ImageWidth, &m_ImageHeight, &m_ImageChannels, 0);
 
-        // TODO: magic numbers
-        m_ImageWidth = 256;
-        m_ImageHeight = 256;
+    InitFromBytes(bytes);
 
-        using enum BlockType;
+    stbi_image_free(bytes);
+}
 
-        m_TextureData[DIRT] = BlockData(texcoords(0, 0));
-        m_TextureData[GRASS] = BlockData(texcoords(1, 0), texcoords(1, 0), texcoords(1, 0), texcoords(1, 0), texcoords(2, 0), texcoords(0, 0));
-    }
+void TextureAtlas::InitFromBytes(unsigned char* bytes)
+{
+    m_Texture.InitFromBytes(bytes, m_ImageWidth, m_ImageHeight, m_ImageChannels, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
 
-    uint8_t TextureAtlas::getTextureLocation(BlockType block, BlockDirection direction, uint8_t x, uint8_t y)
-    {
-        return m_TextureData[block][direction] + x + y * 16;
-    }
+    using enum BlockType;
 
-    void TextureAtlas::bind()
-    {
-        m_Texture.bind();
-    }
+    m_TextureData[DIRT] = BlockData(texcoords(0, 0));
+    m_TextureData[GRASS] = BlockData(texcoords(1, 0), texcoords(1, 0), texcoords(1, 0), texcoords(1, 0), texcoords(2, 0), texcoords(0, 0));
+}
 
-    void TextureAtlas::unbind()
-    {
-        m_Texture.unbind();
-    }
+
+uint8_t TextureAtlas::GetTextureLocation(BlockType block, BlockDirection direction, uint8_t x, uint8_t y)
+{
+    return m_TextureData[block][direction] + x + y * 16;
+}
+
+void TextureAtlas::Bind()
+{
+    m_Texture.Bind();
+}
+
+void TextureAtlas::Unbind()
+{
+    m_Texture.Unbind();
+}
 
 
 

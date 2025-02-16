@@ -34,7 +34,7 @@ public:
     void GenerateChunksIfNeeded(const glm::vec3& playerPosition);
     bool AddChunkIfDoesntExist(const glm::ivec2& pos);
     bool AreNeighboursGenerated(const glm::ivec2& pos);
-    void RenderChunks(const Shader& shader, const glm::vec3& playerPosition, const Frustum& frustum);
+    void RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum& frustum);
     void DeleteChunkIfExists(const glm::ivec2& pos);
     void SafeGenerateChunk(const glm::ivec2& pos);
 

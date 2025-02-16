@@ -7,7 +7,7 @@ namespace Macecraft
 
 void Frustum::UpdateFromCamera(const Camera& camera)
 {
-    float aspect = camera.getAspectRatio();
+    float aspect = camera.GetAspectRatio();
     const float halfVSide = camera.farPlane * tanf(camera.fov * 0.5f);
     const float halfHSide = halfVSide * aspect;
     const glm::vec3 frontMultFar3d = camera.farPlane * camera.orientation;

@@ -26,7 +26,7 @@ public:
     void Generate(TextureAtlas* atlas);
     void RenderWhenPossible();
     void RenderIfNeeded(TextureAtlas* atlas);
-    void Flush(const Shader& shader, const TextureAtlas* atlas);
+    void Flush(const Shader* shader, const TextureAtlas* atlas);
     BlockType GetBlock(glm::ivec3 pos);
     glm::i16vec2 GetPosition();
     bool IsOnFrustum(const Frustum& frustum);

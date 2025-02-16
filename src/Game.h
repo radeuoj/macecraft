@@ -29,7 +29,7 @@ private:
     const char* m_WindowTitle = "Macecraft";
 
     Camera m_Camera{width, height};
-    Shader m_DefaultShader;
+    std::unique_ptr<Shader> m_DefaultShader;
     std::unique_ptr<World> m_World;
     std::unique_ptr<TextureAtlas> m_DefaultAtlas;
     Frustum m_Frustum;

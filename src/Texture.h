@@ -6,6 +6,9 @@
 #include "Shader.h"
 #include <vector>
 
+namespace Macecraft
+{
+    
 class Texture
 {
 public:
@@ -13,15 +16,13 @@ public:
     GLenum type;
 
     Texture() = default;
+    ~Texture();
 
-    /**
-     * @deprecated not sure if it still works
-     */
-    [[deprecated]] void initFromFile(const char* image, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
-    void initFromImage(unsigned char* image, int length, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
+    void InitFromBytes(unsigned char* bytes, int imageWidth, int imageHeight, int imageChannels, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
 
-    void texUnit(Shader& shader, const char* uniform, GLuint unit);
-    void bind();
-    void unbind();
-    void Delete();
+    void Bind();
+    void Unbind();
 };
+    
+}
+

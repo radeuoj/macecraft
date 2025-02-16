@@ -25,11 +25,11 @@ Game::Game()
 
     std::string vertSource = get_file_contents("res/shaders/default.vert");
     std::string fragSource = get_file_contents("res/shaders/default.frag");
-    m_DefaultShader.init(vertSource.data(), fragSource.data());
-    m_DefaultShader.activate();
+    m_DefaultShader = std::make_unique<Shader>(vertSource.data(), fragSource.data());
+    m_DefaultShader->Activate();
 
     m_DefaultAtlas = std::make_unique<TextureAtlas>("res/textures/dirt.png", 16, 16);
-    m_DefaultAtlas->bind();
+    m_DefaultAtlas->Bind();
 
     m_World = std::make_unique<World>(m_DefaultAtlas.get());
 }
@@ -132,8 +132,8 @@ void Game::Run()
         glClearColor(0.67f, 0.85f, 0.90f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        m_Camera.inputs(m_Window, deltaTime);
-        m_Camera.matrix(45.0f, 0.1f, 1000.0f, m_DefaultShader, "camMatrix");
+        m_Camera.Inputs(m_Window, deltaTime);
+        m_Camera.Matrix(45.0f, 0.1f, 1000.0f, m_DefaultShader.get(), "camMatrix");
         
         m_Frustum.UpdateFromCamera(m_Camera);
 
@@ -152,7 +152,7 @@ void Game::Run()
 void Game::Update(float deltaTime)
 {
     m_World->GenerateChunksIfNeeded(m_Camera.position);
-    m_World->RenderChunks(m_DefaultShader, m_Camera.position, m_Frustum);
+    m_World->RenderChunks(m_DefaultShader.get(), m_Camera.position, m_Frustum);
 }
 
 // TODO: fix this by adding a limit to  how many chunks you can delete per frame
