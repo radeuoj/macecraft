@@ -181,6 +181,7 @@ void Game::UpdateImGui(float deltaTime)
     ImGui::NewLine();
 
     ImGui::SliderFloat("Sprint speed", &Camera::SPRINT_SPEED, 0.0f, 1000.0f);
+    ImGui::SliderInt("Render distance", &World::CHUNK_RENDER_DISTANCE, 0, 100);
     ImGui::End();
     
     ImGui::Render();

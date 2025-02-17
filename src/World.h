@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <queue>
 #include <unordered_map>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -21,7 +19,7 @@ class World
 {
 public:
     static constexpr int CHUNK_GENERATION_LIMIT_PER_FRAME = 2;
-    static constexpr int CHUNK_RENDER_DISTANCE = 30;
+    static inline int CHUNK_RENDER_DISTANCE = 30;
     static constexpr int CHUNK_RENDER_DISTANCE_ERROR = 2; // if a chunk is more than CHUNK_RENDER_DISTANCE + CHUNK_RENDER_DISTANCE_ERROR away from the player, it will be deleted
 
     std::unordered_map<glm::ivec2, Chunk> chunks;
@@ -37,6 +35,7 @@ public:
     void RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum& frustum);
     void DeleteChunkIfExists(const glm::ivec2& pos);
     void SafeGenerateChunk(const glm::ivec2& pos);
+    void RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk);
 
     /**
      * @deprecated fix

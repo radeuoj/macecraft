@@ -167,11 +167,11 @@ void Chunk::Flush(const Shader* shader, const TextureAtlas* atlas)
 bool Chunk::IsOnFrustum(const Frustum& frustum)
 {
     return IsOnOrForwardOfPlane(frustum.nearPlane)
-    && IsOnOrForwardOfPlane(frustum.farPlane)
     && IsOnOrForwardOfPlane(frustum.rightPlane)
     && IsOnOrForwardOfPlane(frustum.leftPlane)
     && IsOnOrForwardOfPlane(frustum.bottomPlane)
     && IsOnOrForwardOfPlane(frustum.topPlane);
+    // && IsOnOrForwardOfPlane(frustum.farPlane);
     
 }
 

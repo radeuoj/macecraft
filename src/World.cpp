@@ -13,21 +13,26 @@ World::World(TextureAtlas* atlas): m_Atlas(atlas)
 
 }
 
+void World::RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk)
+{
+    if (chunk.ShouldRender() && AreNeighboursGenerated(pos))
+    {
+        chunk.RenderIfNeeded(m_Atlas,
+            &chunks.at(pos + glm::ivec2(1, 0)),
+            &chunks.at(pos + glm::ivec2(-1, 0)),
+            &chunks.at(pos + glm::ivec2(0, 1)),
+            &chunks.at(pos + glm::ivec2(0, -1))
+        );
+    }
+}
+
 void World::RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum& frustum)
 {
     chunksFlushedThisFrame = 0;
 
     for (auto& [pos, chunk] : chunks)
     {
-        if (chunk.ShouldRender() && AreNeighboursGenerated(pos))
-        {
-            chunk.RenderIfNeeded(m_Atlas,
-                &chunks.at(pos + glm::ivec2(1, 0)),
-                &chunks.at(pos + glm::ivec2(-1, 0)),
-                &chunks.at(pos + glm::ivec2(0, 1)),
-                &chunks.at(pos + glm::ivec2(0, -1))
-            );
-        }
+        RenderChunkIfNeeded(pos, chunk);
 
         if (ENABLE_FRUSTUM_CULLING)
         {

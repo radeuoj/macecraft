@@ -19,7 +19,7 @@ public:
     inline static float NORMAL_SPEED = 11.0f;
     inline static float SPRINT_SPEED = 100.0f;
     
-    glm::vec3 position = glm::vec3(0.0f, 0.0f, 2.0f);
+    glm::vec3 position = glm::vec3(0.0f, 15.0f, 0.0f);
     glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 viewproj = glm::mat4(1.0f);
