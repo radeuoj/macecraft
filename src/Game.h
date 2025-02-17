@@ -1,12 +1,14 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "FrustumCulling/Frustum.h"
 #include "Camera.h"
+#include "Layer.h"
 #include "Renderer.h"
 #include "TextureAtlas.h"
 #include "World.h"
@@ -24,7 +26,16 @@ public:
 
     void Run();
 
+    template <class T> T* BindLayer()
+    {
+        static_assert(std::is_base_of_v<Layer, T>, "T must be a subclass of Layer");
+
+        return static_cast<T*>(m_Layers.emplace_back(new T(*this)).get());
+    }
+
 private:
+    std::vector<std::unique_ptr<Layer>> m_Layers;
+    
     GLFWwindow* m_Window = nullptr;
     const char* m_WindowTitle = "Macecraft";
 

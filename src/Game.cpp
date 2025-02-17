@@ -44,12 +44,13 @@ void Game::InitGLFW()
 
     // Initialize a glfw window
     m_Window = glfwCreateWindow(width, height, m_WindowTitle, nullptr, nullptr);
-    if (m_Window == nullptr)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        exit(-1);
-    }
+    assert(m_Window != nullptr && "Failed to create GLFW window");
+    // if (m_Window == nullptr)
+    // {
+    //     std::cout << "Failed to create GLFW window" << std::endl;
+    //     glfwTerminate();
+    //     exit(-1);
+    // }
     glfwMakeContextCurrent(m_Window);
 
     glfwSetWindowUserPointer(m_Window, this);
