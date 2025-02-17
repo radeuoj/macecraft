@@ -83,67 +83,67 @@ void Chunk::Render(TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chun
                     // BACK
                     if (NeighbourGetBlock({i, j, k - 1}, nXP, nXN, nYP, nYN) == BlockType::AIR)
                     {
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 0, 0)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 0, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 1, 0)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 0, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 1, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 1, 0)) });
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 0, 0)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 0, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 1, 0)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 0, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 1, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZN, 1, 0)));
                     }
 
                     // FRONT
                     if (NeighbourGetBlock({i, j, k + 1}, nXP, nXN, nYP, nYN) == BlockType::AIR)
                     {
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 0, 0)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 0, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 1, 0)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 0, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 1, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 1, 0)) });
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 0, 0)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 0, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 1, 0)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 0, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 1, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), ZP, 1, 0)));
                     }
 
                     //  BOTTOM
                     if (NeighbourGetBlock({i, j - 1, k}, nXP, nXN, nYP, nYN) == BlockType::AIR)
                     {
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 0, 0)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 0, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 1, 0)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 0, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 1, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 1, 0)) });
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 0, 0)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 0, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 1, 0)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 0, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 1, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YN, 1, 0)));
                     }
 
                     // TOP
                     if (NeighbourGetBlock({i, j + 1, k}, nXP, nXN, nYP, nYN) == BlockType::AIR)
                     {
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 0, 0)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 0, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 1, 0)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 0, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 1, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 1, 0)) });
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 0, 0)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 0, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 1, 0)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 0, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 1, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), YP, 1, 0)));
                     }
 
                     // LEFT
                     if (NeighbourGetBlock({i - 1, j, k}, nXP, nXN, nYP, nYN) == BlockType::AIR)
                     {
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 0, 0)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 0, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 1, 0)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 0, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 1, 1)) });
-                        m_Renderer.vertices.push_back({ blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 1, 0)) });
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 0, 0)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 0, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 1, 0)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 0, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 1, 1)));
+                        m_Renderer.vertices.emplace_back(blockPosition.x, blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XN, 1, 0)));
                     }
 
                     // RIGHT
                     if (NeighbourGetBlock({i + 1, j, k}, nXP, nXN, nYP, nYN) == BlockType::AIR)
                     {
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 0, 0)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 0, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 1, 0)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 0, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 1, 1)) });
-                        m_Renderer.vertices.push_back({ GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 1, 0)) });
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 0, 0)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 0, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 1, 0)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), GLubyte(blockPosition.z + 1), GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 0, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), GLubyte(blockPosition.y + 1), blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 1, 1)));
+                        m_Renderer.vertices.emplace_back(GLubyte(blockPosition.x + 1), blockPosition.y, blockPosition.z, GLubyte(atlas->GetTextureLocation(GetBlock(i, j, k), XP, 1, 0)));
                     }
                 }
             }
@@ -177,22 +177,24 @@ bool Chunk::IsOnFrustum(const Frustum& frustum)
 
 bool Chunk::IsOnOrForwardOfPlane(const Plane &plane)
 {
-    glm::vec3 minp = glm::vec3(m_Position.x * SIZE, 0, m_Position.y * SIZE);
-    glm::vec3 maxp = minp + glm::vec3(SIZE, HEIGHT, SIZE);
+    //glm::vec3 minp = glm::vec3(m_Position.x * SIZE, 0, m_Position.y * SIZE);
+    //glm::vec3 maxp = minp + glm::vec3(SIZE, HEIGHT, SIZE);
 
-    glm::vec3 p = minp;
+    //glm::vec3 p = minp;
 
-    // This finds the point most in the direction of the planes normal
-    // this helps to find if the outmost point of the chunk is in front of the say plane
-    // in this case we consider the chunk to be in front of the plane
-    if (plane.normal.x >= 0)
-        p.x = maxp.x;
-    if (plane.normal.y >= 0)
-        p.y = maxp.y;
-    if (plane.normal.z >= 0)
-        p.z = maxp.z;
+    //// This finds the point most in the direction of the planes normal
+    //// this helps to find if the outmost point of the chunk is in front of the say plane
+    //// in this case we consider the chunk to be in front of the plane
+    //if (plane.normal.x >= 0)
+    //    p.x = maxp.x;
+    //if (plane.normal.y >= 0)
+    //    p.y = maxp.y;
+    //if (plane.normal.z >= 0)
+    //    p.z = maxp.z;
 
-    return glm::dot(plane.normal, p) + plane.distance >= 0;
+    //return glm::dot(plane.normal, p) + plane.distance >= 0;
+
+    return glm::dot(plane.normal, plane.chunkP + glm::vec3(m_Position.x * SIZE, 0, m_Position.y * SIZE)) + plane.distance >= 0;
 }
 
 // TODO: old implementation

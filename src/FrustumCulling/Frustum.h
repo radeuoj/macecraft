@@ -13,6 +13,8 @@ struct Frustum
     [[deprecated]] void UpdateFromCamera(const Camera& camera);
     void UpdateFromViewProjMatrix(const glm::mat4& viewproj);
 
+    void GenerateChunkP();
+
 };
 
 } // Macecraft

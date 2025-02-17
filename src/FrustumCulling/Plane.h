@@ -16,12 +16,11 @@ struct Plane
     glm::vec3 normal = glm::vec3(0.0f);
     float distance = 0.0f;
 
-    void Normalize()
-    {
-        float length = glm::length(normal);
-        normal /= length;
-        distance /= length;
-    }
+    glm::vec3 chunkP = glm::vec3(0.0f);
+
+    void Normalize();
+
+    void GenerateP();
 
 };
 

@@ -78,6 +78,18 @@ void Frustum::UpdateFromViewProjMatrix(const glm::mat4& viewproj)
     farPlane.normal.z = viewproj[2][3] - viewproj[2][2];
     farPlane.distance = viewproj[3][3] - viewproj[3][2];
     farPlane.Normalize();
+
+    GenerateChunkP();
+}
+
+void Frustum::GenerateChunkP()
+{
+    leftPlane.GenerateP();
+    rightPlane.GenerateP();
+    bottomPlane.GenerateP();
+    topPlane.GenerateP();
+    nearPlane.GenerateP();
+    farPlane.GenerateP();
 }
 
 
