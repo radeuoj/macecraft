@@ -25,7 +25,13 @@ public:
     void LinkAttribIPointer(GLuint layout, GLint size, GLenum type, GLsizei stride, size_t offset);
 
     void BindVertices();
-    void Flush();
+
+    /**
+     * 
+     * @param mode GL_TRIANGLES GL_POINTS GL_LINES etc\n
+     * default is GL_TRIANGLES
+     */
+    void Flush(GLenum mode = GL_TRIANGLES);
 
     std::vector<VD> vertices;
 

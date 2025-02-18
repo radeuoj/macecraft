@@ -17,6 +17,7 @@ public:
     void OnLoad() override;
     void OnUpdate(float deltaTime) override;
     void OnRender(float deltaTime) override;
+    void OnUIRender(float deltaTime) override;
     void OnImGuiRender(float deltaTime) override;
 
 private:
@@ -30,10 +31,11 @@ private:
 
     std::unique_ptr<Shader> m_UIShader;
     Renderer<UIVertexData> m_StaticUIRenderer;
-    // Renderer m_PointedBlockOutlineRenderer;
+    Renderer<VertexData> m_PointedBlockOutlineRenderer;
 
     void HandleInputs(float deltaTime);
     void HandleBlockLookingAt();
+    void DrawBlockOutline(glm::ivec2 chunkPos, glm::ivec3 blockPos);
 };
 
 }

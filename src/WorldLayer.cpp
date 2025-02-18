@@ -299,8 +299,8 @@ bool WorldLayer::Raycast(const glm::vec3& origin, const glm::vec3& direction, fl
         auto chunkPosData = WorldPosToChunkPos(blockInWorldPos);
         chunkPos = chunkPosData.first;
         blockInChunkPos = chunkPosData.second;
-
-        if (chunks.find(chunkPos) != chunks.end())
+        
+        if (blockInChunkPos.y >= 0 && blockInChunkPos.y < Chunk::HEIGHT && chunks.find(chunkPos) != chunks.end())
         {
             blockType = chunks.at(chunkPos).GetBlock(blockInChunkPos.x, blockInChunkPos.y, blockInChunkPos.z);
             if (blockType != BlockType::AIR)

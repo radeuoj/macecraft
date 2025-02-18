@@ -70,21 +70,21 @@ void Renderer<VD>::BindVertices()
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexData), vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VD), vertices.data(), GL_STATIC_DRAW);
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 template <typename VD>
-void Renderer<VD>::Flush()
+void Renderer<VD>::Flush(GLenum mode)
 {
 
     glBindVertexArray(m_VAO);
 
     // glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
-    glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+    glDrawArrays(mode, 0, vertices.size());
 
     // glBindVertexArray(0);
     // glBindBuffer(GL_ARRAY_BUFFER, 0);

@@ -81,6 +81,7 @@ private:
     void UnloadLayers() const;
     void UpdateLayers(float deltaTime) const;
     void RenderLayers(float deltaTime) const;
+    void UIRenderLayers(float deltaTime) const;
     void ImGuiRenderLayers(float deltaTime) const;
     
     void Update(float deltaTime);

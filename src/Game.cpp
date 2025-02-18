@@ -83,7 +83,7 @@ void Game::InitOpenGL()
     gladLoadGL();
     glViewport(0, 0, width, height);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D);
+    // glEnable(GL_TEXTURE_2D);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CW);
@@ -140,7 +140,7 @@ void Game::Run()
         m_Frustum.UpdateFromViewProjMatrix(m_Camera.viewproj);
         
         RenderLayers(deltaTime);
-
+        UIRenderLayers(deltaTime);
         UpdateImGui(deltaTime);
 
         frameTimeTotal += glfwGetTime() - prevTime;
@@ -182,6 +182,14 @@ void Game::RenderLayers(float deltaTime) const
     for (const std::unique_ptr<Layer>& layer: m_Layers)
     {
         layer->OnRender(deltaTime);
+    }
+}
+
+void Game::UIRenderLayers(float deltaTime) const
+{
+    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    {
+        layer->OnUIRender(deltaTime);
     }
 }
 

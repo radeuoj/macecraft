@@ -17,6 +17,7 @@ public:
     virtual void OnUnload() {}
     virtual void OnUpdate(float deltaTime) {}
     virtual void OnRender(float deltaTime) {}
+    virtual void OnUIRender(float deltaTime) {}
     virtual void OnImGuiRender(float deltaTime) {}
 protected:
     const Game& game;
