@@ -167,20 +167,27 @@ std::pair<glm::ivec2, glm::vec3> WorldLayer::WorldPosToChunkPos(const glm::vec3&
 {
     glm::ivec2 chunkPos = glm::ivec2(0);
     glm::vec3 localPos = glm::vec3(0);
-
+    
     chunkPos.x = int(pos.x) / Chunk::SIZE;
     chunkPos.y = int(pos.z) / Chunk::SIZE;
-
+    
     if (pos.x < 0)
         chunkPos.x -= 1;
-
+    
     if (pos.z < 0)
         chunkPos.y -= 1;
-
+    
     localPos.x = pos.x - chunkPos.x * Chunk::SIZE;
     localPos.z = pos.z - chunkPos.y * Chunk::SIZE;
     localPos.y = pos.y;
+    
+    return std::make_pair(chunkPos, localPos);
+}
 
+std::pair<glm::ivec2, glm::ivec3> WorldLayer::WorldPosToChunkPos(const glm::ivec3& pos)
+{
+    glm::ivec3 localPos = glm::ivec3(pos.x & 15, pos.y & 15, pos.z & 15);
+    glm::ivec2 chunkPos = glm::ivec2((pos.x - localPos.x) / Chunk::SIZE, (pos.z - localPos.z) / Chunk::SIZE);
     return std::make_pair(chunkPos, localPos);
 }
 
@@ -223,13 +230,13 @@ bool WorldLayer::Raycast(const glm::vec3& origin, const glm::vec3& direction, fl
     glm::vec3 rayUnitStepSize = glm::vec3(0.0f);
 
     if (direction.x != 0.0f)
-        rayUnitStepSize.x = directionLength * (1.0f / direction.x);
+        rayUnitStepSize.x = directionLength * (1.0f / abs(direction.x));
     if (direction.y != 0.0f)
-        rayUnitStepSize.y = directionLength * (1.0f / direction.y);
+        rayUnitStepSize.y = directionLength * (1.0f / abs(direction.y));
     if (direction.z != 0.0f)
-        rayUnitStepSize.z = directionLength * (1.0f / direction.z);
+        rayUnitStepSize.z = directionLength * (1.0f / abs(direction.z));
 
-    glm::ivec3 blockInWorldPos = origin;
+    glm::ivec3 blockInWorldPos = glm::floor(origin);
     glm::vec3 rayLength1D = glm::vec3(0.0f);
 
     glm::ivec3 step = glm::ivec3(0);
@@ -275,26 +282,6 @@ bool WorldLayer::Raycast(const glm::vec3& origin, const glm::vec3& direction, fl
     float distance = 0.0f;
     while (!blockFound && abs(distance) < maxDistance)
     {
-        // Walk
-        if (rayLength1D.x < rayLength1D.y && rayLength1D.x < rayLength1D.z)
-        {
-            blockInWorldPos.x += step.x;
-            distance = rayLength1D.x;
-            rayLength1D.x += rayUnitStepSize.x;
-        }
-        else if (rayLength1D.y < rayLength1D.x && rayLength1D.y < rayLength1D.z)
-        {
-            blockInWorldPos.y += step.y;
-            distance = rayLength1D.y;
-            rayLength1D.y += rayUnitStepSize.y;
-        }
-        else
-        {
-            blockInWorldPos.z += step.z;
-            distance = rayLength1D.z;
-            rayLength1D.z += rayUnitStepSize.z;
-        }
-
         // Checking if we got a hit
         auto chunkPosData = WorldPosToChunkPos(blockInWorldPos);
         chunkPos = chunkPosData.first;
@@ -307,6 +294,26 @@ bool WorldLayer::Raycast(const glm::vec3& origin, const glm::vec3& direction, fl
             {
                 blockFound = true;
             }
+        }
+        
+        // Walk
+        if (step.x != 0  && rayLength1D.x < rayLength1D.y && rayLength1D.x < rayLength1D.z)
+        {
+            blockInWorldPos.x += step.x;
+            distance = rayLength1D.x;
+            rayLength1D.x += rayUnitStepSize.x;
+        }
+        else if (step.y != 0 && rayLength1D.y < rayLength1D.x && rayLength1D.y < rayLength1D.z)
+        {
+            blockInWorldPos.y += step.y;
+            distance = rayLength1D.y;
+            rayLength1D.y += rayUnitStepSize.y;
+        }
+        else if (step.z != 0)
+        {
+            blockInWorldPos.z += step.z;
+            distance = rayLength1D.z;
+            rayLength1D.z += rayUnitStepSize.z;
         }
     }
 

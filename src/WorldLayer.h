@@ -40,6 +40,7 @@ public:
     template <typename T> static T SquareDistance(const glm::vec<2, T>& a, const glm::vec<2, T>& b);
     static glm::vec3 ChunkPosToWorldPos(const glm::ivec2& chunkPos, const glm::vec3& pos);
     static std::pair<glm::ivec2, glm::vec3> WorldPosToChunkPos(const glm::vec3& pos);
+    static std::pair<glm::ivec2, glm::ivec3> WorldPosToChunkPos(const glm::ivec3& pos);
 
     /**
      * Casts a ray in the block world\n
