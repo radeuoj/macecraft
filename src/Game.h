@@ -11,7 +11,7 @@
 #include "Layer.h"
 #include "Renderer.h"
 #include "TextureAtlas.h"
-#include "World.h"
+#include "WorldLayer.h"
 
 namespace Macecraft
 {
@@ -28,10 +28,15 @@ public:
 
     template <class T> T* BindLayer()
     {
-        static_assert(std::is_base_of_v<Layer, T>, "T must be a subclass of Layer");
+        static_assert(std::is_base_of_v<Layer, T> && "T must be a subclass of Layer");
 
         return static_cast<T*>(m_Layers.emplace_back(new T(*this)).get());
     }
+
+    TextureAtlas* GetAtlas() const;
+    Camera* GetCamera() const;
+    Shader* GetShader() const;
+    Frustum* GetFrustum() const;
 
 private:
     std::vector<std::unique_ptr<Layer>> m_Layers;
@@ -41,7 +46,7 @@ private:
 
     Camera m_Camera{width, height};
     std::unique_ptr<Shader> m_DefaultShader;
-    std::unique_ptr<World> m_World;
+    // std::unique_ptr<WorldLayer> m_World;
     std::unique_ptr<TextureAtlas> m_DefaultAtlas;
     Frustum m_Frustum;
 
@@ -51,7 +56,13 @@ private:
     void InitGLFW();
     void InitImGui();
     void InitOpenGL();
-
+    
+    void LoadLayers() const;
+    void UnloadLayers() const;
+    void UpdateLayers(float deltaTime) const;
+    void RenderLayers(float deltaTime) const;
+    void ImGuiRenderLayers(float deltaTime) const;
+    
     void Update(float deltaTime);
     void UpdateOncePerSecond();
     void UpdateImGui(float deltaTime);

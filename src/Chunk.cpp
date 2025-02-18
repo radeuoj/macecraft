@@ -164,13 +164,13 @@ void Chunk::Flush(const Shader* shader, const TextureAtlas* atlas)
     m_Renderer.Flush();
 }
 
-bool Chunk::IsOnFrustum(const Frustum& frustum)
+bool Chunk::IsOnFrustum(const Frustum* frustum)
 {
-    return IsOnOrForwardOfPlane(frustum.nearPlane)
-    && IsOnOrForwardOfPlane(frustum.rightPlane)
-    && IsOnOrForwardOfPlane(frustum.leftPlane)
-    && IsOnOrForwardOfPlane(frustum.bottomPlane)
-    && IsOnOrForwardOfPlane(frustum.topPlane);
+    return IsOnOrForwardOfPlane(frustum->nearPlane)
+    && IsOnOrForwardOfPlane(frustum->rightPlane)
+    && IsOnOrForwardOfPlane(frustum->leftPlane)
+    && IsOnOrForwardOfPlane(frustum->bottomPlane)
+    && IsOnOrForwardOfPlane(frustum->topPlane);
     // && IsOnOrForwardOfPlane(frustum.farPlane);
     
 }

@@ -1,6 +1,9 @@
-#include "World.h"
+#include "WorldLayer.h"
 
 #include <iostream>
+
+#include "Game.h"
+#include "imgui.h"
 
 #undef max
 #undef min
@@ -8,16 +11,37 @@
 namespace Macecraft
 {
 
-World::World(TextureAtlas* atlas): m_Atlas(atlas)
+void WorldLayer::OnLoad()
 {
-
 }
 
-void World::RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk)
+void WorldLayer::OnUnload()
+{
+}
+
+void WorldLayer::OnUpdate(float deltaTime)
+{
+    GenerateChunksIfNeeded(game.GetCamera()->position);
+}
+
+void WorldLayer::OnRender(float deltaTime)
+{
+    RenderChunks(game.GetShader(), game.GetCamera()->position, game.GetFrustum());
+}
+
+void WorldLayer::OnImGuiRender(float deltaTime)
+{
+    ImGui::Text("%llu chunks loaded (hopefully)", chunks.size());
+    ImGui::Text("%d chunks flushed this frame", chunksFlushedThisFrame);
+    ImGui::Checkbox("Enable frustum culling", &ENABLE_FRUSTUM_CULLING);
+    ImGui::SliderInt("Render distance", &WorldLayer::CHUNK_RENDER_DISTANCE, 0, 100);
+}
+
+void WorldLayer::RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk)
 {
     if (chunk.ShouldRender() && AreNeighboursGenerated(pos))
     {
-        chunk.RenderIfNeeded(m_Atlas,
+        chunk.RenderIfNeeded(game.GetAtlas(),
             &chunks.at(pos + glm::ivec2(1, 0)),
             &chunks.at(pos + glm::ivec2(-1, 0)),
             &chunks.at(pos + glm::ivec2(0, 1)),
@@ -26,31 +50,66 @@ void World::RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk)
     }
 }
 
-void World::RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum& frustum)
+void WorldLayer::RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum* frustum)
 {
     chunksFlushedThisFrame = 0;
+    int chunksCleanedThisFrame = 0;
 
-    for (auto& [pos, chunk] : chunks)
+    // for (auto& [pos, chunk] : chunks)
+    // {
+    //     RenderChunkIfNeeded(pos, chunk);
+    //
+    //     if (ENABLE_FRUSTUM_CULLING)
+    //     {
+    //         if (chunk.IsOnFrustum(frustum))
+    //         {
+    //             chunk.Flush(shader, game.GetAtlas());
+    //             chunksFlushedThisFrame++;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         chunk.Flush(shader, game.GetAtlas());
+    //         chunksFlushedThisFrame++;
+    //     }
+    // }
+
+    glm::ivec2 playerChunkPos = WorldPosToChunkPos(playerPosition).first;
+
+    for (auto it = chunks.begin(); it != chunks.end(); )
     {
+        auto& pos = it->first;
+        auto& chunk = it->second;
+        
+        if (chunksCleanedThisFrame < CHUNK_CLEAN_LIMIT_PER_FRAME
+            && SquareDistance<int>(pos, playerChunkPos) > CHUNK_RENDER_DISTANCE + CHUNK_RENDER_DISTANCE_ERROR)
+        {
+            it = chunks.erase(it);
+            chunksCleanedThisFrame++;
+            continue;
+        }
+        
         RenderChunkIfNeeded(pos, chunk);
 
         if (ENABLE_FRUSTUM_CULLING)
         {
             if (chunk.IsOnFrustum(frustum))
             {
-                chunk.Flush(shader, m_Atlas);
+                chunk.Flush(shader, game.GetAtlas());
                 chunksFlushedThisFrame++;
             }
         }
         else
         {
-            chunk.Flush(shader, m_Atlas);
+            chunk.Flush(shader, game.GetAtlas());
             chunksFlushedThisFrame++;
         }
+
+        ++it;
     }
 }
 
-void World::GenerateChunksIfNeeded(const glm::vec3& playerPosition)
+void WorldLayer::GenerateChunksIfNeeded(const glm::vec3& playerPosition)
 {
     glm::ivec2 playerChunk = WorldPosToChunkPos(playerPosition).first;
     m_ChunkGenerationCounter = 0;
@@ -102,16 +161,16 @@ void World::GenerateChunksIfNeeded(const glm::vec3& playerPosition)
     }
 }
 
-void World::SafeGenerateChunk(const glm::ivec2& pos)
+void WorldLayer::SafeGenerateChunk(const glm::ivec2& pos)
 {
     if (m_ChunkGenerationCounter < CHUNK_GENERATION_LIMIT_PER_FRAME && !AddChunkIfDoesntExist(pos))
     {
-        chunks.at(pos).Generate(m_Atlas);
+        chunks.at(pos).Generate(game.GetAtlas());
         m_ChunkGenerationCounter++;
     }
 }
 
-void World::CleanupChunks(glm::vec3 playerPosition)
+void WorldLayer::CleanupChunks(glm::vec3 playerPosition)
 {
     glm::ivec2 playerChunkPos = WorldPosToChunkPos(playerPosition).first;
     std::erase_if(chunks, [&playerChunkPos](auto& kv) -> bool
@@ -120,7 +179,7 @@ void World::CleanupChunks(glm::vec3 playerPosition)
     });
 }
 
-template <typename T> T World::SquareDistance(const glm::vec<2, T>& a, const glm::vec<2, T>& b)
+template <typename T> T WorldLayer::SquareDistance(const glm::vec<2, T>& a, const glm::vec<2, T>& b)
 {
     return std::max(abs(a.x - b.x), abs(a.y - b.y));
 }
@@ -135,12 +194,12 @@ template <typename T> T World::SquareDistance(const glm::vec<2, T>& a, const glm
 //     return std::max(abs(a.x - b.x), abs(a.y - b.y));
 // }
 
-glm::vec3 World::ChunkPosToWorldPos(const glm::ivec2& chunkPos, const glm::vec3& pos)
+glm::vec3 WorldLayer::ChunkPosToWorldPos(const glm::ivec2& chunkPos, const glm::vec3& pos)
 {
     return glm::vec3(chunkPos.x * Chunk::SIZE + pos.x, pos.y, chunkPos.y * Chunk::SIZE + pos.y);
 }
 
-std::pair<glm::ivec2, glm::vec3> World::WorldPosToChunkPos(const glm::vec3& pos)
+std::pair<glm::ivec2, glm::vec3> WorldLayer::WorldPosToChunkPos(const glm::vec3& pos)
 {
     glm::ivec2 chunkPos = glm::ivec2(0);
     glm::vec3 localPos = glm::vec3(0);
@@ -161,7 +220,7 @@ std::pair<glm::ivec2, glm::vec3> World::WorldPosToChunkPos(const glm::vec3& pos)
     return std::make_pair(chunkPos, localPos);
 }
 
-void World::DeleteChunkIfExists(const glm::ivec2& pos)
+void WorldLayer::DeleteChunkIfExists(const glm::ivec2& pos)
 {
     chunks.erase(pos);
 }
@@ -169,7 +228,7 @@ void World::DeleteChunkIfExists(const glm::ivec2& pos)
 /**
  * @return if it already existed
  */
-bool World::AddChunkIfDoesntExist(const glm::ivec2& pos)
+bool WorldLayer::AddChunkIfDoesntExist(const glm::ivec2& pos)
 {
     if (chunks.find(pos) == chunks.end())
     {
@@ -181,7 +240,7 @@ bool World::AddChunkIfDoesntExist(const glm::ivec2& pos)
     return true;
 }
 
-bool World::AreNeighboursGenerated(const glm::ivec2& pos)
+bool WorldLayer::AreNeighboursGenerated(const glm::ivec2& pos)
 {
     for (int i = -1; i <= 1; i++)
     {
@@ -200,7 +259,7 @@ bool World::AreNeighboursGenerated(const glm::ivec2& pos)
 /**
  * @deprecated is inefficient
  */
-BlockType World::GetBlock(const glm::ivec3& pos)
+BlockType WorldLayer::GetBlock(const glm::ivec3& pos)
 {
     // Getting the chunk coords
     glm::ivec3 localPos = glm::ivec3(pos.x & (Chunk::SIZE - 1), pos.y, pos.z & (Chunk::SIZE - 1));

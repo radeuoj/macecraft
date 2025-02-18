@@ -35,7 +35,7 @@ public:
     
     void Flush(const Shader* shader, const TextureAtlas* atlas);
     glm::ivec2 GetPosition();
-    bool IsOnFrustum(const Frustum& frustum);
+    bool IsOnFrustum(const Frustum* frustum);
     bool IsOnOrForwardOfPlane(const Plane& plane);
 
     BlockType NeighbourGetBlock(glm::ivec3 pos, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);

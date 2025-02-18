@@ -10,29 +10,38 @@
 #include <glm/gtx/hash.hpp>
 
 #include "Chunk.h"
+#include "Layer.h"
 #include "FrustumCulling/Frustum.h"
 
 namespace Macecraft
 {
     
-class World
+class WorldLayer: public Layer
 {
 public:
+    using Layer::Layer;
+    
+    void OnLoad() override;
+    void OnUnload() override;
+    void OnUpdate(float deltaTime) override;
+    void OnRender(float deltaTime) override;
+    void OnImGuiRender(float deltaTime) override;
+    
     static constexpr int CHUNK_GENERATION_LIMIT_PER_FRAME = 2;
     static inline int CHUNK_RENDER_DISTANCE = 30;
+    static constexpr int CHUNK_CLEAN_LIMIT_PER_FRAME = 10;
     static constexpr int CHUNK_RENDER_DISTANCE_ERROR = 2; // if a chunk is more than CHUNK_RENDER_DISTANCE + CHUNK_RENDER_DISTANCE_ERROR away from the player, it will be deleted
 
     std::unordered_map<glm::ivec2, Chunk> chunks;
 
     bool ENABLE_FRUSTUM_CULLING = true;
     int chunksFlushedThisFrame = 0;
-
-    World(TextureAtlas* atlas);
+    // WorldLayer(TextureAtlas* atlas);
     
     void GenerateChunksIfNeeded(const glm::vec3& playerPosition);
     bool AddChunkIfDoesntExist(const glm::ivec2& pos);
     bool AreNeighboursGenerated(const glm::ivec2& pos);
-    void RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum& frustum);
+    void RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum* frustum);
     void DeleteChunkIfExists(const glm::ivec2& pos);
     void SafeGenerateChunk(const glm::ivec2& pos);
     void RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk);
@@ -53,7 +62,7 @@ public:
 
 private:
     int m_ChunkGenerationCounter = 0;
-    TextureAtlas* m_Atlas = nullptr;
+    // TextureAtlas* m_Atlas = nullptr;
 
 };
 

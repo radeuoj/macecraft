@@ -10,7 +10,7 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "World.h"
+#include "WorldLayer.h"
 
 #include <typeinfo>
 
@@ -30,8 +30,6 @@ Game::Game()
 
     m_DefaultAtlas = std::make_unique<TextureAtlas>("res/textures/dirt.png", 16, 16);
     m_DefaultAtlas->Bind();
-
-    m_World = std::make_unique<World>(m_DefaultAtlas.get());
 }
 
 void Game::InitGLFW()
@@ -103,6 +101,8 @@ Game::~Game()
 
 void Game::Run()
 {
+    LoadLayers();
+    
     
     // TODO: Timer class
 
@@ -150,18 +150,64 @@ void Game::Run()
 
         glfwPollEvents();
     }
+
+    UnloadLayers();
+}
+
+void Game::LoadLayers() const
+{
+    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    {
+        layer->OnLoad();
+    }
+}
+
+void Game::UnloadLayers() const
+{
+    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    {
+        layer->OnUnload();
+    }
+}
+
+void Game::UpdateLayers(float deltaTime) const
+{
+    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    {
+        layer->OnUpdate(deltaTime);
+    }
+}
+
+void Game::RenderLayers(float deltaTime) const
+{
+    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    {
+        layer->OnRender(deltaTime);
+    }
+}
+
+void Game::ImGuiRenderLayers(float deltaTime) const
+{
+    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    {
+        layer->OnImGuiRender(deltaTime);
+        ImGui::NewLine();
+    }
 }
 
 void Game::Update(float deltaTime)
 {
-    m_World->GenerateChunksIfNeeded(m_Camera.position);
-    m_World->RenderChunks(m_DefaultShader.get(), m_Camera.position, m_Frustum);
+    UpdateLayers(deltaTime);
+    RenderLayers(deltaTime);
+    
+    // m_World->GenerateChunksIfNeeded(m_Camera.position);
+    // m_World->RenderChunks(m_DefaultShader.get(), m_Camera.position, m_Frustum);
 }
 
 // TODO: fix this by adding a limit to  how many chunks you can delete per frame
 void Game::UpdateOncePerSecond()
 {
-    m_World->CleanupChunks(m_Camera.position);
+    // m_World->CleanupChunks(m_Camera.position);
 }
 
 void Game::UpdateImGui(float deltaTime)
@@ -175,17 +221,36 @@ void Game::UpdateImGui(float deltaTime)
     ImGui::Text("FPS: %d time: %.2fms", m_FPS, m_FrameTime);
     ImGui::Text("position %.2f %.2f %.2f", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
     ImGui::Text("orientation %.2f %.2f %.2f", m_Camera.orientation.x, m_Camera.orientation.y, m_Camera.orientation.z);
-    ImGui::Text("%d chunks loaded (hopefully)", m_World->chunks.size());
-    ImGui::Text("%d chunks flushed this frame", m_World->chunksFlushedThisFrame);
-    ImGui::Text("Normal: %.2f %.2f Distance %.2f", m_Frustum.nearPlane.normal.x, m_Frustum.nearPlane.normal.y, m_Frustum.nearPlane.distance);
-    ImGui::Checkbox("Enable frustum culling", &m_World->ENABLE_FRUSTUM_CULLING);
-    ImGui::NewLine();
-
     ImGui::SliderFloat("Sprint speed", &Camera::SPRINT_SPEED, 0.0f, 1000.0f);
-    ImGui::SliderInt("Render distance", &World::CHUNK_RENDER_DISTANCE, 0, 100);
-    ImGui::End();
+    ImGui::NewLine();
     
+    ImGuiRenderLayers(deltaTime);
+    
+    ImGui::End();
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
+
+TextureAtlas* Game::GetAtlas() const
+{
+    return m_DefaultAtlas.get();
+}
+
+Camera* Game::GetCamera() const
+{
+    return const_cast<Camera*>(&m_Camera);
+}
+
+Shader* Game::GetShader() const
+{
+    return m_DefaultShader.get();
+}
+
+Frustum* Game::GetFrustum() const
+{
+    return const_cast<Frustum*>(&m_Frustum);
+}
+
+
 } // Macecraft

@@ -5,8 +5,8 @@ int main()
 {
     Macecraft::Game game;
 
-    TestLayer* testLayer = game.BindLayer<TestLayer>();
-    testLayer->OnLoad();
+    // game.BindLayer<TestLayer>();
+    game.BindLayer<Macecraft::WorldLayer>();
     
     game.Run();
 
