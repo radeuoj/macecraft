@@ -17,7 +17,7 @@ public:
     Shader(Shader&& other) = delete;
     ~Shader();
 
-    void Activate();
+    void Activate() const;
     GLuint GetID() const;
 
 private:

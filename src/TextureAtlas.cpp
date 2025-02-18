@@ -37,9 +37,9 @@ void TextureAtlas::InitFromBytes(unsigned char* bytes)
 }
 
 
-uint8_t TextureAtlas::GetTextureLocation(BlockType block, BlockDirection direction, uint8_t x, uint8_t y)
+uint8_t TextureAtlas::GetTextureLocation(BlockType block, BlockDirection direction, uint8_t x, uint8_t y) const
 {
-    return m_TextureData[block][direction] + x + y * 16;
+    return m_TextureData.at(block)[direction] + x + y * 16;
 }
 
 void TextureAtlas::Bind()

@@ -17,7 +17,7 @@ public:
     void Bind();
     void Unbind();
 
-    uint8_t GetTextureLocation(BlockType block, BlockDirection direction, uint8_t x, uint8_t y);
+    uint8_t GetTextureLocation(BlockType block, BlockDirection direction, uint8_t x, uint8_t y) const;
 private:
     int m_ImageWidth = 0, m_ImageHeight = 0, m_ImageChannels = 0;
     int m_SpriteWidth = 0, m_SpriteHeight = 0;

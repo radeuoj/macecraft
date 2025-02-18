@@ -12,7 +12,7 @@ textureZP(_textureZP), textureZN(_textureZN), textureXP(_textureXP), textureXN(_
 {
 }
 
-uint8_t& BlockData::operator[](BlockDirection direction)
+const uint8_t& BlockData::operator[](BlockDirection direction) const
 {
     switch (direction)
     {

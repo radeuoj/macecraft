@@ -36,33 +36,33 @@ public:
 
     bool ENABLE_FRUSTUM_CULLING = true;
     int chunksFlushedThisFrame = 0;
-    // WorldLayer(TextureAtlas* atlas);
+
+    template <typename T> static T SquareDistance(const glm::vec<2, T>& a, const glm::vec<2, T>& b);
+    static glm::vec3 ChunkPosToWorldPos(const glm::ivec2& chunkPos, const glm::vec3& pos);
+    static std::pair<glm::ivec2, glm::vec3> WorldPosToChunkPos(const glm::vec3& pos);
+
+    /**
+     * Casts a ray in the block world\n
+     * <a href="https://www.youtube.com/watch?v=NbSee-XM7WA&t=1386s">Video where i got the algorithm from</a>
+     * @param origin origin of the raycast
+     * @param direction raycast direction
+     * @param maxDistance max distance aka reach
+     * @param hitBlock returns the block hit if the ray is successful
+     * @param hitChunkPos returns the chunk in which the hit is
+     * @param hitPosInChunk returns the position of the hit block inside the chunk
+     * @return if the ray was successful aka if it even hit something
+     */
+    bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, BlockType* hitBlock, glm::ivec2* hitChunkPos, glm::ivec3* hitPosInChunk) const;
     
+private:
     void GenerateChunksIfNeeded(const glm::vec3& playerPosition);
     bool AddChunkIfDoesntExist(const glm::ivec2& pos);
     bool AreNeighboursGenerated(const glm::ivec2& pos);
     void RenderChunks(const Shader* shader, const glm::vec3& playerPosition, const Frustum* frustum);
-    void DeleteChunkIfExists(const glm::ivec2& pos);
     void SafeGenerateChunk(const glm::ivec2& pos);
     void RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk);
 
-    /**
-     * @deprecated fix
-     */
-    [[deprecated]] void CleanupChunks(glm::vec3 playerPosition);
-
-    template <typename T> static T SquareDistance(const glm::vec<2, T>& a, const glm::vec<2, T>& b);
-    // static float SquareDistance(glm::vec2 a, glm::vec2 b);
-    // static int SquareDistance(glm::ivec2 a, glm::ivec2 b);
-    static glm::vec3 ChunkPosToWorldPos(const glm::ivec2& chunkPos, const glm::vec3& pos);
-    static std::pair<glm::ivec2, glm::vec3> WorldPosToChunkPos(const glm::vec3& pos);
-
-    [[deprecated]]
-    BlockType GetBlock(const glm::ivec3& pos);
-
-private:
     int m_ChunkGenerationCounter = 0;
-    // TextureAtlas* m_Atlas = nullptr;
 
 };
 

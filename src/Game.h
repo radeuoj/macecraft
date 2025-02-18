@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -11,7 +12,8 @@
 #include "Layer.h"
 #include "Renderer.h"
 #include "TextureAtlas.h"
-#include "WorldLayer.h"
+
+#include <typeinfo>
 
 namespace Macecraft
 {
@@ -33,10 +35,29 @@ public:
         return static_cast<T*>(m_Layers.emplace_back(new T(*this)).get());
     }
 
-    TextureAtlas* GetAtlas() const;
+    const TextureAtlas* GetAtlas() const;
     Camera* GetCamera() const;
-    Shader* GetShader() const;
-    Frustum* GetFrustum() const;
+    const Shader* GetShader() const;
+    const Frustum* GetFrustum() const;
+    GLFWwindow* GetWindow() const;
+
+    template <class T> T* GetLayer() const
+    {
+        static_assert(std::is_base_of_v<Layer, T> && "T must be a subclass of Layer");
+
+        for (auto& layer : m_Layers)
+        {
+            // std::cout << typeid(*layer.get()).name() << " : " << typeid(T).name() << '\n';
+            if (typeid(*layer.get()) == typeid(T))
+            {
+                return static_cast<T*>(layer.get());
+            }
+        }
+
+        assert(false && "Layer not found");
+
+        return nullptr;
+    }
 
 private:
     std::vector<std::unique_ptr<Layer>> m_Layers;
@@ -46,7 +67,6 @@ private:
 
     Camera m_Camera{width, height};
     std::unique_ptr<Shader> m_DefaultShader;
-    // std::unique_ptr<WorldLayer> m_World;
     std::unique_ptr<TextureAtlas> m_DefaultAtlas;
     Frustum m_Frustum;
 
@@ -64,7 +84,6 @@ private:
     void ImGuiRenderLayers(float deltaTime) const;
     
     void Update(float deltaTime);
-    void UpdateOncePerSecond();
     void UpdateImGui(float deltaTime);
 };
 

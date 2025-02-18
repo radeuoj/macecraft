@@ -55,26 +55,9 @@ void WorldLayer::RenderChunks(const Shader* shader, const glm::vec3& playerPosit
     chunksFlushedThisFrame = 0;
     int chunksCleanedThisFrame = 0;
 
-    // for (auto& [pos, chunk] : chunks)
-    // {
-    //     RenderChunkIfNeeded(pos, chunk);
-    //
-    //     if (ENABLE_FRUSTUM_CULLING)
-    //     {
-    //         if (chunk.IsOnFrustum(frustum))
-    //         {
-    //             chunk.Flush(shader, game.GetAtlas());
-    //             chunksFlushedThisFrame++;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         chunk.Flush(shader, game.GetAtlas());
-    //         chunksFlushedThisFrame++;
-    //     }
-    // }
-
     glm::ivec2 playerChunkPos = WorldPosToChunkPos(playerPosition).first;
+
+    // TODO: maybe dont clean up chunks while rendering but ok
 
     for (auto it = chunks.begin(); it != chunks.end(); )
     {
@@ -170,29 +153,10 @@ void WorldLayer::SafeGenerateChunk(const glm::ivec2& pos)
     }
 }
 
-void WorldLayer::CleanupChunks(glm::vec3 playerPosition)
-{
-    glm::ivec2 playerChunkPos = WorldPosToChunkPos(playerPosition).first;
-    std::erase_if(chunks, [&playerChunkPos](auto& kv) -> bool
-    {
-        return SquareDistance<int>(kv.first, playerChunkPos) > CHUNK_RENDER_DISTANCE + CHUNK_RENDER_DISTANCE_ERROR;
-    });
-}
-
 template <typename T> T WorldLayer::SquareDistance(const glm::vec<2, T>& a, const glm::vec<2, T>& b)
 {
     return std::max(abs(a.x - b.x), abs(a.y - b.y));
 }
-
-// float World::SquareDistance(const glm::vec2 a, const glm::vec2 b)
-// {
-//     return std::max(abs(a.x - b.x), abs(a.y - b.y));
-// }
-//
-// int World::SquareDistance(const glm::ivec2 a, const glm::ivec2 b)
-// {
-//     return std::max(abs(a.x - b.x), abs(a.y - b.y));
-// }
 
 glm::vec3 WorldLayer::ChunkPosToWorldPos(const glm::ivec2& chunkPos, const glm::vec3& pos)
 {
@@ -218,11 +182,6 @@ std::pair<glm::ivec2, glm::vec3> WorldLayer::WorldPosToChunkPos(const glm::vec3&
     localPos.y = pos.y;
 
     return std::make_pair(chunkPos, localPos);
-}
-
-void WorldLayer::DeleteChunkIfExists(const glm::ivec2& pos)
-{
-    chunks.erase(pos);
 }
 
 /**
@@ -256,21 +215,110 @@ bool WorldLayer::AreNeighboursGenerated(const glm::ivec2& pos)
     return true;
 }
 
-/**
- * @deprecated is inefficient
- */
-BlockType WorldLayer::GetBlock(const glm::ivec3& pos)
+bool WorldLayer::Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, BlockType* hitBlock, glm::ivec2* hitChunkPos, glm::ivec3* hitPosInChunk) const
 {
-    // Getting the chunk coords
-    glm::ivec3 localPos = glm::ivec3(pos.x & (Chunk::SIZE - 1), pos.y, pos.z & (Chunk::SIZE - 1));
-    glm::ivec2 chunkPos = glm::ivec2((pos.x - localPos.x) / Chunk::SIZE, (pos.z - localPos.z) / Chunk::SIZE);
+    float directionLength = glm::length(direction);
 
-    auto it = chunks.find(chunkPos);
+    // NOTE: this might be broken
+    glm::vec3 rayUnitStepSize = glm::vec3(0.0f);
 
-    if (it == chunks.end())
-        return BlockType::AIR;
+    if (direction.x != 0.0f)
+        rayUnitStepSize.x = directionLength * (1.0f / direction.x);
+    if (direction.y != 0.0f)
+        rayUnitStepSize.y = directionLength * (1.0f / direction.y);
+    if (direction.z != 0.0f)
+        rayUnitStepSize.z = directionLength * (1.0f / direction.z);
 
-    return it->second.GetBlock(localPos.x, localPos.y, localPos.z);
+    glm::ivec3 blockInWorldPos = origin;
+    glm::vec3 rayLength1D = glm::vec3(0.0f);
+
+    glm::ivec3 step = glm::ivec3(0);
+
+    if (direction.x < 0.0f)
+    {
+        step.x = -1;
+        rayLength1D.x = (origin.x - float(blockInWorldPos.x)) * rayUnitStepSize.x;
+    }
+    else if (direction.x > 0.0f)
+    {
+        step.x = 1;
+        rayLength1D.x = (float(blockInWorldPos.x + 1) - origin.x) * rayUnitStepSize.x;
+    }
+
+    if (direction.y < 0.0f)
+    {
+        step.y = -1;
+        rayLength1D.y = (origin.y - float(blockInWorldPos.y)) * rayUnitStepSize.y;
+    }
+    else if (direction.y > 0.0f)
+    {
+        step.y = 1;
+        rayLength1D.y = (float(blockInWorldPos.y + 1) - origin.y) * rayUnitStepSize.y;
+    }
+
+    if (direction.z < 0.0f)
+    {
+        step.z = -1;
+        rayLength1D.z = (origin.z - float(blockInWorldPos.z)) * rayUnitStepSize.z;
+    }
+    else if (direction.z > 0.0f)
+    {
+        step.z = 1;
+        rayLength1D.z = (float(blockInWorldPos.z + 1) - origin.z) * rayUnitStepSize.z;
+    }
+
+    glm::ivec2 chunkPos = glm::ivec2(0);
+    glm::ivec3 blockInChunkPos = glm::ivec3(0);
+    BlockType blockType = BlockType::AIR;
+
+    bool blockFound = false;
+    float distance = 0.0f;
+    while (!blockFound && abs(distance) < maxDistance)
+    {
+        // Walk
+        if (rayLength1D.x < rayLength1D.y && rayLength1D.x < rayLength1D.z)
+        {
+            blockInWorldPos.x += step.x;
+            distance = rayLength1D.x;
+            rayLength1D.x += rayUnitStepSize.x;
+        }
+        else if (rayLength1D.y < rayLength1D.x && rayLength1D.y < rayLength1D.z)
+        {
+            blockInWorldPos.y += step.y;
+            distance = rayLength1D.y;
+            rayLength1D.y += rayUnitStepSize.y;
+        }
+        else
+        {
+            blockInWorldPos.z += step.z;
+            distance = rayLength1D.z;
+            rayLength1D.z += rayUnitStepSize.z;
+        }
+
+        // Checking if we got a hit
+        auto chunkPosData = WorldPosToChunkPos(blockInWorldPos);
+        chunkPos = chunkPosData.first;
+        blockInChunkPos = chunkPosData.second;
+
+        if (chunks.find(chunkPos) != chunks.end())
+        {
+            blockType = chunks.at(chunkPos).GetBlock(blockInChunkPos.x, blockInChunkPos.y, blockInChunkPos.z);
+            if (blockType != BlockType::AIR)
+            {
+                blockFound = true;
+            }
+        }
+    }
+
+    if (blockFound)
+    {
+        *hitBlock = blockType;
+        *hitChunkPos = chunkPos;
+        *hitPosInChunk = blockInChunkPos;
+        return true;
+    }
+
+    return false;
 }
 
 

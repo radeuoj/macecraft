@@ -5,7 +5,6 @@
 
 #include "BlockType.h"
 #include "Camera.h"
-#include "Camera.h"
 #include "Renderer.h"
 #include "TextureAtlas.h"
 
@@ -23,15 +22,15 @@ public:
     Chunk(Chunk&& other) noexcept;
 
     bool IsGenerated();
-    void Generate(TextureAtlas* atlas);
+    void Generate(const TextureAtlas* atlas);
     void RenderWhenPossible();
     bool ShouldRender() const;
 
     /**
      * 
-     * @param nXP neighbour on positive x axis
+     * @param nXP neighbour on positive x direction
      */
-    void RenderIfNeeded(TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);
+    void RenderIfNeeded(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);
     
     void Flush(const Shader* shader, const TextureAtlas* atlas);
     glm::ivec2 GetPosition();
@@ -46,16 +45,14 @@ public:
     BlockType GetBlock(int x, int y, int z) const;
     void SetBlock(int x, int y, int z, BlockType block);
 
-    // TODO: not good
-    Renderer m_Renderer;
-    bool m_ShouldRender = true;
 private:
-    // World* m_World;
     glm::ivec2 m_Position = glm::ivec2(0);
     BlockType m_Blocks[SIZE * HEIGHT * SIZE] { BlockType::AIR };
     bool m_IsGenerated = false;
+    Renderer<VertexData> m_Renderer;
+    bool m_ShouldRender = true;
 
-    void Render(TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);
+    void Render(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);
 };
 
 }

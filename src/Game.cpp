@@ -23,8 +23,8 @@ Game::Game()
     InitImGui();
     InitOpenGL();
 
-    std::string vertSource = get_file_contents("res/shaders/default.vert");
-    std::string fragSource = get_file_contents("res/shaders/default.frag");
+    std::string vertSource = get_file_contents("res/shaders/block.vert");
+    std::string fragSource = get_file_contents("res/shaders/block.frag");
     m_DefaultShader = std::make_unique<Shader>(vertSource.data(), fragSource.data());
     m_DefaultShader->Activate();
 
@@ -127,20 +127,19 @@ void Game::Run()
             m_FrameTime = frameTimeTotal / float(frameCount) * 1000.0f;
             frameCount = 0;
             frameTimeTotal = 0;
-
-            UpdateOncePerSecond();
         }
 
         glClearColor(0.67f, 0.85f, 0.90f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        m_Camera.Inputs(m_Window, deltaTime);
-        m_Camera.Matrix(m_DefaultShader.get(), "camMatrix");
+        
+        UpdateLayers(deltaTime);
 
-        // m_Frustum.UpdateFromCamera(m_Camera);
+        // m_Camera.Inputs(m_Window, deltaTime);
+        m_Camera.Matrix(m_DefaultShader.get(), "camMatrix");
         m_Frustum.UpdateFromViewProjMatrix(m_Camera.viewproj);
         
-        Update(deltaTime);
+        RenderLayers(deltaTime);
 
         UpdateImGui(deltaTime);
 
@@ -195,21 +194,6 @@ void Game::ImGuiRenderLayers(float deltaTime) const
     }
 }
 
-void Game::Update(float deltaTime)
-{
-    UpdateLayers(deltaTime);
-    RenderLayers(deltaTime);
-    
-    // m_World->GenerateChunksIfNeeded(m_Camera.position);
-    // m_World->RenderChunks(m_DefaultShader.get(), m_Camera.position, m_Frustum);
-}
-
-// TODO: fix this by adding a limit to  how many chunks you can delete per frame
-void Game::UpdateOncePerSecond()
-{
-    // m_World->CleanupChunks(m_Camera.position);
-}
-
 void Game::UpdateImGui(float deltaTime)
 {
     ImGui_ImplOpenGL3_NewFrame();
@@ -221,7 +205,6 @@ void Game::UpdateImGui(float deltaTime)
     ImGui::Text("FPS: %d time: %.2fms", m_FPS, m_FrameTime);
     ImGui::Text("position %.2f %.2f %.2f", m_Camera.position.x, m_Camera.position.y, m_Camera.position.z);
     ImGui::Text("orientation %.2f %.2f %.2f", m_Camera.orientation.x, m_Camera.orientation.y, m_Camera.orientation.z);
-    ImGui::SliderFloat("Sprint speed", &Camera::SPRINT_SPEED, 0.0f, 1000.0f);
     ImGui::NewLine();
     
     ImGuiRenderLayers(deltaTime);
@@ -232,7 +215,7 @@ void Game::UpdateImGui(float deltaTime)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-TextureAtlas* Game::GetAtlas() const
+const TextureAtlas* Game::GetAtlas() const
 {
     return m_DefaultAtlas.get();
 }
@@ -242,14 +225,19 @@ Camera* Game::GetCamera() const
     return const_cast<Camera*>(&m_Camera);
 }
 
-Shader* Game::GetShader() const
+const Shader* Game::GetShader() const
 {
     return m_DefaultShader.get();
 }
 
-Frustum* Game::GetFrustum() const
+const Frustum* Game::GetFrustum() const
 {
-    return const_cast<Frustum*>(&m_Frustum);
+    return &m_Frustum;
+}
+
+GLFWwindow* Game::GetWindow() const
+{
+    return m_Window;
 }
 
 

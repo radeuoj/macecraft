@@ -7,6 +7,8 @@ namespace Macecraft
 {
 Chunk::Chunk(glm::ivec2 position): m_Position(position)
 {
+    m_Renderer.LinkAttribIPointer(0, 3, GL_UNSIGNED_BYTE, sizeof(VertexData), offsetof(VertexData, x));
+    m_Renderer.LinkAttribIPointer(1, 1, GL_UNSIGNED_BYTE, sizeof(VertexData), offsetof(VertexData, texCoords));
 }
 
 Chunk::Chunk(Chunk&& other) noexcept:
@@ -21,7 +23,7 @@ bool Chunk::IsGenerated()
     return m_IsGenerated;
 }
 
-void Chunk::Generate(TextureAtlas* atlas)
+void Chunk::Generate(const TextureAtlas* atlas)
 {
     for (int i = 0; i < SIZE; i++)
     {
@@ -55,13 +57,13 @@ bool Chunk::ShouldRender() const
     return m_ShouldRender;
 }
 
-void Chunk::RenderIfNeeded(TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN)
+void Chunk::RenderIfNeeded(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN)
 {
     if (m_ShouldRender)
         Render(atlas, nXP, nXN, nYP, nYN);
 }
 
-void Chunk::Render(TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN)
+void Chunk::Render(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN)
 {
     if (!m_IsGenerated) return;
 
