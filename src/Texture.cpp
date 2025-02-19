@@ -13,11 +13,15 @@ void Texture::InitFromBytes(unsigned char* bytes, int imageWidth, int imageHeigh
     glActiveTexture(slot);
     glBindTexture(texType, ID);
 
+    // glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
     glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(texType, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(texType, GL_TEXTURE_MAX_LOD, 4.0f);
+    // glTexParameteri(texType, GL_TEXTURE_MAX_LEVEL, 2);
 
     glTexParameteri(texType, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(texType, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // glTexParameteri(texType, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
     if (imageChannels == 4)
         glTexImage2D
