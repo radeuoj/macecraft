@@ -12,6 +12,9 @@ Renderer<VD>::Renderer()
     glGenBuffers(1, &m_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
+    glGenBuffers(1, &m_EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+
     // glVertexAttribIPointer(0, 2, GL_SHORT, sizeof(VertexData), (void*) offsetof(VertexData, chunk_x));
     // glEnableVertexAttribArray(0);
 
@@ -54,6 +57,7 @@ Renderer<VD>::Renderer(Renderer&& other) noexcept
     vertices = other.vertices;
     m_VAO = other.m_VAO;
     m_VBO = other.m_VBO;
+    m_EBO = other.m_EBO;
 
     if (other.m_isInitialized)
     {
@@ -69,12 +73,34 @@ void Renderer<VD>::BindVertices()
     glBindVertexArray(m_VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VD), vertices.data(), GL_STATIC_DRAW);
 
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
+
+    // glBindVertexArray(0);
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
+
+template <typename VD>
+template <typename... Args>
+uint32_t Renderer<VD>::PushVertex(Args&&... args)
+{
+    vertices.emplace_back(std::forward<Args>(args)...);
+    return vertices.size() - 1;
+}
+
+template <typename VD>
+template <typename... Args>
+void Renderer<VD>::PushIndices(Args&&... args)
+{
+    for (auto& i: {args...})
+    {
+        indices.emplace_back(i);
+    }
+}
+
 
 template <typename VD>
 void Renderer<VD>::Flush(GLenum mode)
@@ -84,8 +110,9 @@ void Renderer<VD>::Flush(GLenum mode)
 
     // glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 
-    glDrawArrays(mode, 0, vertices.size());
-
+    // glDrawArrays(mode, 0, vertices.size());
+    glDrawElements(mode, indices.size(), GL_UNSIGNED_INT, 0);
+    
     // glBindVertexArray(0);
     // glBindBuffer(GL_ARRAY_BUFFER, 0);
 

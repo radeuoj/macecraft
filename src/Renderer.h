@@ -27,6 +27,22 @@ public:
     void BindVertices();
 
     /**
+     * this does not push it into the index buffer
+     * @param args constructor arguments of vertex type
+     * @return index in vertices vector
+     */
+    template <typename... Args>
+    uint32_t PushVertex(Args&&... args);
+
+    /**
+     * will throw weird error if you dont
+     * @tparam Args MUST BE OF TYPE UINT32_T
+     * @param args indices
+     */
+    template <typename... Args>
+    void PushIndices(Args&&... args);
+
+    /**
      * 
      * @param mode GL_TRIANGLES GL_POINTS GL_LINES etc\n
      * default is GL_TRIANGLES
@@ -34,9 +50,10 @@ public:
     void Flush(GLenum mode = GL_TRIANGLES);
 
     std::vector<VD> vertices;
+    std::vector<uint32_t> indices;
 
 private:
-    GLuint m_VAO = 0, m_VBO = 0;
+    GLuint m_VAO = 0, m_VBO = 0, m_EBO = 0;
     mutable bool m_isInitialized = false;
 };
 }
