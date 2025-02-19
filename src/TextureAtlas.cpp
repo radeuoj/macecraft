@@ -28,7 +28,7 @@ m_SpriteHeight(spriteHeight)
 
 void TextureAtlas::InitFromBytes(unsigned char* bytes)
 {
-    m_Texture.InitFromBytes(bytes, m_ImageWidth, m_ImageHeight, m_ImageChannels, GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA4, GL_UNSIGNED_BYTE);
+    m_Texture.InitFromBytes(bytes, m_ImageWidth, m_ImageHeight, m_ImageChannels, GL_TEXTURE_2D, GL_TEXTURE0);
 
     using enum BlockType;
 

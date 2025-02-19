@@ -15,6 +15,8 @@
 
 #include <typeinfo>
 
+#include "TextureArray.h"
+
 namespace Macecraft
 {
 
@@ -35,7 +37,8 @@ public:
         return static_cast<T*>(m_Layers.emplace_back(new T(*this)).get());
     }
 
-    const TextureAtlas* GetAtlas() const;
+    // const TextureAtlas* GetAtlas() const;
+    const TextureArray* GetTextureArray() const;
     Camera* GetCamera() const;
     const Shader* GetShader() const;
     const Frustum* GetFrustum() const;
@@ -67,7 +70,8 @@ private:
 
     Camera m_Camera{width, height};
     std::unique_ptr<Shader> m_DefaultShader;
-    std::unique_ptr<TextureAtlas> m_DefaultAtlas;
+    // std::unique_ptr<TextureAtlas> m_DefaultAtlas;
+    std::unique_ptr<TextureArray> m_DefaultTextureArray;
     Frustum m_Frustum;
 
     int m_FPS = 0;

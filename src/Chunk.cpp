@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cstring>
 
+#include "TextureArray.h"
+
 namespace Macecraft
 {
 Chunk::Chunk(glm::ivec2 position): m_Position(position)
@@ -23,7 +25,7 @@ bool Chunk::IsGenerated()
     return m_IsGenerated;
 }
 
-void Chunk::Generate(const TextureAtlas* atlas)
+void Chunk::Generate()
 {
     for (int i = 0; i < SIZE; i++)
     {
@@ -57,13 +59,13 @@ bool Chunk::ShouldRender() const
     return m_ShouldRender;
 }
 
-void Chunk::RenderIfNeeded(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN)
+void Chunk::RenderIfNeeded(const TextureArray* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN)
 {
     if (m_ShouldRender)
         Render(atlas, nXP, nXN, nYP, nYN);
 }
 
-void Chunk::Render(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN)
+void Chunk::Render(const TextureArray* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN)
 {
     if (!m_IsGenerated) return;
 
@@ -156,7 +158,7 @@ void Chunk::Render(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP
     // m_Renderer.flush();
 }
 
-void Chunk::Flush(const Shader* shader, const TextureAtlas* atlas)
+void Chunk::Flush(const Shader* shader)
 {
     if (!m_IsGenerated) return;
 

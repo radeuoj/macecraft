@@ -28,8 +28,11 @@ Game::Game()
     m_DefaultShader = std::make_unique<Shader>(vertSource.data(), fragSource.data());
     m_DefaultShader->Activate();
 
-    m_DefaultAtlas = std::make_unique<TextureAtlas>("res/textures/dirt.png", 16, 16);
-    m_DefaultAtlas->Bind();
+    // m_DefaultAtlas = std::make_unique<TextureAtlas>("res/textures/dirt.png", 16, 16);
+    // m_DefaultAtlas->Bind();
+
+    m_DefaultTextureArray = std::make_unique<TextureArray>();
+    m_DefaultTextureArray->Bind();
 }
 
 void Game::InitGLFW()
@@ -223,9 +226,15 @@ void Game::UpdateImGui(float deltaTime)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-const TextureAtlas* Game::GetAtlas() const
+// const TextureAtlas* Game::GetAtlas() const
+// {
+//     assert(false && "use TextureArray instead");
+//     return m_DefaultAtlas.get();
+// }
+
+const TextureArray* Game::GetTextureArray() const
 {
-    return m_DefaultAtlas.get();
+    return m_DefaultTextureArray.get();
 }
 
 Camera* Game::GetCamera() const

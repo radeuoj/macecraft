@@ -78,34 +78,34 @@ void PlayerLayer::DrawBlockOutline(glm::ivec2 chunkPos, glm::ivec3 blockPos)
     m_PointedBlockOutlineRenderer.vertices.clear();
 
     // Bottom
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z + 1, 255);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z + 1, 0);
     
     // Top
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1, 255);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1, 0);
 
     // Sides
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z + 1, 255);
-    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1, 255);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x, blockPos.y + 1, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y, blockPos.z + 1, 0);
+    m_PointedBlockOutlineRenderer.vertices.emplace_back(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1, 0);
     
     m_PointedBlockOutlineRenderer.BindVertices();
     glUniform2i(glGetUniformLocation(game.GetShader()->GetID(), "chunkPos"), chunkPos.x, chunkPos.y);

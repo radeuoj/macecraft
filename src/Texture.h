@@ -14,14 +14,13 @@ class Texture
 public:
     GLuint ID;
     GLenum type;
+    
+    virtual ~Texture();
 
-    Texture() = default;
-    ~Texture();
+    virtual void InitFromBytes(unsigned char* bytes, int imageWidth, int imageHeight, int imageChannels, GLenum texType, GLenum slot);
 
-    void InitFromBytes(unsigned char* bytes, int imageWidth, int imageHeight, int imageChannels, GLenum texType, GLenum slot, GLenum format, GLenum pixelType);
-
-    void Bind();
-    void Unbind();
+    virtual void Bind();
+    virtual void Unbind();
 };
     
 }

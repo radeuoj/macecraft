@@ -41,7 +41,7 @@ void WorldLayer::RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk)
 {
     if (chunk.ShouldRender() && AreNeighboursGenerated(pos))
     {
-        chunk.RenderIfNeeded(game.GetAtlas(),
+        chunk.RenderIfNeeded(game.GetTextureArray(),
             &chunks.at(pos + glm::ivec2(1, 0)),
             &chunks.at(pos + glm::ivec2(-1, 0)),
             &chunks.at(pos + glm::ivec2(0, 1)),
@@ -78,13 +78,13 @@ void WorldLayer::RenderChunks(const Shader* shader, const glm::vec3& playerPosit
         {
             if (chunk.IsOnFrustum(frustum))
             {
-                chunk.Flush(shader, game.GetAtlas());
+                chunk.Flush(shader);
                 chunksFlushedThisFrame++;
             }
         }
         else
         {
-            chunk.Flush(shader, game.GetAtlas());
+            chunk.Flush(shader);
             chunksFlushedThisFrame++;
         }
 
@@ -148,7 +148,7 @@ void WorldLayer::SafeGenerateChunk(const glm::ivec2& pos)
 {
     if (m_ChunkGenerationCounter < CHUNK_GENERATION_LIMIT_PER_FRAME && !AddChunkIfDoesntExist(pos))
     {
-        chunks.at(pos).Generate(game.GetAtlas());
+        chunks.at(pos).Generate();
         m_ChunkGenerationCounter++;
     }
 }

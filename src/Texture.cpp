@@ -5,7 +5,7 @@
 namespace Macecraft
 {
 
-void Texture::InitFromBytes(unsigned char* bytes, int imageWidth, int imageHeight, int imageChannels, GLenum texType, GLenum slot, GLenum format, GLenum pixelType)
+void Texture::InitFromBytes(unsigned char* bytes, int imageWidth, int imageHeight, int imageChannels, GLenum texType, GLenum slot)
 {
     type = texType;
 

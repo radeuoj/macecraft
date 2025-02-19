@@ -3,9 +3,9 @@
 out vec4 FragColor;
 
 //in vec3 color;
-in vec2 texCoords;
+in vec3 texCoords;
 
-uniform sampler2D tex0;
+uniform sampler2DArray tex0;
 
 void main()
 {

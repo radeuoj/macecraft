@@ -6,7 +6,7 @@
 #include "BlockType.h"
 #include "Camera.h"
 #include "Renderer.h"
-#include "TextureAtlas.h"
+#include "TextureArray.h"
 
 namespace Macecraft
 {
@@ -22,7 +22,7 @@ public:
     Chunk(Chunk&& other) noexcept;
 
     bool IsGenerated();
-    void Generate(const TextureAtlas* atlas);
+    void Generate();
     void RenderWhenPossible();
     bool ShouldRender() const;
 
@@ -30,9 +30,9 @@ public:
      * 
      * @param nXP neighbour on positive x direction
      */
-    void RenderIfNeeded(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);
+    void RenderIfNeeded(const TextureArray* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);
     
-    void Flush(const Shader* shader, const TextureAtlas* atlas);
+    void Flush(const Shader* shader);
     glm::ivec2 GetPosition();
     bool IsOnFrustum(const Frustum* frustum);
     bool IsOnOrForwardOfPlane(const Plane& plane);
@@ -52,7 +52,10 @@ private:
     Renderer<VertexData> m_Renderer;
     bool m_ShouldRender = true;
 
-    void Render(const TextureAtlas* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);
+    /**
+     * TODO: change atlas to array
+     */
+    void Render(const TextureArray* atlas, Chunk* nXP, Chunk* nXN, Chunk* nYP, Chunk* nYN);
 };
 
 }
