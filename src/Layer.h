@@ -7,8 +7,8 @@ class Game;
 class Layer
 {
 public:
-    Layer() = delete;
-    Layer(const Game& game);
+    Layer() = default;
+    // Layer(const Game& game);
     Layer(const Layer&) = delete;
     Layer(Layer&&) = delete;
     virtual ~Layer() = default;
@@ -19,8 +19,10 @@ public:
     virtual void OnRender(float deltaTime) {}
     virtual void OnUIRender(float deltaTime) {}
     virtual void OnImGuiRender(float deltaTime) {}
+
+    void __Internal_SetGame(const Game* __game);
 protected:
-    const Game& game;
+    const Game* game = nullptr;
 
 };
 

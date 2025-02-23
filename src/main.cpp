@@ -4,14 +4,25 @@
 #include "PlayerLayer.h"
 #include "WorldLayer.h"
 #include "TestLayer.h"
+#include "jet_utils.h"
+
+bool test() {
+    Jetstream::Utils::Println("awdawd");
+    return false;
+}
 
 int main()
 {
+    LogInfo("HELLO THERE AGAIN");
+    LogWarning("This is a warnging");
+    LogError("This is an error");
+    // JET_ASSERT(test(), "yup, nup");
+    
     Macecraft::Game game;
 
     // game.BindLayer<TestLayer>();
-    game.BindLayer<Macecraft::PlayerLayer>();
-    game.BindLayer<Macecraft::WorldLayer>();
+    game.BindLayer(new Macecraft::PlayerLayer());
+    game.BindLayer(new Macecraft::WorldLayer());
     
     game.Run();
 

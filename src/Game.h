@@ -30,11 +30,15 @@ public:
 
     void Run();
 
-    template <class T> T* BindLayer()
+    // template <class T> void BindLayer(Layer* layer)
+    void BindLayer(Layer* layer)
     {
-        static_assert(std::is_base_of_v<Layer, T> && "T must be a subclass of Layer");
+        // static_assert(std::is_base_of_v<Layer, T> && "T must be a subclass of Layer");
 
-        return static_cast<T*>(m_Layers.emplace_back(new T(*this)).get());
+        layer->__Internal_SetGame(this);
+        m_Layers.push_back(layer);
+
+        // return dynamic_cast<T*>(m_Layers.emplace_back(new T(*this)).get());
     }
 
     // const TextureAtlas* GetAtlas() const;
@@ -48,22 +52,23 @@ public:
     {
         static_assert(std::is_base_of_v<Layer, T> && "T must be a subclass of Layer");
 
-        for (auto& layer : m_Layers)
+        for (Layer* layer : m_Layers)
         {
             // std::cout << typeid(*layer.get()).name() << " : " << typeid(T).name() << '\n';
-            if (typeid(*layer.get()) == typeid(T))
+            if (typeid(*layer) == typeid(T))
             {
-                return static_cast<T*>(layer.get());
+                return dynamic_cast<T*>(layer);
             }
         }
 
+        // TODO: use custom asserts
         assert(false && "Layer not found");
 
         return nullptr;
     }
 
 private:
-    std::vector<std::unique_ptr<Layer>> m_Layers;
+    std::vector<Layer*> m_Layers;
     
     GLFWwindow* m_Window = nullptr;
     const char* m_WindowTitle = "Macecraft";

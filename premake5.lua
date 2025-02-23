@@ -1,6 +1,6 @@
 workspace "Macecraft"
     architecture "x64"
-    configurations { "Debug", "Release" }
+    configurations { "Debug", "Release", "Dist" }
     startproject "Macecraft"
 
     flags { "MultiProcessorCompile" }
@@ -8,13 +8,23 @@ workspace "Macecraft"
     cppdialect "C++20"
 
     filter "configurations:Debug"
-        defines { "DEBUG" }
+        defines { "JET_DEBUG" }
         symbols "On"
+        runtime "Debug"
 
     filter "configurations:Release"
-        defines { "NDEBUG" }
+        defines { "JET_RELEASE" }
         optimize "Speed"
         linktimeoptimization "On"
+        runtime "Release"
+
+    filter "configurations:Dist"
+        defines { "JET_DIST" }
+        optimize "Speed"
+        linktimeoptimization "On"
+        runtime "Release"
+        
+    filter ""
         
 include "libs"
 
@@ -40,3 +50,10 @@ project "Macecraft"
         "libs/glm",
         "libs/stb_image/include"
     }
+    
+    filter { "configurations:Dist", "system:windows" }
+        kind "WindowedApp"
+        entrypoint "mainCRTStartup"
+        
+    filter ""
+        

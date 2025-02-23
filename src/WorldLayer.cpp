@@ -21,12 +21,12 @@ void WorldLayer::OnUnload()
 
 void WorldLayer::OnUpdate(float deltaTime)
 {
-    GenerateChunksIfNeeded(game.GetCamera()->position);
+    GenerateChunksIfNeeded(game->GetCamera()->position);
 }
 
 void WorldLayer::OnRender(float deltaTime)
 {
-    RenderChunks(game.GetShader(), game.GetCamera()->position, game.GetFrustum());
+    RenderChunks(game->GetShader(), game->GetCamera()->position, game->GetFrustum());
 }
 
 void WorldLayer::OnImGuiRender(float deltaTime)
@@ -41,7 +41,8 @@ void WorldLayer::RenderChunkIfNeeded(const glm::ivec2& pos, Chunk& chunk)
 {
     if (chunk.ShouldRender() && AreNeighboursGenerated(pos))
     {
-        chunk.RenderIfNeeded(game.GetTextureArray(),
+        // TODO: make this multi threaded
+        chunk.RenderIfNeeded(game->GetTextureArray(),
             &chunks.at(pos + glm::ivec2(1, 0)),
             &chunks.at(pos + glm::ivec2(-1, 0)),
             &chunks.at(pos + glm::ivec2(0, 1)),

@@ -95,6 +95,12 @@ void Game::InitOpenGL()
 
 Game::~Game()
 {
+    for (Layer* layer: m_Layers)
+    {
+        delete layer;
+        layer = nullptr;
+    }
+    
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -159,7 +165,7 @@ void Game::Run()
 
 void Game::LoadLayers() const
 {
-    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    for (Layer* layer: m_Layers)
     {
         layer->OnLoad();
     }
@@ -167,7 +173,7 @@ void Game::LoadLayers() const
 
 void Game::UnloadLayers() const
 {
-    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    for (Layer* layer: m_Layers)
     {
         layer->OnUnload();
     }
@@ -175,7 +181,7 @@ void Game::UnloadLayers() const
 
 void Game::UpdateLayers(float deltaTime) const
 {
-    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    for (Layer* layer: m_Layers)
     {
         layer->OnUpdate(deltaTime);
     }
@@ -183,7 +189,7 @@ void Game::UpdateLayers(float deltaTime) const
 
 void Game::RenderLayers(float deltaTime) const
 {
-    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    for (Layer* layer: m_Layers)
     {
         layer->OnRender(deltaTime);
     }
@@ -191,7 +197,7 @@ void Game::RenderLayers(float deltaTime) const
 
 void Game::UIRenderLayers(float deltaTime) const
 {
-    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    for (Layer* layer: m_Layers)
     {
         layer->OnUIRender(deltaTime);
     }
@@ -199,7 +205,7 @@ void Game::UIRenderLayers(float deltaTime) const
 
 void Game::ImGuiRenderLayers(float deltaTime) const
 {
-    for (const std::unique_ptr<Layer>& layer: m_Layers)
+    for (Layer* layer: m_Layers)
     {
         layer->OnImGuiRender(deltaTime);
         ImGui::NewLine();

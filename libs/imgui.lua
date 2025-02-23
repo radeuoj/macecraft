@@ -31,6 +31,6 @@
         runtime "Debug"
         symbols "on"
 
-    filter "configurations:Release"
+    filter { "configurations:Release", "configurations:Dist" }
         runtime "Release"
         optimize "on"

@@ -14,7 +14,7 @@ static WorldLayer* s_World;
 
 void PlayerLayer::OnLoad()
 {
-    s_World = game.GetLayer<WorldLayer>();
+    s_World = game->GetLayer<WorldLayer>();
 
     std::string vertSource = get_file_contents("res/shaders/ui.vert");
     std::string fragSource = get_file_contents("res/shaders/ui.frag");
@@ -59,10 +59,10 @@ void PlayerLayer::OnUpdate(float deltaTime)
     HandleBlockLookingAt();
     
     m_Position += m_Velocity * deltaTime;
-    game.GetCamera()->position = m_Position;
-    game.GetCamera()->orientation = m_Orientation;
+    game->GetCamera()->position = m_Position;
+    game->GetCamera()->orientation = m_Orientation;
     
-    game.GetShader()->Activate();
+    game->GetShader()->Activate();
 }
 
 static bool s_IsPlayerLookingAtSomething = false;
@@ -139,7 +139,7 @@ void PlayerLayer::DrawBlockOutline(glm::ivec2 chunkPos, glm::ivec3 blockPos)
     // m_PointedBlockOutlineRenderer.PushVertex(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1, 0);
     
     m_PointedBlockOutlineRenderer.BindVertices();
-    glUniform2i(glGetUniformLocation(game.GetShader()->GetID(), "chunkPos"), chunkPos.x, chunkPos.y);
+    glUniform2i(glGetUniformLocation(game->GetShader()->GetID(), "chunkPos"), chunkPos.x, chunkPos.y);
     glLineWidth(4.5f);
     m_PointedBlockOutlineRenderer.Flush(GL_LINES);
     glLineWidth(1.0f);
@@ -162,61 +162,61 @@ void PlayerLayer::HandleInputs(float deltaTime)
 
     float speed = 0.0f;
     
-    if (glfwGetKey(game.GetWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    if (glfwGetKey(game->GetWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         speed = SPRINT_SPEED;
     }
 
-    if (glfwGetKey(game.GetWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+    if (glfwGetKey(game->GetWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
     {
         speed = NORMAL_SPEED;
     }
     
-    if (glfwGetKey(game.GetWindow(), GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(game->GetWindow(), GLFW_KEY_W) == GLFW_PRESS)
     {
         m_Velocity += speed * horizontalOrientation;
     }
 
-    if (glfwGetKey(game.GetWindow(), GLFW_KEY_S) == GLFW_PRESS)
+    if (glfwGetKey(game->GetWindow(), GLFW_KEY_S) == GLFW_PRESS)
     {
         m_Velocity += speed * -horizontalOrientation;
     }
 
-    if (glfwGetKey(game.GetWindow(), GLFW_KEY_A) == GLFW_PRESS)
+    if (glfwGetKey(game->GetWindow(), GLFW_KEY_A) == GLFW_PRESS)
     {
         m_Velocity += speed * -glm::normalize(glm::cross(horizontalOrientation, UP));
     }
 
-    if (glfwGetKey(game.GetWindow(), GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(game->GetWindow(), GLFW_KEY_D) == GLFW_PRESS)
     {
         m_Velocity += speed * glm::normalize(glm::cross(horizontalOrientation, UP));
     }
 
-    if (glfwGetKey(game.GetWindow(), GLFW_KEY_SPACE) == GLFW_PRESS)
+    if (glfwGetKey(game->GetWindow(), GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         m_Velocity += speed * UP;
     }
 
-    if (glfwGetKey(game.GetWindow(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    if (glfwGetKey(game->GetWindow(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
     {
         m_Velocity += speed * -UP;
     }
 
-    if (glfwGetMouseButton(game.GetWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+    if (glfwGetMouseButton(game->GetWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
     {
-        glfwSetInputMode(game.GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(game->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         if (s_FirstClick)
         {
-            glfwSetCursorPos(game.GetWindow(), game.width / 2, game.height / 2);
+            glfwSetCursorPos(game->GetWindow(), game->width / 2, game->height / 2);
             s_FirstClick = false;
         }
 
         double mouseX, mouseY;
-        glfwGetCursorPos(game.GetWindow(), &mouseX, &mouseY);
+        glfwGetCursorPos(game->GetWindow(), &mouseX, &mouseY);
 
-        float rotX = SENSITIVITY * (float)(mouseY - (float)game.height / 2) / (float)game.height;
-        float rotY = SENSITIVITY * (float)(mouseX - (float)game.width / 2) / (float)game.width;
+        float rotX = SENSITIVITY * (float)(mouseY - (float)game->height / 2) / (float)game->height;
+        float rotY = SENSITIVITY * (float)(mouseX - (float)game->width / 2) / (float)game->width;
 
         glm::vec3 newm_Orientation = glm::rotate(m_Orientation, glm::radians(-rotX), glm::normalize(glm::cross(m_Orientation, UP)));
 
@@ -227,11 +227,11 @@ void PlayerLayer::HandleInputs(float deltaTime)
 
         m_Orientation = glm::rotate(m_Orientation, glm::radians(-rotY), UP);
 
-        glfwSetCursorPos(game.GetWindow(), (float)game.width / 2, (float)game.height / 2);
+        glfwSetCursorPos(game->GetWindow(), (float)game->width / 2, (float)game->height / 2);
     }
-    else if (glfwGetMouseButton(game.GetWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+    else if (glfwGetMouseButton(game->GetWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
     {
-        glfwSetInputMode(game.GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(game->GetWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         s_FirstClick = true;
     }
 }
