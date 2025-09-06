@@ -21,8 +21,8 @@ int main()
     Macecraft::Game game;
 
     // game.BindLayer<TestLayer>();
-    game.BindLayer(new Macecraft::PlayerLayer());
-    game.BindLayer(new Macecraft::WorldLayer());
+    game.BindLayer<Macecraft::PlayerLayer>();
+    game.BindLayer<Macecraft::WorldLayer>();
     
     game.Run();
 

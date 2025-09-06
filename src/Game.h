@@ -30,15 +30,16 @@ public:
 
     void Run();
 
-    // template <class T> void BindLayer(Layer* layer)
-    void BindLayer(Layer* layer)
+    // void BindLayer(Layer* layer)
+    template <class T> T* BindLayer()
     {
-        // static_assert(std::is_base_of_v<Layer, T> && "T must be a subclass of Layer");
+        static_assert(std::is_base_of_v<Layer, T> && "T must be a subclass of Layer");
 
+        T* layer = new T;
         layer->__Internal_SetGame(this);
         m_Layers.push_back(layer);
 
-        // return dynamic_cast<T*>(m_Layers.emplace_back(new T(*this)).get());
+        return layer;
     }
 
     // const TextureAtlas* GetAtlas() const;
