@@ -3,6 +3,8 @@
     	language "C"
     	staticruntime "on"
     	warnings "off"
+
+		location "glfw"
     
     	files
     	{
