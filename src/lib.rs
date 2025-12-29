@@ -102,7 +102,7 @@ impl Camera {
 
     fn handle_moving(&mut self, delta_time: f32, active_keys: &HashSet<KeyCode>) {
         let mut move_dir = glam::Vec3::ZERO;
-        let forward = self.forward();
+        let forward = self.forward().with_y(0.0).normalize_or_zero();
         let right = self.right();
 
         use KeyCode::*;
@@ -110,6 +110,8 @@ impl Camera {
         if active_keys.contains(&KeyS) { move_dir -= forward }
         if active_keys.contains(&KeyD) { move_dir += right }
         if active_keys.contains(&KeyA) { move_dir -= right }
+        move_dir = move_dir.normalize_or_zero();
+
         if active_keys.contains(&Space) { move_dir.y += 1.0 }
         if active_keys.contains(&ShiftLeft) { move_dir.y -= 1.0 }
 
@@ -165,6 +167,7 @@ struct State {
     camera_bind_group: wgpu::BindGroup,
     active_keys: HashSet<KeyCode>,
     mouse_delta: glam::Vec2,
+    is_mouse_captured: bool,
 }
 
 impl State {
@@ -358,6 +361,7 @@ impl State {
             camera_bind_group,
             active_keys: HashSet::new(),
             mouse_delta: glam::Vec2::ZERO,
+            is_mouse_captured: false,
         };
 
         res.configure_surface();
@@ -387,15 +391,29 @@ impl State {
         self.configure_surface();
     }
 
+    fn toggle_mouse_capture(&mut self) {
+        self.is_mouse_captured = !self.is_mouse_captured;
+
+        if self.is_mouse_captured {
+            self.window.set_cursor_grab(CursorGrabMode::Locked).unwrap();
+            self.window.set_cursor_visible(false);
+        } else {
+            self.window.set_cursor_grab(CursorGrabMode::None).unwrap();
+            self.window.set_cursor_visible(true);
+        }
+    }
+
     fn handle_key(&mut self, code: KeyCode, is_pressed: bool) {
         if is_pressed {
             self.active_keys.insert(code);
+            if code == KeyCode::AltLeft { self.toggle_mouse_capture() }
         } else {
             assert!(self.active_keys.remove(&code));
         }
     }
 
     fn handle_mouse(&mut self, delta: glam::Vec2) {
+        if !self.is_mouse_captured { return }
         self.mouse_delta += delta;
     }
 
@@ -492,9 +510,9 @@ impl App {
 impl ApplicationHandler for App {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         let window_attributes = Window::default_attributes()
-            .with_title("Learn WGPU");
+            .with_title("Macecraft")
+            .with_inner_size(winit::dpi::LogicalSize::new(1600, 900));
         let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
-        window.set_cursor_grab(CursorGrabMode::Locked).unwrap();
 
         self.state = Some(pollster::block_on(State::new(window)));
     }
