@@ -1,5 +1,5 @@
 [package]
-name = "learn_wgpu"
+name = "macecraft"
 version = "0.1.0"
 edition = "2024"
 
@@ -7,6 +7,8 @@ edition = "2024"
 anyhow = "1.0.100"
 bytemuck = "1.24.0"
 env_logger = "0.11.8"
+glam = "0.30.9"
+image = "0.25.9"
 log = "0.4.29"
 pollster = "0.4.0"
 wgpu = "27.0.1"
