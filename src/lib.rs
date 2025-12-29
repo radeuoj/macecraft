@@ -1,15 +1,17 @@
 mod texture;
 
+use crate::texture::Texture;
+use bytemuck::{Pod, Zeroable};
+use std::collections::HashSet;
 use std::default::Default;
 use std::sync::Arc;
-use anyhow::Error;
-use bytemuck::{Pod, Zeroable};
-use wgpu::util::{DeviceExt};
+use std::time::Instant;
+use wgpu::util::DeviceExt;
 use winit::application::ApplicationHandler;
-use winit::event::WindowEvent;
-use winit::event_loop::{ActiveEventLoop, EventLoop};
-use winit::window::{Window, WindowId};
-use crate::texture::Texture;
+use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, WindowEvent};
+use winit::event_loop::ActiveEventLoop;
+use winit::keyboard::{KeyCode, PhysicalKey};
+use winit::window::{CursorGrabMode, Window, WindowId};
 
 #[repr(C)]
 #[derive(Copy, Clone, Default, Pod, Zeroable)]
@@ -34,16 +36,116 @@ impl Vertex {
 }
 
 const VERTICES: [Vertex; 4] = [
-    Vertex { position: [-0.5, 0.5, 0.0], tex_coords: [0.0, 0.0] },
-    Vertex { position: [-0.5, -0.5, 0.0], tex_coords: [0.0, 1.0] },
-    Vertex { position: [0.5, -0.5, 0.0], tex_coords: [1.0, 1.0] },
-    Vertex { position: [0.5, 0.5, 0.0], tex_coords: [1.0, 0.0] },
+    Vertex { position: [-0.5, 0.5, -1.0], tex_coords: [0.0, 0.0] },
+    Vertex { position: [-0.5, -0.5, -1.0], tex_coords: [0.0, 1.0] },
+    Vertex { position: [0.5, -0.5, -1.0], tex_coords: [1.0, 1.0] },
+    Vertex { position: [0.5, 0.5, -1.0], tex_coords: [1.0, 0.0] },
 ];
 
 const INDICES: [u16; 6] = [
     0, 1, 2,
     2, 3, 0,
 ];
+
+struct Camera {
+    position: glam::Vec3,
+    yaw: f32,
+    pitch: f32,
+    aspect_ratio: f32,
+}
+
+impl Camera {
+    const UP: glam::Vec3 = glam::Vec3::Y;
+    const FOV_Y: f32 = 60.0;
+    const Z_NEAR: f32 = 0.1;
+    const Z_FAR: f32 = 1000.0;
+    const SPEED: f32 = 2.0;
+    const SENSITIVITY: f32 = 0.002;
+
+    fn new(aspect_ratio: f32) -> Self {
+        Self {
+            position: glam::Vec3::ZERO,
+            yaw: -90f32.to_radians(),
+            pitch: 0.0,
+            aspect_ratio,
+        }
+    }
+
+    fn forward(&self) -> glam::Vec3 {
+        glam::vec3(
+            self.yaw.cos() * self.pitch.cos(),
+            self.pitch.sin(),
+            self.yaw.sin() * self.pitch.cos(),
+        )
+    }
+
+    fn right(&self) -> glam::Vec3 {
+        self.forward().cross(Self::UP)
+    }
+
+    fn build_view_proj_matrix(&self) -> glam::Mat4 {
+        let view = glam::Mat4::look_at_rh(
+            self.position,
+            self.position + self.forward(),
+            Self::UP,
+        );
+
+        let proj = glam::Mat4::perspective_rh(
+            Self::FOV_Y.to_radians(),
+            self.aspect_ratio,
+            Self::Z_NEAR,
+            Self::Z_FAR,
+        );
+
+        proj * view
+    }
+
+    fn handle_moving(&mut self, delta_time: f32, active_keys: &HashSet<KeyCode>) {
+        let mut move_dir = glam::Vec3::ZERO;
+        let forward = self.forward();
+        let right = self.right();
+
+        use KeyCode::*;
+        if active_keys.contains(&KeyW) { move_dir += forward }
+        if active_keys.contains(&KeyS) { move_dir -= forward }
+        if active_keys.contains(&KeyD) { move_dir += right }
+        if active_keys.contains(&KeyA) { move_dir -= right }
+        if active_keys.contains(&Space) { move_dir.y += 1.0 }
+        if active_keys.contains(&ShiftLeft) { move_dir.y -= 1.0 }
+
+        self.position += move_dir * Self::SPEED * delta_time;
+    }
+
+    fn handle_looking(&mut self, mouse_delta: glam::Vec2) {
+        self.yaw += Self::SENSITIVITY * mouse_delta.x;
+        self.pitch -= Self::SENSITIVITY * mouse_delta.y;
+
+        self.pitch = self.pitch.clamp(-89f32.to_radians(), 89f32.to_radians());
+    }
+
+    fn update(&mut self, delta_time: f32, active_keys: &HashSet<KeyCode>, mouse_delta: glam::Vec2) {
+        self.handle_moving(delta_time, active_keys);
+        self.handle_looking(mouse_delta);
+    }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Pod, Zeroable)]
+struct CameraUniform {
+    view_proj: [[f32; 4]; 4],
+}
+
+impl CameraUniform {
+    fn new() -> Self {
+        Self {
+            view_proj: glam::Mat4::IDENTITY.to_cols_array_2d(),
+        }
+    }
+
+    fn update_view_proj(&mut self, camera: &Camera) {
+        self.view_proj = camera.build_view_proj_matrix().to_cols_array_2d();
+    }
+}
 
 struct State {
     window: Arc<Window>,
@@ -57,6 +159,12 @@ struct State {
     index_buffer: wgpu::Buffer,
     diffuse_bind_group: wgpu::BindGroup,
     diffuse_texture: Texture,
+    camera: Camera,
+    camera_uniform: CameraUniform,
+    camera_buffer: wgpu::Buffer,
+    camera_bind_group: wgpu::BindGroup,
+    active_keys: HashSet<KeyCode>,
+    mouse_delta: glam::Vec2,
 }
 
 impl State {
@@ -129,10 +237,53 @@ impl State {
                 ],
             });
 
+        let camera = Camera::new(size.width as f32 / size.height as f32);
+        let mut camera_uniform = CameraUniform::new();
+        camera_uniform.update_view_proj(&camera);
+
+        let camera_buffer = device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Camera buffer"),
+                contents: bytemuck::cast_slice(&[camera_uniform]),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            });
+
+        let camera_bind_group_layout = device
+            .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                label: Some("Camera Bind group layout"),
+                entries: &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: wgpu::ShaderStages::VERTEX,
+                        ty: wgpu::BindingType::Buffer {
+                            ty: wgpu::BufferBindingType::Uniform,
+                            has_dynamic_offset: false,
+                            min_binding_size: None,
+                        },
+                        count: None,
+                    },
+                ],
+            });
+
+        let camera_bind_group = device
+            .create_bind_group(&wgpu::BindGroupDescriptor {
+                label: Some("Camera bind group"),
+                layout: &camera_bind_group_layout,
+                entries: &[
+                    wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: camera_buffer.as_entire_binding(),
+                    },
+                ],
+            });
+
         let render_pipeline_layout = device
             .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render pipeline layout"),
-                bind_group_layouts: &[&texture_bind_group_layout],
+                bind_group_layouts: &[
+                    &texture_bind_group_layout,
+                    &camera_bind_group_layout,
+                ],
                 push_constant_ranges: &[],
             });
 
@@ -201,6 +352,12 @@ impl State {
             index_buffer,
             diffuse_bind_group,
             diffuse_texture,
+            camera,
+            camera_uniform,
+            camera_buffer,
+            camera_bind_group,
+            active_keys: HashSet::new(),
+            mouse_delta: glam::Vec2::ZERO,
         };
 
         res.configure_surface();
@@ -226,11 +383,26 @@ impl State {
     fn resize(&mut self, size: winit::dpi::PhysicalSize<u32>) {
         if size.width == 0 || size.height == 0 { return; }
         self.size = size;
+        self.camera.aspect_ratio = size.width as f32 / size.height as f32;
         self.configure_surface();
     }
 
-    fn update(&mut self) {
+    fn handle_key(&mut self, code: KeyCode, is_pressed: bool) {
+        if is_pressed {
+            self.active_keys.insert(code);
+        } else {
+            assert!(self.active_keys.remove(&code));
+        }
+    }
 
+    fn handle_mouse(&mut self, delta: glam::Vec2) {
+        self.mouse_delta += delta;
+    }
+
+    fn update(&mut self, delta_time: f32) {
+        self.camera.update(delta_time, &self.active_keys, self.mouse_delta);
+        self.camera_uniform.update_view_proj(&self.camera);
+        self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
     }
 
     fn render(&mut self) -> anyhow::Result<()> {
@@ -264,6 +436,7 @@ impl State {
 
         render_pass.set_pipeline(&self.render_pipeline);
         render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
+        render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
         render_pass.draw_indexed(0..(INDICES.len() as u32), 0, 0..1);
@@ -279,13 +452,40 @@ impl State {
 
 pub struct App {
     state: Option<State>,
+    delta_time: Instant,
 }
 
 impl App {
     pub fn new() -> App {
         Self {
             state: None,
+            delta_time: Instant::now(),
         }
+    }
+
+    fn handle_key(&mut self, event_loop: &ActiveEventLoop, code: KeyCode, is_pressed: bool) {
+        if is_pressed && code == KeyCode::Escape {
+            event_loop.exit();
+        }
+
+        let state = self.state.as_mut().unwrap();
+        state.handle_key(code, is_pressed);
+    }
+
+    fn handle_redraw(&mut self)  {
+        let delta_time = self.delta_time.elapsed();
+        self.delta_time = Instant::now();
+
+        let state = self.state.as_mut().unwrap();
+        state.update(delta_time.as_secs_f32());
+
+        match state.render() {
+            Ok(_) => (),
+            Err(e) => log::error!("Render error: {}", e),
+        }
+
+        state.mouse_delta = glam::Vec2::ZERO;
+        state.window.request_redraw();
     }
 }
 
@@ -294,25 +494,36 @@ impl ApplicationHandler for App {
         let window_attributes = Window::default_attributes()
             .with_title("Learn WGPU");
         let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
+        window.set_cursor_grab(CursorGrabMode::Locked).unwrap();
+
         self.state = Some(pollster::block_on(State::new(window)));
     }
 
-    fn window_event(&mut self, event_loop: &ActiveEventLoop, window_id: WindowId, event: WindowEvent) {
+    fn window_event(&mut self, event_loop: &ActiveEventLoop, _window_id: WindowId, event: WindowEvent) {
         let state = self.state.as_mut().unwrap();
 
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
-            WindowEvent::RedrawRequested => {
-                state.update();
-
-                match state.render() {
-                    Ok(_) => {}
-                    Err(e) => log::error!("Render error: {}", e),
-                }
-
-                state.window.request_redraw();
-            }
+            WindowEvent::KeyboardInput {
+                event: KeyEvent {
+                    physical_key: PhysicalKey::Code(code),
+                    state: key_state,
+                    ..
+                },
+                ..
+            } => self.handle_key(event_loop, code, key_state.is_pressed()),
+            WindowEvent::RedrawRequested => self.handle_redraw(),
             WindowEvent::Resized(size) => state.resize(size),
+            _ => (),
+        }
+    }
+
+    fn device_event(&mut self, _event_loop: &ActiveEventLoop, _device_id: DeviceId, event: DeviceEvent) {
+        let state = self.state.as_mut().unwrap();
+
+        match event {
+            DeviceEvent::MouseMotion { delta } => state
+                .handle_mouse(glam::vec2(delta.0 as f32, delta.1 as f32)),
             _ => (),
         }
     }
