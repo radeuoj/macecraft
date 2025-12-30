@@ -1,4 +1,5 @@
 mod texture;
+mod imgui;
 
 use crate::texture::Texture;
 use bytemuck::{Pod, Zeroable};
@@ -8,10 +9,11 @@ use std::sync::Arc;
 use std::time::Instant;
 use wgpu::util::DeviceExt;
 use winit::application::ApplicationHandler;
-use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, WindowEvent};
+use winit::event::{DeviceEvent, DeviceId, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
+use crate::imgui::ImGuiState;
 
 #[repr(C)]
 #[derive(Copy, Clone, Default, Pod, Zeroable)]
@@ -168,6 +170,7 @@ struct State {
     active_keys: HashSet<KeyCode>,
     mouse_delta: glam::Vec2,
     is_mouse_captured: bool,
+    imgui: ImGuiState,
 }
 
 impl State {
@@ -287,7 +290,7 @@ impl State {
                     &texture_bind_group_layout,
                     &camera_bind_group_layout,
                 ],
-                push_constant_ranges: &[],
+                immediate_size: 0,
             });
 
         let render_pipeline = device
@@ -325,7 +328,7 @@ impl State {
                     mask: !0,
                     alpha_to_coverage_enabled: false,
                 },
-                multiview: None,
+                multiview_mask: None,
                 cache: None,
             });
 
@@ -342,6 +345,13 @@ impl State {
                 contents: bytemuck::cast_slice(&INDICES),
                 usage: wgpu::BufferUsages::INDEX,
             });
+
+        let imgui = ImGuiState::new(
+            &device,
+            &queue,
+            surface_format,
+            &window,
+        );
 
         let res = Self {
             window,
@@ -362,6 +372,7 @@ impl State {
             active_keys: HashSet::new(),
             mouse_delta: glam::Vec2::ZERO,
             is_mouse_captured: false,
+            imgui,
         };
 
         res.configure_surface();
@@ -418,6 +429,7 @@ impl State {
     }
 
     fn update(&mut self, delta_time: f32) {
+        self.imgui.update_delta_time(delta_time);
         self.camera.update(delta_time, &self.active_keys, self.mouse_delta);
         self.camera_uniform.update_view_proj(&self.camera);
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
@@ -450,6 +462,7 @@ impl State {
             depth_stencil_attachment: None,
             timestamp_writes: None,
             occlusion_query_set: None,
+            multiview_mask: None,
         });
 
         render_pass.set_pipeline(&self.render_pipeline);
@@ -458,6 +471,12 @@ impl State {
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
         render_pass.draw_indexed(0..(INDICES.len() as u32), 0, 0..1);
+
+        self.imgui.render(&self.window, &self.device, &self.queue, &mut render_pass, |ui| {
+            ui.window("Hello world").build(|| {
+                ui.text("Hello world");
+            });
+        });
 
         drop(render_pass);
 
@@ -517,8 +536,9 @@ impl ApplicationHandler for App {
         self.state = Some(pollster::block_on(State::new(window)));
     }
 
-    fn window_event(&mut self, event_loop: &ActiveEventLoop, _window_id: WindowId, event: WindowEvent) {
+    fn window_event(&mut self, event_loop: &ActiveEventLoop, window_id: WindowId, event: WindowEvent) {
         let state = self.state.as_mut().unwrap();
+        state.imgui.handle_window_event(&state.window, window_id, event.clone());
 
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
