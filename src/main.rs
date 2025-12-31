@@ -1,4 +1,4 @@
-use winit::event_loop::EventLoop;
+use winit::event_loop::{ControlFlow, EventLoop};
 
 fn main() {
     env_logger::init();

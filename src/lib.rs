@@ -1,5 +1,6 @@
 mod texture;
 mod imgui;
+mod camera;
 
 use crate::texture::Texture;
 use bytemuck::{Pod, Zeroable};
@@ -13,6 +14,7 @@ use winit::event::{DeviceEvent, DeviceId, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
+use crate::camera::Camera;
 use crate::imgui::ImGuiState;
 
 #[repr(C)]
@@ -48,90 +50,6 @@ const INDICES: [u16; 6] = [
     0, 1, 2,
     2, 3, 0,
 ];
-
-struct Camera {
-    position: glam::Vec3,
-    yaw: f32,
-    pitch: f32,
-    aspect_ratio: f32,
-}
-
-impl Camera {
-    const UP: glam::Vec3 = glam::Vec3::Y;
-    const FOV_Y: f32 = 60.0;
-    const Z_NEAR: f32 = 0.1;
-    const Z_FAR: f32 = 1000.0;
-    const SPEED: f32 = 2.0;
-    const SENSITIVITY: f32 = 0.002;
-
-    fn new(aspect_ratio: f32) -> Self {
-        Self {
-            position: glam::Vec3::ZERO,
-            yaw: -90f32.to_radians(),
-            pitch: 0.0,
-            aspect_ratio,
-        }
-    }
-
-    fn forward(&self) -> glam::Vec3 {
-        glam::vec3(
-            self.yaw.cos() * self.pitch.cos(),
-            self.pitch.sin(),
-            self.yaw.sin() * self.pitch.cos(),
-        )
-    }
-
-    fn right(&self) -> glam::Vec3 {
-        self.forward().cross(Self::UP)
-    }
-
-    fn build_view_proj_matrix(&self) -> glam::Mat4 {
-        let view = glam::Mat4::look_at_rh(
-            self.position,
-            self.position + self.forward(),
-            Self::UP,
-        );
-
-        let proj = glam::Mat4::perspective_rh(
-            Self::FOV_Y.to_radians(),
-            self.aspect_ratio,
-            Self::Z_NEAR,
-            Self::Z_FAR,
-        );
-
-        proj * view
-    }
-
-    fn handle_moving(&mut self, delta_time: f32, active_keys: &HashSet<KeyCode>) {
-        let mut move_dir = glam::Vec3::ZERO;
-        let forward = self.forward().with_y(0.0).normalize_or_zero();
-        let right = self.right();
-
-        use KeyCode::*;
-        if active_keys.contains(&KeyW) { move_dir += forward }
-        if active_keys.contains(&KeyS) { move_dir -= forward }
-        if active_keys.contains(&KeyD) { move_dir += right }
-        if active_keys.contains(&KeyA) { move_dir -= right }
-        move_dir = move_dir.normalize_or_zero();
-
-        if active_keys.contains(&Space) { move_dir.y += 1.0 }
-        if active_keys.contains(&ShiftLeft) { move_dir.y -= 1.0 }
-
-        self.position += move_dir * Self::SPEED * delta_time;
-    }
-
-    fn handle_looking(&mut self, mouse_delta: glam::Vec2) {
-        self.yaw += Self::SENSITIVITY * mouse_delta.x;
-        self.pitch -= Self::SENSITIVITY * mouse_delta.y;
-
-        self.pitch = self.pitch.clamp(-89f32.to_radians(), 89f32.to_radians());
-    }
-
-    fn update(&mut self, delta_time: f32, active_keys: &HashSet<KeyCode>, mouse_delta: glam::Vec2) {
-        self.handle_moving(delta_time, active_keys);
-        self.handle_looking(mouse_delta);
-    }
-}
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
@@ -171,6 +89,10 @@ struct State {
     mouse_delta: glam::Vec2,
     is_mouse_captured: bool,
     imgui: ImGuiState,
+    delta_time: f32,
+    fps: u32,
+    time_since_last_fps_update: f32,
+    frames_since_last_fps_update: u32,
 }
 
 impl State {
@@ -373,6 +295,10 @@ impl State {
             mouse_delta: glam::Vec2::ZERO,
             is_mouse_captured: false,
             imgui,
+            delta_time: 0.0,
+            fps: 0,
+            time_since_last_fps_update: 0.0,
+            frames_since_last_fps_update: 0,
         };
 
         res.configure_surface();
@@ -386,7 +312,7 @@ impl State {
             format: self.surface_format,
             width: self.size.width,
             height: self.size.height,
-            present_mode: wgpu::PresentMode::AutoVsync,
+            present_mode: wgpu::PresentMode::Fifo,
             desired_maximum_frame_latency: 2,
             alpha_mode: wgpu::CompositeAlphaMode::Auto,
             view_formats: vec![],
@@ -398,7 +324,7 @@ impl State {
     fn resize(&mut self, size: winit::dpi::PhysicalSize<u32>) {
         if size.width == 0 || size.height == 0 { return; }
         self.size = size;
-        self.camera.aspect_ratio = size.width as f32 / size.height as f32;
+        self.camera.set_aspect_ratio(size.width as f32 / size.height as f32);
         self.configure_surface();
     }
 
@@ -429,10 +355,23 @@ impl State {
     }
 
     fn update(&mut self, delta_time: f32) {
+        self.delta_time = delta_time;
+        self.try_update_fps();
         self.imgui.update_delta_time(delta_time);
         self.camera.update(delta_time, &self.active_keys, self.mouse_delta);
         self.camera_uniform.update_view_proj(&self.camera);
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
+    }
+
+    fn try_update_fps(&mut self) {
+        self.time_since_last_fps_update += self.delta_time;
+        self.frames_since_last_fps_update += 1;
+
+        if self.time_since_last_fps_update >= 1.0 {
+            self.time_since_last_fps_update -= 1.0;
+            self.fps = self.frames_since_last_fps_update;
+            self.frames_since_last_fps_update = 0;
+        }
     }
 
     fn render(&mut self) -> anyhow::Result<()> {
@@ -472,11 +411,7 @@ impl State {
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
         render_pass.draw_indexed(0..(INDICES.len() as u32), 0, 0..1);
 
-        self.imgui.render(&self.window, &self.device, &self.queue, &mut render_pass, |ui| {
-            ui.window("Hello world").build(|| {
-                ui.text("Hello world");
-            });
-        });
+        self.render_imgui(&mut render_pass);
 
         drop(render_pass);
 
@@ -484,6 +419,21 @@ impl State {
         surface_texture.present();
 
         Ok(())
+    }
+
+    fn render_imgui<'a>(&'a mut self, render_pass: &mut wgpu::RenderPass<'a>) {
+        self.imgui.render(
+            &self.window,
+            &self.device,
+            &self.queue,
+            render_pass,
+            |ui| {
+                ui.window("Hello world").build(|| {
+                    ui.text("Hello world");
+                    ui.text(format!("FPS: {}", self.fps));
+                });
+            }
+        );
     }
 }
 
@@ -524,6 +474,10 @@ impl App {
         state.mouse_delta = glam::Vec2::ZERO;
         state.window.request_redraw();
     }
+
+    fn state(&mut self) -> &mut State {
+        self.state.as_mut().unwrap()
+    }
 }
 
 impl ApplicationHandler for App {
@@ -537,9 +491,6 @@ impl ApplicationHandler for App {
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, window_id: WindowId, event: WindowEvent) {
-        let state = self.state.as_mut().unwrap();
-        state.imgui.handle_window_event(&state.window, window_id, event.clone());
-
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
             WindowEvent::KeyboardInput {
@@ -551,9 +502,12 @@ impl ApplicationHandler for App {
                 ..
             } => self.handle_key(event_loop, code, key_state.is_pressed()),
             WindowEvent::RedrawRequested => self.handle_redraw(),
-            WindowEvent::Resized(size) => state.resize(size),
+            WindowEvent::Resized(size) => self.state().resize(size),
             _ => (),
         }
+
+        let state = self.state();
+        state.imgui.handle_window_event(&state.window, window_id, event.clone());
     }
 
     fn device_event(&mut self, _event_loop: &ActiveEventLoop, _device_id: DeviceId, event: DeviceEvent) {
