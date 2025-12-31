@@ -6,6 +6,7 @@ use crate::texture::Texture;
 use bytemuck::{Pod, Zeroable};
 use std::collections::HashSet;
 use std::default::Default;
+use std::fmt::format;
 use std::sync::Arc;
 use std::time::Instant;
 use wgpu::util::DeviceExt;
@@ -89,15 +90,11 @@ struct State {
     mouse_delta: glam::Vec2,
     is_mouse_captured: bool,
     imgui: ImGuiState,
-    delta_time: f32,
-    fps: u32,
-    time_since_last_fps_update: f32,
-    frames_since_last_fps_update: u32,
 }
 
 impl State {
     async fn new(window: Arc<Window>) -> State {
-        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor::default());
+        let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor::from_env_or_default());
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions::default())
@@ -295,10 +292,6 @@ impl State {
             mouse_delta: glam::Vec2::ZERO,
             is_mouse_captured: false,
             imgui,
-            delta_time: 0.0,
-            fps: 0,
-            time_since_last_fps_update: 0.0,
-            frames_since_last_fps_update: 0,
         };
 
         res.configure_surface();
@@ -355,23 +348,10 @@ impl State {
     }
 
     fn update(&mut self, delta_time: f32) {
-        self.delta_time = delta_time;
-        self.try_update_fps();
         self.imgui.update_delta_time(delta_time);
         self.camera.update(delta_time, &self.active_keys, self.mouse_delta);
         self.camera_uniform.update_view_proj(&self.camera);
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
-    }
-
-    fn try_update_fps(&mut self) {
-        self.time_since_last_fps_update += self.delta_time;
-        self.frames_since_last_fps_update += 1;
-
-        if self.time_since_last_fps_update >= 1.0 {
-            self.time_since_last_fps_update -= 1.0;
-            self.fps = self.frames_since_last_fps_update;
-            self.frames_since_last_fps_update = 0;
-        }
     }
 
     fn render(&mut self) -> anyhow::Result<()> {
@@ -430,7 +410,8 @@ impl State {
             |ui| {
                 ui.window("Hello world").build(|| {
                     ui.text("Hello world");
-                    ui.text(format!("FPS: {}", self.fps));
+                    ui.text(format!("Delta time on avg: {:.2}ms", 1000.0 / ui.io().framerate));
+                    ui.text(format!("FPS: {:.2}", ui.io().framerate));
                 });
             }
         );
