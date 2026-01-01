@@ -6,7 +6,6 @@ use crate::texture::Texture;
 use bytemuck::{Pod, Zeroable};
 use std::collections::HashSet;
 use std::default::Default;
-use std::fmt::format;
 use std::sync::Arc;
 use std::time::Instant;
 use wgpu::util::DeviceExt;
@@ -305,7 +304,7 @@ impl State {
             format: self.surface_format,
             width: self.size.width,
             height: self.size.height,
-            present_mode: wgpu::PresentMode::Fifo,
+            present_mode: wgpu::PresentMode::Fifo, // https://github.com/gfx-rs/wgpu/issues/8310
             desired_maximum_frame_latency: 2,
             alpha_mode: wgpu::CompositeAlphaMode::Auto,
             view_formats: vec![],
