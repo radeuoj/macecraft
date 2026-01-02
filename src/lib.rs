@@ -97,6 +97,7 @@ struct State {
     mouse_delta: glam::Vec2,
     is_mouse_captured: bool,
     imgui: ImGuiState,
+    backend: wgpu::Backend,
 }
 
 impl State {
@@ -307,6 +308,7 @@ impl State {
             mouse_delta: glam::Vec2::ZERO,
             is_mouse_captured: false,
             imgui,
+            backend: adapter.get_info().backend,
         };
 
         res.configure_surface();
@@ -432,6 +434,7 @@ impl State {
             |ui| {
                 ui.window("Hello world").build(|| {
                     ui.text("Hello world");
+                    ui.text(format!("Using {}", self.backend));
                     ui.text(format!("Delta time on avg: {:.2}ms", 1000.0 / ui.io().framerate));
                     ui.text(format!("FPS: {:.2}", ui.io().framerate));
                 });
