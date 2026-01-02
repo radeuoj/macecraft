@@ -7,7 +7,7 @@ use bytemuck::{Pod, Zeroable};
 use std::collections::HashSet;
 use std::default::Default;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 use wgpu::util::DeviceExt;
 use winit::application::ApplicationHandler;
 use winit::event::{DeviceEvent, DeviceId, KeyEvent, WindowEvent};
@@ -304,7 +304,7 @@ impl State {
             format: self.surface_format,
             width: self.size.width,
             height: self.size.height,
-            present_mode: wgpu::PresentMode::Mailbox, // https://github.com/gfx-rs/wgpu/issues/8310
+            present_mode: wgpu::PresentMode::Fifo, // https://github.com/gfx-rs/wgpu/issues/8310
             desired_maximum_frame_latency: 2,
             alpha_mode: wgpu::CompositeAlphaMode::Auto,
             view_formats: vec![],
@@ -419,19 +419,14 @@ impl State {
 
 pub struct App {
     state: Option<State>,
-    frame_start: Instant,
-    target_render_time: Instant,
+    delta_time: Instant,
 }
 
 impl App {
-    const TARGET_FPS: u64 = 144;
-    const TARGET_FRAME_DURATION: Duration = Duration::from_nanos(1e9 as u64 / Self::TARGET_FPS);
-
     pub fn new() -> App {
         Self {
             state: None,
-            frame_start: Instant::now(),
-            target_render_time: Instant::now(),
+            delta_time: Instant::now(),
         }
     }
 
@@ -445,8 +440,8 @@ impl App {
     }
 
     fn handle_redraw(&mut self)  {
-        let delta_time = self.frame_start.elapsed();
-        self.frame_start = Instant::now();
+        let delta_time = self.delta_time.elapsed();
+        self.delta_time = Instant::now();
 
         let state = self.state.as_mut().unwrap();
         state.update(delta_time.as_secs_f32());
@@ -458,11 +453,6 @@ impl App {
 
         state.mouse_delta = glam::Vec2::ZERO;
         state.window.request_redraw();
-
-        self.target_render_time += Self::TARGET_FRAME_DURATION;
-        if Instant::now() < self.target_render_time {
-            std::thread::sleep(self.target_render_time - Instant::now());
-        }
     }
 
     fn state(&mut self) -> &mut State {
