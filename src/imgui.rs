@@ -2,6 +2,7 @@ use std::time::Duration;
 use imgui_winit_support::{HiDpiMode, WinitPlatform};
 use winit::event::{Event, WindowEvent};
 use winit::window::{Window, WindowId};
+use crate::texture::DepthTexture;
 
 pub struct ImGuiState {
     context: imgui::Context,
@@ -16,6 +17,7 @@ impl ImGuiState {
 
         let renderer = imgui_wgpu::Renderer::new(&mut context, &device, &queue, imgui_wgpu::RendererConfig {
             texture_format: surface_format,
+            depth_format: Some(DepthTexture::DEPTH_FORMAT),
             ..Default::default()
         });
 

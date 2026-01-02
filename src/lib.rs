@@ -2,7 +2,7 @@ mod texture;
 mod imgui;
 mod camera;
 
-use crate::texture::Texture;
+use crate::texture::{DepthTexture, Texture};
 use bytemuck::{Pod, Zeroable};
 use std::collections::HashSet;
 use std::default::Default;
@@ -39,16 +39,24 @@ impl Vertex {
     }
 }
 
-const VERTICES: [Vertex; 4] = [
+const VERTICES: [Vertex; 8] = [
     Vertex { position: [-0.5, 0.5, -1.0], tex_coords: [0.0, 0.0] },
     Vertex { position: [-0.5, -0.5, -1.0], tex_coords: [0.0, 1.0] },
     Vertex { position: [0.5, -0.5, -1.0], tex_coords: [1.0, 1.0] },
     Vertex { position: [0.5, 0.5, -1.0], tex_coords: [1.0, 0.0] },
+
+    Vertex { position: [-0.5, 0.5, -2.0], tex_coords: [0.0, 0.0] },
+    Vertex { position: [-0.5, -0.5, -2.0], tex_coords: [0.0, 1.0] },
+    Vertex { position: [0.5, -0.5, -2.0], tex_coords: [1.0, 1.0] },
+    Vertex { position: [0.5, 0.5, -2.0], tex_coords: [1.0, 0.0] },
 ];
 
-const INDICES: [u16; 6] = [
+const INDICES: [u16; 12] = [
     0, 1, 2,
     2, 3, 0,
+
+    4, 5, 6,
+    6, 7, 4,
 ];
 
 #[repr(C)]
@@ -80,11 +88,11 @@ struct State {
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
     diffuse_bind_group: wgpu::BindGroup,
-    diffuse_texture: Texture,
     camera: Camera,
     camera_uniform: CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
+    depth_texture: DepthTexture,
     active_keys: HashSet<KeyCode>,
     mouse_delta: glam::Vec2,
     is_mouse_captured: bool,
@@ -201,6 +209,8 @@ impl State {
                 ],
             });
 
+        let depth_texture = DepthTexture::new(&device, size.into(), "Depth texture");
+
         let render_pipeline_layout = device
             .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render pipeline layout"),
@@ -240,7 +250,13 @@ impl State {
                     polygon_mode: wgpu::PolygonMode::Fill,
                     conservative: false,
                 },
-                depth_stencil: None,
+                depth_stencil: Some(wgpu::DepthStencilState {
+                    format: DepthTexture::DEPTH_FORMAT,
+                    depth_write_enabled: true,
+                    depth_compare: wgpu::CompareFunction::Less,
+                    stencil: wgpu::StencilState::default(),
+                    bias: wgpu::DepthBiasState::default(),
+                }),
                 multisample: wgpu::MultisampleState {
                     count: 1,
                     mask: !0,
@@ -282,11 +298,11 @@ impl State {
             vertex_buffer,
             index_buffer,
             diffuse_bind_group,
-            diffuse_texture,
             camera,
             camera_uniform,
             camera_buffer,
             camera_bind_group,
+            depth_texture,
             active_keys: HashSet::new(),
             mouse_delta: glam::Vec2::ZERO,
             is_mouse_captured: false,
@@ -377,7 +393,14 @@ impl State {
                     store: wgpu::StoreOp::Store,
                 },
             })],
-            depth_stencil_attachment: None,
+            depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                view: &self.depth_texture.view,
+                depth_ops: Some(wgpu::Operations {
+                    load: wgpu::LoadOp::Clear(1.0),
+                    store: wgpu::StoreOp::Store,
+                }),
+                stencil_ops: None,
+            }),
             timestamp_writes: None,
             occlusion_query_set: None,
             multiview_mask: None,
