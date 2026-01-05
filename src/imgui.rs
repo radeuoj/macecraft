@@ -36,7 +36,7 @@ impl ImGuiState {
         F: FnMut(&mut imgui::Ui)
     {
         self.platform.prepare_frame(self.context.io_mut(), window).unwrap();
-        let ui = self.context.frame();
+        let ui = self.context.new_frame();
         run_ui(ui);
         self.platform.prepare_render(ui, window);
         let draw_data = self.context.render();
