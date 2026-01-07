@@ -8,47 +8,48 @@ use crate::camera::Camera;
 use crate::imgui::ImGuiState;
 use crate::texture::{DepthTexture, Texture};
 
-#[repr(C)]
-#[derive(Copy, Clone, Default, Pod, Zeroable)]
+#[derive(Debug)]
 struct Vertex {
-    position: [f32; 3],
-    tex_coords: [f32; 2],
+    position: [u8; 3], // chunk pos 6 bits each
+    tex_coords: [u8; 2], // texture coords 5 bits each
 }
 
 impl Vertex {
+    fn compress(&self) -> u32 {
+        self.position[0] as u32
+            | ((self.position[1] as u32) << 6)
+            | ((self.position[2] as u32) << 12)
+            | ((self.tex_coords[0] as u32) << 18)
+            | ((self.tex_coords[1] as u32) << 23)
+    }
+
+    #[allow(unused)]
+    fn uncompress(vertex: u32) -> Self {
+        Self {
+            position: [
+                (vertex & ((1 << 6) - 1)) as u8,
+                ((vertex >> 6) & ((1 << 6) - 1)) as u8,
+                ((vertex >> 12) & ((1 << 6) - 1)) as u8
+            ],
+            tex_coords: [
+                ((vertex >> 18) & ((1 << 5) - 1)) as u8,
+                ((vertex >> 23) & ((1 << 5) - 1)) as u8
+            ],
+        }
+    }
+
     fn layout() -> wgpu::VertexBufferLayout<'static> {
-        const ATTRIBUTES: [wgpu::VertexAttribute; 2] = wgpu::vertex_attr_array![
-            0 => Float32x3,
-            1 => Float32x2,
+        const ATTRIBUTES: [wgpu::VertexAttribute; 1] = wgpu::vertex_attr_array![
+            0 => Uint32,
         ];
 
         wgpu::VertexBufferLayout {
-            array_stride: size_of::<Vertex>() as wgpu::BufferAddress,
+            array_stride: size_of::<u32>() as wgpu::BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &ATTRIBUTES,
         }
     }
 }
-
-const VERTICES: [Vertex; 8] = [
-    Vertex { position: [-0.5, 0.5, -1.0], tex_coords: [0.0, 0.0] },
-    Vertex { position: [-0.5, -0.5, -1.0], tex_coords: [0.0, 1.0] },
-    Vertex { position: [0.5, -0.5, -1.0], tex_coords: [1.0, 1.0] },
-    Vertex { position: [0.5, 0.5, -1.0], tex_coords: [1.0, 0.0] },
-
-    Vertex { position: [-0.5, 0.5, -2.0], tex_coords: [0.0, 0.0] },
-    Vertex { position: [-0.5, -0.5, -2.0], tex_coords: [0.0, 1.0] },
-    Vertex { position: [0.5, -0.5, -2.0], tex_coords: [1.0, 1.0] },
-    Vertex { position: [0.5, 0.5, -2.0], tex_coords: [1.0, 0.0] },
-];
-
-const INDICES: [u16; 12] = [
-    0, 1, 2,
-    2, 3, 0,
-
-    4, 5, 6,
-    6, 7, 4,
-];
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
@@ -74,9 +75,6 @@ pub struct Renderer {
     surface: wgpu::Surface<'static>,
     surface_format: wgpu::TextureFormat,
     render_pipeline: wgpu::RenderPipeline,
-
-    vertex_buffer: wgpu::Buffer,
-    index_buffer: wgpu::Buffer,
 
     diffuse_bind_group: wgpu::BindGroup,
 
@@ -118,12 +116,12 @@ impl Renderer {
         let shader = device
             .create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
-        let diffuse_bytes = include_bytes!("textures/dirt.png");
+        let diffuse_bytes = include_bytes!("textures/textures.png");
         let diffuse_texture = Texture::from_bytes(
             &device,
             &queue,
             diffuse_bytes,
-            "dirt",
+            "textures",
         ).unwrap();
 
         let texture_bind_group_layout = device
@@ -261,20 +259,6 @@ impl Renderer {
                 cache: None,
             });
 
-        let vertex_buffer = device
-            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some("Vertex buffer"),
-                contents: bytemuck::cast_slice(&VERTICES),
-                usage: wgpu::BufferUsages::VERTEX,
-            });
-
-        let index_buffer = device
-            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some("Index buffer"),
-                contents: bytemuck::cast_slice(&INDICES),
-                usage: wgpu::BufferUsages::INDEX,
-            });
-
         let imgui = ImGuiState::new(
             &device,
             &queue,
@@ -288,8 +272,6 @@ impl Renderer {
             surface,
             surface_format,
             render_pipeline,
-            vertex_buffer,
-            index_buffer,
             diffuse_bind_group,
             camera_uniform,
             camera_buffer,
@@ -328,60 +310,65 @@ impl Renderer {
         self.imgui.handle_window_event(window, window_id, event);
     }
 
-    pub fn render_block(&mut self, block: Block, glam::Vec3 { x, y, z }: glam::Vec3) {
+    pub fn render_block(&mut self, block: Block, glam::U8Vec3 { x, y, z }: glam::U8Vec3) {
+        let tx = block as u8 % 16;
+        let ty = block as u8 / 16;
+
         let vertices = [
             // -z
-            Vertex { position: [x      , y + 1.0, z      ], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x      , y      , z      ], tex_coords: [0.0, 1.0] },
-            Vertex { position: [x + 1.0, y      , z      ], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x      , y + 1.0, z      ], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x + 1.0, y      , z      ], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x + 1.0, y + 1.0, z      ], tex_coords: [1.0, 0.0] },
+            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
 
             // -x
-            Vertex { position: [x + 1.0, y + 1.0, z      ], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x + 1.0, y      , z      ], tex_coords: [0.0, 1.0] },
-            Vertex { position: [x + 1.0, y      , z - 1.0], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x + 1.0, y + 1.0, z      ], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x + 1.0, y      , z - 1.0], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x + 1.0, y + 1.0, z - 1.0], tex_coords: [1.0, 0.0] },
+            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y + 1, z - 1], tex_coords: [tx + 1, ty    ] },
 
             // +z
-            Vertex { position: [x + 1.0, y + 1.0, z - 1.0], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x + 1.0, y      , z - 1.0], tex_coords: [0.0, 1.0] },
-            Vertex { position: [x      , y      , z - 1.0], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x + 1.0, y + 1.0, z - 1.0], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x      , y      , z - 1.0], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x      , y + 1.0, z - 1.0], tex_coords: [1.0, 0.0] },
+            Vertex { position: [x + 1, y + 1, z - 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x    , y    , z - 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y + 1, z - 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z - 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx + 1, ty    ] },
 
             // +x
-            Vertex { position: [x      , y + 1.0, z - 1.0], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x      , y      , z - 1.0], tex_coords: [0.0, 1.0] },
-            Vertex { position: [x      , y      , z      ], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x      , y + 1.0, z - 1.0], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x      , y      , z      ], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x      , y + 1.0, z      ], tex_coords: [1.0, 0.0] },
+            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z - 1], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx + 1, ty    ] },
 
             // -y
-            Vertex { position: [x      , y + 1.0, z - 1.0], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x      , y + 1.0, z      ], tex_coords: [0.0, 1.0] },
-            Vertex { position: [x + 1.0, y + 1.0, z      ], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x      , y + 1.0, z - 1.0], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x + 1.0, y + 1.0, z      ], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x + 1.0, y + 1.0, z - 1.0], tex_coords: [1.0, 0.0] },
+            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y + 1, z - 1], tex_coords: [tx + 1, ty    ] },
 
             // +y
-            Vertex { position: [x      , y      , z      ], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x      , y      , z - 1.0], tex_coords: [0.0, 1.0] },
-            Vertex { position: [x + 1.0, y      , z - 1.0], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x      , y      , z      ], tex_coords: [0.0, 0.0] },
-            Vertex { position: [x + 1.0, y      , z - 1.0], tex_coords: [1.0, 1.0] },
-            Vertex { position: [x + 1.0, y      , z      ], tex_coords: [1.0, 0.0] },
+            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z - 1], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty    ] },
         ];
+
+        let vertices = vertices.map(|v| v.compress());
 
         self.blocks.push(
             self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some(&format!("Block at {:.2}", glam::vec3(x, y, z))),
+                label: Some(&format!("Block at {:.2}", glam::u8vec3(x, y, z))),
                 contents: bytemuck::cast_slice(&vertices),
                 usage: wgpu::BufferUsages::VERTEX,
             })
@@ -436,9 +423,6 @@ impl Renderer {
         render_pass.set_pipeline(&self.render_pipeline);
         render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
         render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
-        render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-        render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-        render_pass.draw_indexed(0..(INDICES.len() as u32), 0, 0..1);
 
         self.draw_blocks(&mut render_pass);
 

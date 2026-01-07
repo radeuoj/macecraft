@@ -31,7 +31,7 @@ impl State {
         let size = window.inner_size();
         let camera = Camera::new(size.width as f32 / size.height as f32);
         let mut renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
-        renderer.render_block(Block::Dirt, glam::vec3(0.0, 0.0, -3.0));
+        renderer.render_block(Block::Dirt, glam::u8vec3(0, 0, 3));
 
         Self {
             window,
