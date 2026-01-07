@@ -2,6 +2,7 @@ mod texture;
 mod imgui;
 mod camera;
 mod renderer;
+mod block;
 
 use crate::camera::Camera;
 use crate::renderer::Renderer;
@@ -13,6 +14,7 @@ use winit::event::{DeviceEvent, DeviceId, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
+use crate::block::Block;
 
 struct State {
     window: Arc<Window>,
@@ -28,7 +30,8 @@ impl State {
     async fn new(window: Arc<Window>) -> State {
         let size = window.inner_size();
         let camera = Camera::new(size.width as f32 / size.height as f32);
-        let renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
+        let mut renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
+        renderer.render_block(Block::Dirt, glam::vec3(0.0, 0.0, -3.0));
 
         Self {
             window,
@@ -82,12 +85,14 @@ impl State {
 
     fn render(&mut self) -> anyhow::Result<()> {
         let backend = self.renderer.get_backend();
+        let position = self.camera.position;
         self.renderer.render_imgui(move |ui| {
-            ui.window("Hello world").build(|| {
+            ui.window("Macecraft").build(|| {
                 ui.text("Hello world");
                 ui.text(format!("Using {}", backend));
                 ui.text(format!("Delta time on avg: {:.2}ms", 1000.0 / ui.io().framerate));
                 ui.text(format!("FPS: {:.2}", ui.io().framerate));
+                ui.text(format!("Position: {:.2}", position));
             });
         });
 

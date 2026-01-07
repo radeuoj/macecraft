@@ -2,9 +2,9 @@ use std::collections::HashSet;
 use winit::keyboard::KeyCode;
 
 pub struct Camera {
-    position: glam::Vec3,
-    yaw: f32,
-    pitch: f32,
+    pub position: glam::Vec3,
+    pub yaw: f32,
+    pub pitch: f32,
     proj: glam::Mat4,
 }
 
