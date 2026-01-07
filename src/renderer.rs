@@ -3,7 +3,7 @@ use bytemuck::{Pod, Zeroable};
 use wgpu::util::DeviceExt;
 use winit::event::WindowEvent;
 use winit::window::{Window, WindowId};
-use crate::block::Block;
+use crate::chunk::{Block, Chunk};
 use crate::camera::Camera;
 use crate::imgui::ImGuiState;
 use crate::texture::{DepthTexture, Texture};
@@ -90,6 +90,7 @@ pub struct Renderer {
     imgui_fn: Option<Box<dyn FnMut(&mut imgui::Ui)>>,
 
     blocks: Vec<wgpu::Buffer>,
+    chunk: Option<wgpu::Buffer>,
 }
 
 impl Renderer {
@@ -281,6 +282,7 @@ impl Renderer {
             imgui,
             imgui_fn: None,
             blocks: vec![],
+            chunk: None,
         }
     }
 
@@ -316,52 +318,52 @@ impl Renderer {
 
         let vertices = [
             // -z
-            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+
+            // -x
+            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1] },
             Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
             Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
             Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
 
-            // -x
+            // +z
             Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
             Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z - 1], tex_coords: [tx + 1, ty    ] },
-
-            // +z
-            Vertex { position: [x + 1, y + 1, z - 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x    , y    , z - 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z - 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z - 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx + 1, ty    ] },
-
-            // +x
-            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z - 1], tex_coords: [tx    , ty + 1] },
             Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
             Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
             Vertex { position: [x    , y + 1, z    ], tex_coords: [tx + 1, ty    ] },
 
+            // +x
+            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+
             // -y
-            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z - 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z - 1], tex_coords: [tx + 1, ty    ] },
+            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
 
             // +y
-            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z - 1], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y    , z - 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty    ] },
+            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
+            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
+            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty    ] },
         ];
 
         let vertices = vertices.map(|v| v.compress());
@@ -375,10 +377,92 @@ impl Renderer {
         );
     }
 
+    pub fn render_chunk(&mut self, chunk: &Chunk) {
+        let mut vertices: Vec<Vertex> = vec![];
+
+        for x in 0..Chunk::SIZE as u8 {
+            for y in 0..Chunk::SIZE as u8 {
+                for z in 0..Chunk::SIZE as u8 {
+                    let block = chunk.get(glam::uvec3(x as u32, y as u32, z as u32));
+                    if block == Block::Air { continue; }
+                    let tx = block as u8 % 16;
+                    let ty = block as u8 / 16;
+
+                    vertices.extend([
+                        // -z
+                        Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1] },
+                        Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+
+                        // -x
+                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1] },
+                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+
+                        // +z
+                        Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
+                        Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+
+                        // +x
+                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
+                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+
+                        // -y
+                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1] },
+                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+
+                        // +y
+                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
+                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
+                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                        Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty    ] },
+                    ]);
+                }
+            }
+        }
+
+        let vertices = vertices.iter().map(|v| v.compress()).collect::<Vec<_>>();
+
+        self.chunk = Some(self.device.create_buffer_init(
+            &wgpu::util::BufferInitDescriptor {
+                label: Some("Chunk vertex buffer"),
+                contents: bytemuck::cast_slice(&vertices),
+                usage: wgpu::BufferUsages::VERTEX,
+            }
+        ));
+    }
+
     fn draw_blocks(&self, render_pass: &mut wgpu::RenderPass) {
         for block in &self.blocks {
             render_pass.set_vertex_buffer(0, block.slice(..));
             render_pass.draw(0..36, 0..1);
+        }
+    }
+
+    fn draw_chunk(&self, render_pass: &mut wgpu::RenderPass) {
+        if let Some(ref chunk) = self.chunk {
+            render_pass.set_vertex_buffer(0, chunk.slice(..));
+            render_pass.draw(0..(chunk.size() as u32 / 4), 0..1);
         }
     }
 
@@ -424,6 +508,7 @@ impl Renderer {
         render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
         render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
+        self.draw_chunk(&mut render_pass);
         self.draw_blocks(&mut render_pass);
 
         self.imgui.render(
