@@ -61,7 +61,10 @@ impl State {
         self.is_mouse_captured = !self.is_mouse_captured;
 
         if self.is_mouse_captured {
-            self.window.set_cursor_grab(CursorGrabMode::Locked).unwrap();
+            self.window
+                .set_cursor_grab(CursorGrabMode::Confined)
+                .or_else(|_| self.window.set_cursor_grab(CursorGrabMode::Locked))
+                .unwrap();
             self.window.set_cursor_visible(false);
         } else {
             self.window.set_cursor_grab(CursorGrabMode::None).unwrap();
@@ -74,7 +77,7 @@ impl State {
             self.active_keys.insert(code);
             if code == KeyCode::AltLeft { self.toggle_mouse_capture() }
         } else {
-            assert!(self.active_keys.remove(&code));
+            self.active_keys.remove(&code);
         }
     }
 
