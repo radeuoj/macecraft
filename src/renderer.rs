@@ -1,9 +1,11 @@
 use std::sync::Arc;
 use bytemuck::{Pod, Zeroable};
 use wgpu::util::DeviceExt;
+use winit::event::WindowEvent;
 use winit::window::Window;
 use crate::chunk::{Block, Chunk};
 use crate::camera::Camera;
+use crate::imgui_renderer::ImGuiRenderer;
 use crate::texture::{DepthTexture, Texture};
 
 #[derive(Debug)]
@@ -84,6 +86,8 @@ pub struct Renderer {
 
     blocks: Vec<wgpu::Buffer>,
     chunk: Option<wgpu::Buffer>,
+
+    imgui: ImGuiRenderer,
 }
 
 impl Renderer {
@@ -253,6 +257,8 @@ impl Renderer {
                 cache: None,
             });
 
+        let imgui = ImGuiRenderer::new(&device, &queue, surface_format, &window);
+
         Self {
             device,
             queue,
@@ -266,6 +272,7 @@ impl Renderer {
             depth_texture,
             blocks: vec![],
             chunk: None,
+            imgui,
         }
     }
 
@@ -433,7 +440,7 @@ impl Renderer {
         }
     }
 
-    pub fn draw(&mut self) -> anyhow::Result<()> {
+    pub fn draw(&mut self, window: &Window) -> anyhow::Result<()> {
         let surface_texture = self.surface.get_current_texture()?;
         let texture_view = surface_texture.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
@@ -477,12 +484,18 @@ impl Renderer {
         self.draw_chunk(&mut render_pass);
         self.draw_blocks(&mut render_pass);
 
+        self.imgui.render(window, &mut render_pass);
+
         drop(render_pass);
 
         self.queue.submit(std::iter::once(encoder.finish()));
         surface_texture.present();
 
         Ok(())
+    }
+
+    pub fn handle_imgui_window_event(&mut self, window: &Window, event: &WindowEvent) {
+        self.imgui.handle_window_event(window, event);
     }
 }
 

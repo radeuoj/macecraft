@@ -2,6 +2,7 @@ mod texture;
 mod camera;
 mod renderer;
 mod chunk;
+mod imgui_renderer;
 
 use crate::camera::Camera;
 use crate::renderer::Renderer;
@@ -91,7 +92,7 @@ impl State {
     }
 
     fn render(&mut self) -> anyhow::Result<()> {
-        self.renderer.draw()?;
+        self.renderer.draw(&self.window)?;
 
         Ok(())
     }
@@ -165,6 +166,9 @@ impl ApplicationHandler for App {
             WindowEvent::Resized(size) => self.state().resize(size),
             _ => (),
         }
+
+        let state = self.state();
+        state.renderer.handle_imgui_window_event(&state.window, &event);
     }
 
     fn device_event(&mut self, _event_loop: &ActiveEventLoop, _device_id: DeviceId, event: DeviceEvent) {
