@@ -1,5 +1,4 @@
 mod texture;
-mod imgui;
 mod camera;
 mod renderer;
 mod chunk;
@@ -87,25 +86,12 @@ impl State {
     }
 
     fn update(&mut self, delta_time: f32) {
-        self.renderer.update_delta_time(delta_time);
         self.camera.update(delta_time, &self.active_keys, self.mouse_delta);
         self.renderer.update_camera(&self.camera);
     }
 
     fn render(&mut self) -> anyhow::Result<()> {
-        let backend = self.renderer.get_backend();
-        let position = self.camera.position;
-        self.renderer.render_imgui(move |ui| {
-            ui.window("Macecraft").build(|| {
-                ui.text("Hello world");
-                ui.text(format!("Using {}", backend));
-                ui.text(format!("Delta time on avg: {:.2}ms", 1000.0 / ui.io().framerate));
-                ui.text(format!("FPS: {:.2}", ui.io().framerate));
-                ui.text(format!("Position: {:.2}", position));
-            });
-        });
-
-        self.renderer.draw(&self.window)?;
+        self.renderer.draw()?;
 
         Ok(())
     }
@@ -164,7 +150,7 @@ impl ApplicationHandler for App {
         self.state = Some(pollster::block_on(State::new(window)));
     }
 
-    fn window_event(&mut self, event_loop: &ActiveEventLoop, window_id: WindowId, event: WindowEvent) {
+    fn window_event(&mut self, event_loop: &ActiveEventLoop, _window_id: WindowId, event: WindowEvent) {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
             WindowEvent::KeyboardInput {
@@ -179,9 +165,6 @@ impl ApplicationHandler for App {
             WindowEvent::Resized(size) => self.state().resize(size),
             _ => (),
         }
-
-        let state = self.state();
-        state.renderer.imgui_handle_window_event(&state.window, window_id, event.clone());
     }
 
     fn device_event(&mut self, _event_loop: &ActiveEventLoop, _device_id: DeviceId, event: DeviceEvent) {

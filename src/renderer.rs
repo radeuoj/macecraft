@@ -1,11 +1,9 @@
 use std::sync::Arc;
 use bytemuck::{Pod, Zeroable};
 use wgpu::util::DeviceExt;
-use winit::event::WindowEvent;
-use winit::window::{Window, WindowId};
+use winit::window::Window;
 use crate::chunk::{Block, Chunk};
 use crate::camera::Camera;
-use crate::imgui::ImGuiState;
 use crate::texture::{DepthTexture, Texture};
 
 #[derive(Debug)]
@@ -83,11 +81,6 @@ pub struct Renderer {
     camera_bind_group: wgpu::BindGroup,
 
     depth_texture: DepthTexture,
-
-    backend: wgpu::Backend,
-
-    imgui: ImGuiState,
-    imgui_fn: Option<Box<dyn FnMut(&mut imgui::Ui)>>,
 
     blocks: Vec<wgpu::Buffer>,
     chunk: Option<wgpu::Buffer>,
@@ -260,13 +253,6 @@ impl Renderer {
                 cache: None,
             });
 
-        let imgui = ImGuiState::new(
-            &device,
-            &queue,
-            surface_format,
-            &window,
-        );
-
         Self {
             device,
             queue,
@@ -278,16 +264,9 @@ impl Renderer {
             camera_buffer,
             camera_bind_group,
             depth_texture,
-            backend: adapter.get_info().backend,
-            imgui,
-            imgui_fn: None,
             blocks: vec![],
             chunk: None,
         }
-    }
-
-    pub fn get_backend(&self) -> wgpu::Backend {
-        self.backend
     }
 
     pub fn resize(&mut self, size: winit::dpi::PhysicalSize<u32>) {
@@ -298,18 +277,6 @@ impl Renderer {
     pub fn update_camera(&mut self, camera: &Camera) {
         self.camera_uniform.view_proj = camera.build_view_proj_matrix().to_cols_array_2d();
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
-    }
-
-    pub fn update_delta_time(&mut self, delta_time: f32) {
-        self.imgui.update_delta_time(delta_time);
-    }
-
-    pub fn render_imgui(&mut self, imgui_fn: impl FnMut(&mut imgui::Ui) + 'static) {
-        self.imgui_fn = Some(Box::new(imgui_fn));
-    }
-
-    pub fn imgui_handle_window_event(&mut self, window: &Window, window_id: WindowId, event: WindowEvent) {
-        self.imgui.handle_window_event(window, window_id, event);
     }
 
     pub fn render_block(&mut self, block: Block, glam::U8Vec3 { x, y, z }: glam::U8Vec3) {
@@ -466,8 +433,7 @@ impl Renderer {
         }
     }
 
-    // there should not be a window here, imgui state is a messed up struct
-    pub fn draw(&mut self, window: &Window) -> anyhow::Result<()> {
+    pub fn draw(&mut self) -> anyhow::Result<()> {
         let surface_texture = self.surface.get_current_texture()?;
         let texture_view = surface_texture.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
@@ -510,14 +476,6 @@ impl Renderer {
 
         self.draw_chunk(&mut render_pass);
         self.draw_blocks(&mut render_pass);
-
-        self.imgui.render(
-            window,
-            &self.device,
-            &self.queue,
-            &mut render_pass,
-            self.imgui_fn.as_mut().unwrap(),
-        );
 
         drop(render_pass);
 
