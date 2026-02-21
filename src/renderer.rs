@@ -347,7 +347,8 @@ impl Renderer {
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
     }
 
-    pub fn render_chunk(&mut self, pos: glam::IVec3, chunk: &Chunk) {
+    pub fn render_chunk(&mut self, pos: glam::IVec3, world: &World) {
+        let chunk = world.get_chunk(pos).unwrap();
         let mut vertices: Vec<Vertex> = vec![];
 
         for x in 0..Chunk::SIZE as u8 {
@@ -358,55 +359,77 @@ impl Renderer {
                     let tx = block as u8 % 16;
                     let ty = block as u8 / 16;
 
-                    vertices.extend([
-                        // -z
-                        Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1] },
-                        Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+                    // -z
+                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y, z + 1).as_uvec3())) {
+                        vertices.extend([
+                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1] },
+                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+                        ]);
+                    }
 
-                        // -x
-                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1] },
-                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                    // -x
+                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x + 1, y, z).as_uvec3())) {
+                        vertices.extend([
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1] },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                        ]);
+                    }
 
-                        // +z
-                        Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
-                        Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                    // +z
+                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y, z - 1).as_uvec3())) {
+                        vertices.extend([
+                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
+                            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                        ]);
+                    }
 
-                        // +x
-                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
-                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+                    // +x
+                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x - 1, y, z).as_uvec3())) {
+                        vertices.extend([
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+                        ]);
+                    }
 
-                        // -y
-                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1] },
-                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                    // -y
+                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y + 1, z).as_uvec3())) {
+                        vertices.extend([
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1] },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                        ]);
+                    }
 
-                        // +y
-                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
-                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
-                        Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                        Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty    ] },
-                    ]);
+                    // +y
+                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y - 1, z).as_uvec3())) {
+                        vertices.extend([
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
+                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty    ] },
+                        ]);
+                    }
                 }
             }
         }
@@ -426,9 +449,9 @@ impl Renderer {
         for (i, (pos, chunk)) in self.chunks.iter().enumerate() {
             let mut chunk_pos_uniform = ChunkPosUniform::new();
             chunk_pos_uniform.set(*pos);
-            self.queue.write_buffer(&self.chunk_pos_buffer, (i * 256) as u64, bytemuck::cast_slice(&[chunk_pos_uniform]));
-            let offset = (i * 256) as u32;
-            render_pass.set_bind_group(2, &self.chunk_bind_group, &[offset]);
+            let offset = i as u64 * self.device.limits().min_uniform_buffer_offset_alignment as u64;
+            self.queue.write_buffer(&self.chunk_pos_buffer, offset, bytemuck::cast_slice(&[chunk_pos_uniform]));
+            render_pass.set_bind_group(2, &self.chunk_bind_group, &[offset as u32]);
             render_pass.set_vertex_buffer(0, chunk.slice(..));
             render_pass.draw(0..(chunk.size() as u32 / 4), 0..1);
         }

@@ -42,7 +42,14 @@ impl State {
                 let mut chunk = Chunk::new();
                 chunk.generate_superflat();
                 let pos = (i, 0, j).into();
-                renderer.render_chunk(pos, world.add_chunk(pos, chunk));
+                world.add_chunk(pos, chunk);
+            }
+        }
+
+        for i in -1..=1 {
+            for j in -1..=1 {
+                let pos = (i, 0, j).into();
+                renderer.render_chunk(pos, &world);
             }
         }
 
