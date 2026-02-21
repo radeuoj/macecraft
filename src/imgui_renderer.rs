@@ -1,4 +1,4 @@
-use dear_imgui_rs::{Context, FontConfig};
+use dear_imgui_rs::{Context, FontConfig, Ui};
 use dear_imgui_wgpu::{GammaMode, WgpuInitInfo, WgpuRenderer};
 use dear_imgui_winit::{HiDpiMode, WinitPlatform};
 use winit::{event::WindowEvent, window::Window};
@@ -46,13 +46,12 @@ impl ImGuiRenderer {
         }
     }
 
-    pub fn render(&mut self, window: &Window, render_pass: &mut wgpu::RenderPass) {
+    pub fn render(&mut self, window: &Window, render_pass: &mut wgpu::RenderPass, content: impl FnOnce(&Ui)) {
         self.platform.prepare_frame(window, &mut self.context);
         let ui = self.context.frame();
 
-        ui.window("Hello world").build(|| {
-            ui.text("YAYYY?!??!");
-            ui.text("Does it work?");
+        ui.window("Macecraft").build(|| {
+            content(ui);
         });
 
         let draw_data = self.context.render();

@@ -108,6 +108,7 @@ pub struct Renderer {
     chunks: HashMap<glam::IVec3, wgpu::Buffer>,
 
     imgui: ImGuiRenderer,
+    imgui_content: Box<dyn FnOnce(&dear_imgui_rs::Ui)>,
 }
 
 impl Renderer {
@@ -334,6 +335,7 @@ impl Renderer {
             depth_texture,
             chunks: HashMap::new(),
             imgui,
+            imgui_content: Box::new(|_| {}),
         }
     }
 
@@ -347,6 +349,10 @@ impl Renderer {
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
     }
 
+    pub fn update_imgui(&mut self, content: impl FnOnce(&dear_imgui_rs::Ui) + 'static) {
+        self.imgui_content = Box::new(content);
+    }
+
     pub fn render_chunk(&mut self, pos: glam::IVec3, world: &World) {
         let chunk = world.get_chunk(pos).unwrap();
         let mut vertices: Vec<Vertex> = vec![];
@@ -358,9 +364,10 @@ impl Renderer {
                     if block == Block::Air { continue; }
                     let tx = block as u8 % 16;
                     let ty = block as u8 / 16;
+                    let pos = World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y, z).as_uvec3());
 
                     // -z
-                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y, z + 1).as_uvec3())) {
+                    if world.is_air(pos + glam::ivec3(0, 0, 1)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1] },
@@ -372,7 +379,7 @@ impl Renderer {
                     }
 
                     // -x
-                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x + 1, y, z).as_uvec3())) {
+                    if world.is_air(pos + glam::ivec3(1, 0, 0)) {
                         vertices.extend([
                             Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1] },
@@ -384,7 +391,7 @@ impl Renderer {
                     }
 
                     // +z
-                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y, z - 1).as_uvec3())) {
+                    if world.is_air(pos + glam::ivec3(0, 0, -1)) {
                         vertices.extend([
                             Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
@@ -396,7 +403,7 @@ impl Renderer {
                     }
 
                     // +x
-                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x - 1, y, z).as_uvec3())) {
+                    if world.is_air(pos + glam::ivec3(-1, 0, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
@@ -408,7 +415,7 @@ impl Renderer {
                     }
 
                     // -y
-                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y + 1, z).as_uvec3())) {
+                    if world.is_air(pos + glam::ivec3(0, 1, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1] },
@@ -420,7 +427,7 @@ impl Renderer {
                     }
 
                     // +y
-                    if world.is_air(World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y - 1, z).as_uvec3())) {
+                    if world.is_air(pos + glam::ivec3(0, -1, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
@@ -500,7 +507,8 @@ impl Renderer {
 
         self.draw_chunks(&mut render_pass);
 
-        self.imgui.render(window, &mut render_pass);
+        let imgui_content = std::mem::replace(&mut self.imgui_content, Box::new(|_| {}));
+        self.imgui.render(window, &mut render_pass, imgui_content);
 
         drop(render_pass);
 

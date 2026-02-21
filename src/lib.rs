@@ -104,6 +104,19 @@ impl State {
     fn update(&mut self, delta_time: f32) {
         self.camera.update(delta_time, &self.active_keys, self.mouse_delta);
         self.renderer.update_camera(&self.camera);
+        self.update_imgui(delta_time);
+    }
+
+    fn update_imgui(&mut self, delta_time: f32) {
+        let pos = self.camera.position;
+        let yaw = self.camera.yaw;
+        let pitch = self.camera.pitch;
+        self.renderer.update_imgui(move |ui| {
+            ui.text(format!("FPS: {}", 1.0 / delta_time));
+            ui.text(format!("Position: {:+.2} {:+.2} {:+.2}", pos.x, pos.y, pos.z));
+            ui.text(format!("Yaw: {:+.2}", yaw));
+            ui.text(format!("Pitch: {:+.2}", pitch));
+        });
     }
 
     fn render(&mut self) -> anyhow::Result<()> {
