@@ -15,7 +15,7 @@ impl Camera {
     pub const Z_FAR: f32 = 1000.0;
     pub const SPEED: f32 = 2.0;
     pub const SPRINT_SPEED: f32 = 20.0;
-    pub const SENSITIVITY: f32 = 0.002;
+    pub const SENSITIVITY: f32 = 0.001;
 
     pub fn new(aspect_ratio: f32) -> Self {
         Self {

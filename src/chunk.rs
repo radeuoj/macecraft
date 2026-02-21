@@ -1,19 +1,31 @@
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum Block {
-    Air,
-    Dirt,
-    Grass,
+pub struct Block(pub u8);
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum BlockFace {
+    ZN, // Z-
+    ZP, // Z+
+    XN, // X-
+    XP, // X+
+    YN, // Y-
+    YP, // Y+
 }
 
-impl From<u8> for Block {
-    fn from(value: u8) -> Self {
-        use Block::*;
+impl Block {
+    pub const AIR: Block = Block(0);
+    pub const DIRT: Block = Block(1);
+    pub const GRASS: Block = Block(2);
 
-        match value {
-            0 => Air,
-            1 => Dirt,
-            2 => Grass,
-            _ => unreachable!(),
+    pub fn get_texture_coords(&self, face: BlockFace) -> (u8, u8) {
+        match self {
+            &Self::AIR => (0, 0),
+            &Self::DIRT => (1, 0),
+            &Self::GRASS => match face {
+                BlockFace::YN => (3, 0),
+                BlockFace::YP => (1, 0),
+                _ => (2, 0),
+            }
+            _ => unimplemented!("invalid block"),
         }
     }
 }
@@ -27,7 +39,7 @@ impl Chunk {
 
     pub fn new() -> Self {
         Self {
-            blocks: Box::new([Block::Air; _]),
+            blocks: Box::new([Block::AIR; _]),
         }
     }
 
@@ -45,14 +57,14 @@ impl Chunk {
         for y in 0..4u32 {
             for x in 0..Self::SIZE {
                 for z in 0..Self::SIZE {
-                    self.set(glam::uvec3(x, y, z), Block::Dirt);
+                    self.set(glam::uvec3(x, y, z), Block::DIRT);
                 }
             }
         }
 
         for x in 0..Self::SIZE {
             for z in 0..Self::SIZE {
-                self.set(glam::uvec3(x, 4, z), Block::Grass);
+                self.set(glam::uvec3(x, 4, z), Block::GRASS);
             }
         }
     }

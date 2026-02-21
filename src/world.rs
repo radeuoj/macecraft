@@ -28,12 +28,12 @@ impl World {
 
         match self.chunks.get(&chunk_pos) {
             Some(chunk) => chunk.get(local_pos),
-            None => Block::Air,
+            None => Block::AIR,
         }
     }
 
     pub fn is_air(&self, pos: glam::IVec3) -> bool {
-        self.get_block(pos) == Block::Air
+        self.get_block(pos) == Block::AIR
     }
 
     /**

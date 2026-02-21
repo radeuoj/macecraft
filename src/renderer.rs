@@ -4,7 +4,7 @@ use bytemuck::{Pod, Zeroable};
 use wgpu::util::DeviceExt;
 use winit::event::WindowEvent;
 use winit::window::Window;
-use crate::chunk::{Block, Chunk};
+use crate::chunk::{Block, BlockFace, Chunk};
 use crate::camera::Camera;
 use crate::imgui_renderer::ImGuiRenderer;
 use crate::texture::{DepthTexture, Texture};
@@ -361,12 +361,11 @@ impl Renderer {
             for y in 0..Chunk::SIZE as u8 {
                 for z in 0..Chunk::SIZE as u8 {
                     let block = chunk.get(glam::uvec3(x as u32, y as u32, z as u32));
-                    if block == Block::Air { continue; }
-                    let tx = block as u8 % 16;
-                    let ty = block as u8 / 16;
+                    if block == Block::AIR { continue; }
                     let pos = World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y, z).as_uvec3());
 
                     // -z
+                    let (tx, ty) = block.get_texture_coords(BlockFace::ZN);
                     if world.is_air(pos + glam::ivec3(0, 0, 1)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
@@ -379,6 +378,7 @@ impl Renderer {
                     }
 
                     // -x
+                    let (tx, ty) = block.get_texture_coords(BlockFace::XN);
                     if world.is_air(pos + glam::ivec3(1, 0, 0)) {
                         vertices.extend([
                             Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
@@ -391,6 +391,7 @@ impl Renderer {
                     }
 
                     // +z
+                    let (tx, ty) = block.get_texture_coords(BlockFace::ZP);
                     if world.is_air(pos + glam::ivec3(0, 0, -1)) {
                         vertices.extend([
                             Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
@@ -403,6 +404,7 @@ impl Renderer {
                     }
 
                     // +x
+                    let (tx, ty) = block.get_texture_coords(BlockFace::XP);
                     if world.is_air(pos + glam::ivec3(-1, 0, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
@@ -415,6 +417,7 @@ impl Renderer {
                     }
 
                     // -y
+                    let (tx, ty) = block.get_texture_coords(BlockFace::YN);
                     if world.is_air(pos + glam::ivec3(0, 1, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
@@ -427,6 +430,7 @@ impl Renderer {
                     }
 
                     // +y
+                    let (tx, ty) = block.get_texture_coords(BlockFace::YP);
                     if world.is_air(pos + glam::ivec3(0, -1, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
