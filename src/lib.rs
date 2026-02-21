@@ -14,6 +14,7 @@ use crate::world::World;
 use std::sync::Arc;
 use std::time::Instant;
 use winit::application::ApplicationHandler;
+use winit::dpi::PhysicalPosition;
 use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
@@ -184,6 +185,12 @@ impl App {
 
         state.input.mouse_delta = glam::Vec2::ZERO;
         state.input.just_pressed_mouse_buttons.clear();
+
+        if state.is_mouse_captured {
+            state.window.set_cursor_position(PhysicalPosition::new(
+                state.size.width / 2, state.size.height / 2)).unwrap();
+        }
+
         state.window.request_redraw();
     }
 
