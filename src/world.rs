@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use glam::Vec3;
 
@@ -7,6 +7,7 @@ use crate::{chunk::{Block, Chunk}, input::Input, player::Player};
 pub struct World {
     player: Player,
     chunks: HashMap<glam::IVec3, Chunk>,
+    pub last_updated_chunks: HashSet<glam::IVec3>, // TODO: fix
 }
 
 impl World {
@@ -16,11 +17,13 @@ impl World {
         Self {
             player: Player::new(),
             chunks: HashMap::new(),
+            last_updated_chunks: HashSet::new(),
         }
     }
 
     pub fn add_chunk(&mut self, pos: glam::IVec3, chunk: Chunk) {
         self.chunks.insert(pos, chunk);
+        self.request_chunk_render_if_exists(pos);
     }
 
     pub fn get_chunk(&self, pos: glam::IVec3) -> Option<&Chunk> {
@@ -36,11 +39,23 @@ impl World {
         }
     }
 
+    fn request_chunk_render_if_exists(&mut self, pos: glam::IVec3) {
+        if !self.chunks.contains_key(&pos) { return; }
+        self.last_updated_chunks.insert(pos);
+    }
+
     pub fn set_block(&mut self, pos: glam::IVec3, block: Block) {
         let (chunk_pos, local_pos) = World::world_pos_to_chunk_pos(pos);
 
         if let Some(chunk) = self.chunks.get_mut(&chunk_pos) {
             chunk.set(local_pos, block);
+            self.request_chunk_render_if_exists(chunk_pos);
+            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(0, -1, 0));
+            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(0, 1, 0));
+            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(-1, 0, 0));
+            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(1, 0, 0));
+            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(0, 0, -1));
+            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(0, 0, 1));
         } else {
             panic!("Chunk at {:?} was not loaded yet", chunk_pos);
         }
@@ -89,8 +104,8 @@ impl World {
 
         let mut ray_length = ray_unit_step_size * glam::Vec3::select(
             dir.cmplt(Vec3::ZERO),
-            origin.fract(),
-            1.0 - origin.fract()
+            origin - origin.floor(),
+            1.0 - origin + origin.floor()
         );
 
         let mut dist = 0.0;

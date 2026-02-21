@@ -104,6 +104,7 @@ impl State {
     fn handle_mouse_button(&mut self, button: MouseButton, is_pressed: bool) {
         if is_pressed {
             self.input.active_mouse_buttons.insert(button);
+            self.input.just_pressed_mouse_buttons.insert(button);
         } else {
             self.input.active_mouse_buttons.remove(&button);
         }
@@ -136,6 +137,11 @@ impl State {
     }
 
     fn render(&mut self) -> anyhow::Result<()> {
+        for pos in &self.world.last_updated_chunks {
+            self.renderer.render_chunk(*pos, &self.world);
+        }
+        self.world.last_updated_chunks.clear();
+
         self.renderer.draw(&self.window)?;
 
         Ok(())
@@ -177,6 +183,7 @@ impl App {
         }
 
         state.input.mouse_delta = glam::Vec2::ZERO;
+        state.input.just_pressed_mouse_buttons.clear();
         state.window.request_redraw();
     }
 

@@ -74,7 +74,7 @@ impl Player {
     // TODO: fix this so it doesnt use raw pointers
     pub fn handle_block_manip(&self, input: &Input, world: *mut World) {
         unsafe {
-            if input.is_mouse_button_pressed(MouseButton::Left) && 
+            if input.is_mouse_button_just_pressed(MouseButton::Left) && 
                     let Some(pos) = (*world).raycast(self.position, self.forward(), 5.0) {
                 (*world).set_block(pos, Block::AIR);
             }
