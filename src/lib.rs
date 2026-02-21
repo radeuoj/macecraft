@@ -131,14 +131,16 @@ pub struct App {
     delta_time: Instant,
 }
 
-impl App {
-    pub fn new() -> App {
+impl Default for App {
+    fn default() -> Self {
         Self {
             state: None,
             delta_time: Instant::now(),
         }
     }
+}
 
+impl App {
     fn handle_key(&mut self, event_loop: &ActiveEventLoop, code: KeyCode, is_pressed: bool) {
         if is_pressed && code == KeyCode::Escape {
             event_loop.exit();
@@ -202,10 +204,8 @@ impl ApplicationHandler for App {
     fn device_event(&mut self, _event_loop: &ActiveEventLoop, _device_id: DeviceId, event: DeviceEvent) {
         let state = self.state.as_mut().unwrap();
 
-        match event {
-            DeviceEvent::MouseMotion { delta } => state
-                .handle_mouse(glam::vec2(delta.0 as f32, delta.1 as f32)),
-            _ => (),
+        if let DeviceEvent::MouseMotion { delta } = event {
+            state.handle_mouse(glam::vec2(delta.0 as f32, delta.1 as f32));
         }
     }
 }
