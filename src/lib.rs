@@ -2,10 +2,12 @@ mod texture;
 mod camera;
 mod renderer;
 mod chunk;
+mod world;
 mod imgui_renderer;
 
 use crate::camera::Camera;
 use crate::renderer::Renderer;
+use crate::world::World;
 use std::collections::HashSet;
 use std::sync::Arc;
 use std::time::Instant;
@@ -14,7 +16,7 @@ use winit::event::{DeviceEvent, DeviceId, KeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
-use crate::chunk::{Block, Chunk};
+use crate::chunk::Chunk;
 
 struct State {
     window: Arc<Window>,
@@ -25,7 +27,7 @@ struct State {
     mouse_delta: glam::Vec2,
     is_mouse_captured: bool,
 
-    chunk: Chunk,
+    world: World,
 }
 
 impl State {
@@ -33,10 +35,16 @@ impl State {
         let size = window.inner_size();
         let camera = Camera::new(size.width as f32 / size.height as f32);
         let mut renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
-        renderer.render_block(Block::Dirt, glam::u8vec3(0, 10, 0));
-        let mut chunk = Chunk::new();
-        chunk.generate_superflat();
-        renderer.render_chunk(&chunk);
+
+        let mut world = World::new();
+        for i in -1..=1 {
+            for j in -1..=1 {
+                let mut chunk = Chunk::new();
+                chunk.generate_superflat();
+                let pos = (i, 0, j).into();
+                renderer.render_chunk(pos, world.add_chunk(pos, chunk));
+            }
+        }
 
         Self {
             window,
@@ -46,7 +54,7 @@ impl State {
             active_keys: HashSet::new(),
             mouse_delta: glam::Vec2::ZERO,
             is_mouse_captured: false,
-            chunk,
+            world,
         }
     }
 

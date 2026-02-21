@@ -10,12 +10,17 @@ struct CameraUniform {
 @group(1) @binding(0)
 var<uniform> camera: CameraUniform;
 
+@group(2) @binding(0)
+var<uniform> chunk_pos: vec3<i32>;
+
+const CHUNK_SIZE: i32 = 32;
+
 @vertex
 fn vs_main(@location(0) in: u32) -> VertexOutput {
-    let position = vec3<u32>(
-        in & ((1 << 6) - 1),
-        (in >> 6) & ((1 << 6) - 1),
-        (in >> 12) & ((1 << 6) - 1),
+    let position = chunk_pos * CHUNK_SIZE + vec3<i32>(
+        i32(in & ((1 << 6) - 1)),
+        i32((in >> 6) & ((1 << 6) - 1)),
+        i32((in >> 12) & ((1 << 6) - 1)),
     );
 
     let tex_coords = vec2<u32>(

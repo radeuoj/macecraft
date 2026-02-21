@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use bytemuck::{Pod, Zeroable};
 use wgpu::util::DeviceExt;
@@ -7,6 +8,7 @@ use crate::chunk::{Block, Chunk};
 use crate::camera::Camera;
 use crate::imgui_renderer::ImGuiRenderer;
 use crate::texture::{DepthTexture, Texture};
+use crate::world::World;
 
 #[derive(Debug)]
 struct Vertex {
@@ -69,6 +71,22 @@ impl CameraUniform {
     }
 }
 
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Pod, Zeroable)]
+struct ChunkPosUniform {
+    chunk_pos: [i32; 3],
+}
+
+impl ChunkPosUniform {
+    fn new() -> Self {
+        Self { chunk_pos: [0; 3] }
+    }
+
+    fn set(&mut self, pos: glam::IVec3) {
+        self.chunk_pos = pos.into();
+    }
+}
+
 pub struct Renderer {
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -82,10 +100,12 @@ pub struct Renderer {
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
 
+    chunk_pos_buffer: wgpu::Buffer,
+    chunk_bind_group: wgpu::BindGroup,
+
     depth_texture: DepthTexture,
 
-    blocks: Vec<wgpu::Buffer>,
-    chunk: Option<wgpu::Buffer>,
+    chunks: HashMap<glam::IVec3, wgpu::Buffer>,
 
     imgui: ImGuiRenderer,
 }
@@ -173,7 +193,7 @@ impl Renderer {
 
         let camera_bind_group_layout = device
             .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                label: Some("Camera Bind group layout"),
+                label: Some("Camera bind group layout"),
                 entries: &[
                     wgpu::BindGroupLayoutEntry {
                         binding: 0,
@@ -197,6 +217,45 @@ impl Renderer {
                         binding: 0,
                         resource: camera_buffer.as_entire_binding(),
                     },
+                    
+                ],
+            });
+        
+        assert!(size_of::<ChunkPosUniform>() as u32 <= device.limits().min_uniform_buffer_offset_alignment);
+        let chunk_pos_buffer = device
+            .create_buffer(&wgpu::BufferDescriptor {
+                label: Some("Chunk pos buffer"),
+                size: device.limits().min_uniform_buffer_offset_alignment as u64 * World::MAX_CHUNKS as u64,
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            });
+
+        let chunk_bind_group_layout = device
+            .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+                label: Some("Chunk bind group layout"),
+                entries: &[
+                    wgpu::BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: wgpu::ShaderStages::VERTEX,
+                        ty: wgpu::BindingType::Buffer {
+                            ty: wgpu::BufferBindingType::Uniform,
+                            has_dynamic_offset: true,
+                            min_binding_size: None,
+                        },
+                        count: None,
+                    },
+                ],
+            });
+
+        let chunk_bind_group = device
+            .create_bind_group(&wgpu::BindGroupDescriptor {
+                label: Some("Chunk bind group"),
+                layout: &chunk_bind_group_layout,
+                entries: &[
+                    wgpu::BindGroupEntry {
+                        binding: 0,
+                        resource: chunk_pos_buffer.slice(0..256).into(),
+                    },
                 ],
             });
 
@@ -208,6 +267,7 @@ impl Renderer {
                 bind_group_layouts: &[
                     &texture_bind_group_layout,
                     &camera_bind_group_layout,
+                    &chunk_bind_group_layout,
                 ],
                 immediate_size: 0,
             });
@@ -269,9 +329,10 @@ impl Renderer {
             camera_uniform,
             camera_buffer,
             camera_bind_group,
+            chunk_pos_buffer,
+            chunk_bind_group,
             depth_texture,
-            blocks: vec![],
-            chunk: None,
+            chunks: HashMap::new(),
             imgui,
         }
     }
@@ -286,72 +347,7 @@ impl Renderer {
         self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
     }
 
-    pub fn render_block(&mut self, block: Block, glam::U8Vec3 { x, y, z }: glam::U8Vec3) {
-        let tx = block as u8 % 16;
-        let ty = block as u8 / 16;
-
-        let vertices = [
-            // -z
-            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
-
-            // -x
-            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
-
-            // +z
-            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx + 1, ty    ] },
-
-            // +x
-            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
-
-            // -y
-            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
-
-            // +y
-            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
-            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
-            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty    ] },
-        ];
-
-        let vertices = vertices.map(|v| v.compress());
-
-        self.blocks.push(
-            self.device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
-                label: Some(&format!("Block at {:.2}", glam::u8vec3(x, y, z))),
-                contents: bytemuck::cast_slice(&vertices),
-                usage: wgpu::BufferUsages::VERTEX,
-            })
-        );
-    }
-
-    pub fn render_chunk(&mut self, chunk: &Chunk) {
+    pub fn render_chunk(&mut self, pos: glam::IVec3, chunk: &Chunk) {
         let mut vertices: Vec<Vertex> = vec![];
 
         for x in 0..Chunk::SIZE as u8 {
@@ -417,7 +413,7 @@ impl Renderer {
 
         let vertices = vertices.iter().map(|v| v.compress()).collect::<Vec<_>>();
 
-        self.chunk = Some(self.device.create_buffer_init(
+        self.chunks.insert(pos, self.device.create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
                 label: Some("Chunk vertex buffer"),
                 contents: bytemuck::cast_slice(&vertices),
@@ -426,15 +422,13 @@ impl Renderer {
         ));
     }
 
-    fn draw_blocks(&self, render_pass: &mut wgpu::RenderPass) {
-        for block in &self.blocks {
-            render_pass.set_vertex_buffer(0, block.slice(..));
-            render_pass.draw(0..36, 0..1);
-        }
-    }
-
-    fn draw_chunk(&self, render_pass: &mut wgpu::RenderPass) {
-        if let Some(ref chunk) = self.chunk {
+    fn draw_chunks(&mut self, render_pass: &mut wgpu::RenderPass) {
+        for (i, (pos, chunk)) in self.chunks.iter().enumerate() {
+            let mut chunk_pos_uniform = ChunkPosUniform::new();
+            chunk_pos_uniform.set(*pos);
+            self.queue.write_buffer(&self.chunk_pos_buffer, (i * 256) as u64, bytemuck::cast_slice(&[chunk_pos_uniform]));
+            let offset = (i * 256) as u32;
+            render_pass.set_bind_group(2, &self.chunk_bind_group, &[offset]);
             render_pass.set_vertex_buffer(0, chunk.slice(..));
             render_pass.draw(0..(chunk.size() as u32 / 4), 0..1);
         }
@@ -481,8 +475,7 @@ impl Renderer {
         render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
         render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
-        self.draw_chunk(&mut render_pass);
-        self.draw_blocks(&mut render_pass);
+        self.draw_chunks(&mut render_pass);
 
         self.imgui.render(window, &mut render_pass);
 

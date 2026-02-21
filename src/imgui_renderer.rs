@@ -1,8 +1,7 @@
-use dear_imgui_rs::{Context, FontConfig, draw_data};
+use dear_imgui_rs::{Context, FontConfig};
 use dear_imgui_wgpu::{GammaMode, WgpuInitInfo, WgpuRenderer};
 use dear_imgui_winit::{HiDpiMode, WinitPlatform};
 use winit::{event::WindowEvent, window::Window};
-
 use crate::texture::DepthTexture;
 
 pub struct ImGuiRenderer {
