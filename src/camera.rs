@@ -1,5 +1,4 @@
-use std::collections::HashSet;
-use winit::keyboard::KeyCode;
+use crate::player::Player;
 
 pub struct Camera {
     pub position: glam::Vec3,
@@ -13,9 +12,6 @@ impl Camera {
     pub const FOV_Y: f32 = 60.0;
     pub const Z_NEAR: f32 = 0.1;
     pub const Z_FAR: f32 = 1000.0;
-    pub const SPEED: f32 = 2.0;
-    pub const SPRINT_SPEED: f32 = 20.0;
-    pub const SENSITIVITY: f32 = 0.001;
 
     pub fn new(aspect_ratio: f32) -> Self {
         Self {
@@ -34,12 +30,14 @@ impl Camera {
         )
     }
 
-    pub fn right(&self) -> glam::Vec3 {
-        self.forward().cross(Self::UP)
-    }
-
     pub fn set_aspect_ratio(&mut self, aspect_ratio: f32) {
         self.proj = Self::build_proj_matrix(aspect_ratio);
+    }
+
+    pub fn update_from_player(&mut self, player: &Player) {
+        self.position = player.position;
+        self.yaw = player.yaw;
+        self.pitch = player.pitch;
     }
 
     fn build_proj_matrix(aspect_ratio: f32) -> glam::Mat4 {
@@ -59,41 +57,5 @@ impl Camera {
         );
 
         self.proj * view
-    }
-
-    pub fn update(&mut self, delta_time: f32, active_keys: &HashSet<KeyCode>, mouse_delta: glam::Vec2) {
-        self.handle_moving(delta_time, active_keys);
-        self.handle_looking(mouse_delta);
-    }
-
-    fn handle_moving(&mut self, delta_time: f32, active_keys: &HashSet<KeyCode>) {
-        let mut move_dir = glam::Vec3::ZERO;
-        let forward = self.forward().with_y(0.0).normalize_or_zero();
-        let right = self.right();
-
-        use KeyCode::*;
-        if active_keys.contains(&KeyW) { move_dir += forward }
-        if active_keys.contains(&KeyS) { move_dir -= forward }
-        if active_keys.contains(&KeyD) { move_dir += right }
-        if active_keys.contains(&KeyA) { move_dir -= right }
-        move_dir = move_dir.normalize_or_zero();
-
-        if active_keys.contains(&Space) { move_dir.y += 1.0 }
-        if active_keys.contains(&ShiftLeft) { move_dir.y -= 1.0 }
-
-        let speed = if active_keys.contains(&ControlLeft) {
-            Self::SPRINT_SPEED
-        } else {
-            Self::SPEED
-        };
-
-        self.position += move_dir * speed * delta_time;
-    }
-
-    fn handle_looking(&mut self, mouse_delta: glam::Vec2) {
-        self.yaw += Self::SENSITIVITY * mouse_delta.x;
-        self.pitch -= Self::SENSITIVITY * mouse_delta.y;
-
-        self.pitch = self.pitch.clamp(-89f32.to_radians(), 89f32.to_radians());
     }
 }

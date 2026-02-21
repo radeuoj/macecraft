@@ -1,8 +1,11 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-use crate::chunk::{Block, Chunk};
+use winit::keyboard::KeyCode;
+
+use crate::{chunk::{Block, Chunk}, player::Player};
 
 pub struct World {
+    player: Player,
     chunks: HashMap<glam::IVec3, Chunk>,
 }
 
@@ -11,6 +14,7 @@ impl World {
 
     pub fn new() -> Self {
         Self {
+            player: Player::new(),
             chunks: HashMap::new(),
         }
     }
@@ -50,5 +54,13 @@ impl World {
 
     pub fn chunk_pos_to_world_pos(chunk_pos: glam::IVec3, local_pos: glam::UVec3) -> glam::IVec3 {
         chunk_pos * Chunk::SIZE as i32 + local_pos.as_ivec3()
+    }
+
+    pub fn update(&mut self, delta_time: f32, active_keys: &HashSet<KeyCode>, mouse_delta: glam::Vec2) {
+        self.player.update(delta_time, active_keys, mouse_delta);
+    }
+
+    pub fn get_player(&self) -> &Player {
+        &self.player
     }
 }

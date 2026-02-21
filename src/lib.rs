@@ -4,6 +4,7 @@ mod renderer;
 mod chunk;
 mod world;
 mod imgui_renderer;
+mod player;
 
 use crate::camera::Camera;
 use crate::renderer::Renderer;
@@ -102,7 +103,8 @@ impl State {
     }
 
     fn update(&mut self, delta_time: f32) {
-        self.camera.update(delta_time, &self.active_keys, self.mouse_delta);
+        self.world.update(delta_time, &self.active_keys, self.mouse_delta);
+        self.camera.update_from_player(self.world.get_player());
         self.renderer.update_camera(&self.camera);
         self.update_imgui(delta_time);
     }
@@ -131,16 +133,14 @@ pub struct App {
     delta_time: Instant,
 }
 
-impl Default for App {
-    fn default() -> Self {
+impl App {
+    pub fn new() -> Self {
         Self {
             state: None,
             delta_time: Instant::now(),
         }
     }
-}
 
-impl App {
     fn handle_key(&mut self, event_loop: &ActiveEventLoop, code: KeyCode, is_pressed: bool) {
         if is_pressed && code == KeyCode::Escape {
             event_loop.exit();
