@@ -5,15 +5,16 @@ mod chunk;
 mod world;
 mod imgui_renderer;
 mod player;
+mod input;
 
 use crate::camera::Camera;
+use crate::input::Input;
 use crate::renderer::Renderer;
 use crate::world::World;
-use std::collections::HashSet;
 use std::sync::Arc;
 use std::time::Instant;
 use winit::application::ApplicationHandler;
-use winit::event::{DeviceEvent, DeviceId, KeyEvent, WindowEvent};
+use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
@@ -24,8 +25,7 @@ struct State {
     size: winit::dpi::PhysicalSize<u32>,
     camera: Camera,
     renderer: Renderer,
-    active_keys: HashSet<KeyCode>,
-    mouse_delta: glam::Vec2,
+    input: Input,
     is_mouse_captured: bool,
 
     world: World,
@@ -59,8 +59,7 @@ impl State {
             size,
             camera,
             renderer,
-            active_keys: HashSet::new(),
-            mouse_delta: glam::Vec2::ZERO,
+            input: Input::new(),
             is_mouse_captured: false,
             world,
         }
@@ -90,20 +89,28 @@ impl State {
 
     fn handle_key(&mut self, code: KeyCode, is_pressed: bool) {
         if is_pressed {
-            self.active_keys.insert(code);
+            self.input.active_keys.insert(code);
             if code == KeyCode::AltLeft { self.toggle_mouse_capture() }
         } else {
-            self.active_keys.remove(&code);
+            self.input.active_keys.remove(&code);
         }
     }
 
     fn handle_mouse(&mut self, delta: glam::Vec2) {
         if !self.is_mouse_captured { return }
-        self.mouse_delta += delta;
+        self.input.mouse_delta += delta;
+    }
+
+    fn handle_mouse_button(&mut self, button: MouseButton, is_pressed: bool) {
+        if is_pressed {
+            self.input.active_mouse_buttons.insert(button);
+        } else {
+            self.input.active_mouse_buttons.remove(&button);
+        }
     }
 
     fn update(&mut self, delta_time: f32) {
-        self.world.update(delta_time, &self.active_keys, self.mouse_delta);
+        self.world.update(delta_time, &self.input);
         self.camera.update_from_player(self.world.get_player());
         self.renderer.update_camera(&self.camera);
         self.update_imgui(delta_time);
@@ -113,11 +120,18 @@ impl State {
         let pos = self.camera.position;
         let yaw = self.camera.yaw;
         let pitch = self.camera.pitch;
+
+        let player = self.world.get_player();
+        let target_block_pos = self.world.raycast(player.position, player.forward(), 5.0);
+        let target_block = target_block_pos.map(|pos| self.world.get_block(pos));
+
         self.renderer.update_imgui(move |ui| {
             ui.text(format!("FPS: {}", 1.0 / delta_time));
             ui.text(format!("Position: {:+.2} {:+.2} {:+.2}", pos.x, pos.y, pos.z));
             ui.text(format!("Yaw: {:+.2}", yaw));
             ui.text(format!("Pitch: {:+.2}", pitch));
+            ui.text(format!("Target: {:?}", target_block_pos));
+            ui.text(format!("Target block: {:?}", target_block));
         });
     }
 
@@ -162,7 +176,7 @@ impl App {
             Err(e) => log::error!("Render error: {}", e),
         }
 
-        state.mouse_delta = glam::Vec2::ZERO;
+        state.input.mouse_delta = glam::Vec2::ZERO;
         state.window.request_redraw();
     }
 
@@ -192,6 +206,11 @@ impl ApplicationHandler for App {
                 },
                 ..
             } => self.handle_key(event_loop, code, key_state.is_pressed()),
+            WindowEvent::MouseInput { 
+                button, 
+                state: button_state,
+                .. 
+            } => self.state().handle_mouse_button(button, button_state.is_pressed()),
             WindowEvent::RedrawRequested => self.handle_redraw(),
             WindowEvent::Resized(size) => self.state().resize(size),
             _ => (),
@@ -205,7 +224,7 @@ impl ApplicationHandler for App {
         let state = self.state.as_mut().unwrap();
 
         if let DeviceEvent::MouseMotion { delta } = event {
-            state.handle_mouse(glam::vec2(delta.0 as f32, delta.1 as f32));
+            state.handle_mouse(glam::DVec2::from(delta).as_vec2());
         }
     }
 }

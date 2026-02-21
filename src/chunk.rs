@@ -18,14 +18,13 @@ impl Block {
 
     pub fn get_texture_coords(&self, face: BlockFace) -> (u8, u8) {
         match *self {
-            Self::AIR => (0, 0),
             Self::DIRT => (1, 0),
             Self::GRASS => match face {
                 BlockFace::YN => (3, 0),
                 BlockFace::YP => (1, 0),
                 _ => (2, 0),
             }
-            _ => unimplemented!("invalid block"),
+            _ => unimplemented!("invalid block {:?}", self),
         }
     }
 }
