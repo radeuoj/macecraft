@@ -7,6 +7,7 @@ mod imgui_renderer;
 mod player;
 mod input;
 mod block;
+mod aabb;
 
 use crate::camera::Camera;
 use crate::input::Input;
@@ -129,9 +130,13 @@ impl State {
         let yaw = self.camera.yaw;
         let pitch = self.camera.pitch;
 
-        let target_pos = self.world.get_player().get_target_pos();
-        let target_face = self.world.get_player().get_target_face();
+        let player = self.world.get_player();
+
+        let target_pos = player.get_target_pos();
+        let target_face = player.get_target_face();
         let target_block = target_pos.map(|pos| self.world.get_block(pos));
+
+        let collision = player.is_colliding();
 
         self.renderer.update_imgui(move |ui| {
             ui.text(format!("FPS: {}", 1.0 / delta_time));
@@ -141,6 +146,7 @@ impl State {
             ui.text(format!("Target: {:?}", target_pos));
             ui.text(format!("Target face: {:?}", target_face));
             ui.text(format!("Target block: {:?}", target_block));
+            ui.text(format!("Colision: {}", collision));
         });
     }
 

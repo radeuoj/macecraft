@@ -1,7 +1,7 @@
 
 use winit::{event::MouseButton, keyboard::KeyCode};
 
-use crate::{block::{Block, BlockFace}, input::Input, world::World};
+use crate::{aabb::AABB, block::{self, Block, BlockFace}, input::Input, world::World};
 
 pub struct Player {
     pub position: glam::Vec3,
@@ -17,6 +17,9 @@ impl Player {
     pub const SPRINT_SPEED: f32 = 20.0;
     pub const SENSITIVITY: f32 = 0.001;
     pub const REACH: f32 = 5.0;
+    pub const WIDTH: f32 = 0.5;
+    pub const HEIGHT: f32 = 2.0;
+    pub const EYE_LEVEL: f32 = 1.7;
 
     pub fn new() -> Self {
         Self {
@@ -92,7 +95,7 @@ impl Player {
 
         self.pitch = self.pitch.clamp(-89f32.to_radians(), 89f32.to_radians());
 
-        self.target = self.world().raycast(self.position, self.forward(), Player::REACH);
+        self.target = self.world().raycast(self.position + Player::UP * Player::EYE_LEVEL, self.forward(), Player::REACH);
     }
 
     pub fn handle_block_manip(&self, input: &Input) {
@@ -112,5 +115,23 @@ impl Player {
 
             self.world().set_block(pos, Block::COBBLE);
         }
+    }
+
+    pub fn is_colliding(&self) -> bool {
+        for i in -1..=1 {
+            for j in -1..=2 {
+                for k in -1..=1 {
+                    let player = AABB::from_player(self.position);
+                    let block_pos = self.position.as_ivec3() + glam::ivec3(i, j, k);
+                    let block = AABB::from_block(block_pos);
+
+                    if !self.world().is_air(block_pos) && AABB::collision(&player, &block) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        false
     }
 }

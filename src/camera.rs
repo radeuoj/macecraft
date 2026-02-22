@@ -35,7 +35,7 @@ impl Camera {
     }
 
     pub fn update_from_player(&mut self, player: &Player) {
-        self.position = player.position;
+        self.position = player.position + Camera::UP * Player::EYE_LEVEL;
         self.yaw = player.yaw;
         self.pitch = player.pitch;
     }
