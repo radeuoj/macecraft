@@ -20,7 +20,7 @@ impl Player {
 
     pub fn new() -> Self {
         Self {
-            position: glam::Vec3::ZERO,
+            position: glam::vec3(0.0, 10.0, 0.0),
             yaw: -90f32.to_radians(),
             pitch: 0.0,
             world: std::ptr::null_mut(),

@@ -78,6 +78,28 @@ impl UiVertex {
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Pod, Zeroable)]
+struct ColorVertex {
+    position: [f32; 3],
+    color: [f32; 4],
+}
+
+impl ColorVertex {
+    const fn layout() -> wgpu::VertexBufferLayout<'static> {
+        const ATTRIBUTES: [wgpu::VertexAttribute; 2] = wgpu::vertex_attr_array![
+            0 => Float32x3,
+            1 => Float32x4,
+        ];
+
+        wgpu::VertexBufferLayout {
+            array_stride: size_of::<ColorVertex>() as _,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &ATTRIBUTES,
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Pod, Zeroable)]
 struct CameraUniform {
     view_proj: [[f32; 4]; 4],
 }
@@ -115,8 +137,10 @@ pub struct Renderer {
     queue: wgpu::Queue,
     surface: wgpu::Surface<'static>,
     surface_format: wgpu::TextureFormat,
-    render_pipeline: wgpu::RenderPipeline,
+
+    chunk_render_pipeline: wgpu::RenderPipeline,
     ui_render_pipeline: wgpu::RenderPipeline,
+    color_render_pipeline: wgpu::RenderPipeline,
 
     diffuse_bind_group: wgpu::BindGroup,
 
@@ -131,6 +155,8 @@ pub struct Renderer {
 
     chunks: HashMap<glam::IVec3, wgpu::Buffer>,
 
+    has_target_block: bool,
+    color_buffer: wgpu::Buffer,
     ui_buffer: wgpu::Buffer,
 
     imgui: ImGuiRenderer,
@@ -283,6 +309,15 @@ impl Renderer {
                 ],
             });
 
+        let color_buffer = device.create_buffer(
+            &wgpu::BufferDescriptor {
+                label: Some("Color vertex buffer"),
+                size: (size_of::<ColorVertex>() * 8 * 3) as _,
+                usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            }
+        );
+
         let ui_buffer = device.create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
                 label: Some("Chunk vertex buffer"),
@@ -293,10 +328,10 @@ impl Renderer {
 
         let depth_texture = DepthTexture::new(&device, size.into(), "Depth texture");
 
-        let shader = device
-            .create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
+        let chunk_shader = device
+            .create_shader_module(wgpu::include_wgsl!("shaders/chunk.wgsl"));
 
-        let render_pipeline_layout = device
+        let chunk_render_pipeline_layout = device
             .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
                 label: Some("Render pipeline layout"),
                 bind_group_layouts: &[
@@ -307,17 +342,18 @@ impl Renderer {
                 immediate_size: 0,
             });
 
-        let render_pipeline = make_render_pipeline(
+        let chunk_render_pipeline = make_render_pipeline(
             "Render pipeline",
             &device, 
-            &render_pipeline_layout, 
-            &shader, 
+            &chunk_render_pipeline_layout, 
+            &chunk_shader, 
             surface_format,
-            Vertex::layout()
+            Vertex::layout(),
+            wgpu::PrimitiveTopology::TriangleList,
         );
 
         let ui_shader = device
-            .create_shader_module(wgpu::include_wgsl!("ui.wgsl"));
+            .create_shader_module(wgpu::include_wgsl!("shaders/ui.wgsl"));
 
         let ui_render_pipeline_layout = device
             .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -332,7 +368,31 @@ impl Renderer {
             &ui_render_pipeline_layout,
             &ui_shader,
             surface_format,
-            UiVertex::layout()
+            UiVertex::layout(),
+            wgpu::PrimitiveTopology::TriangleList,
+        );
+
+        let color_shader = device
+            .create_shader_module(wgpu::include_wgsl!("shaders/color.wgsl"));
+
+        let color_render_pipeline_layout = device
+            .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("Color render pipeline layout"),
+                bind_group_layouts: &[
+                    &texture_bind_group_layout,
+                    &camera_bind_group_layout,
+                ],
+                immediate_size: 0,
+            });
+
+        let color_render_pipeline = make_render_pipeline(
+            "Color render pipeline",
+            &device,
+            &color_render_pipeline_layout,
+            &color_shader,
+            surface_format,
+            ColorVertex::layout(),
+            wgpu::PrimitiveTopology::LineList,
         );
 
         let imgui = ImGuiRenderer::new(&device, &queue, surface_format, &window);
@@ -342,8 +402,9 @@ impl Renderer {
             queue,
             surface,
             surface_format,
-            render_pipeline,
+            chunk_render_pipeline,
             ui_render_pipeline,
+            color_render_pipeline,
             diffuse_bind_group,
             camera_uniform,
             camera_buffer,
@@ -352,6 +413,8 @@ impl Renderer {
             chunk_bind_group,
             depth_texture,
             chunks: HashMap::new(),
+            has_target_block: false,
+            color_buffer,
             ui_buffer,
             imgui,
             imgui_content: Box::new(|_| {}),
@@ -367,7 +430,19 @@ impl Renderer {
 
     pub fn update_camera(&mut self, camera: &Camera) {
         self.camera_uniform.view_proj = camera.build_view_proj_matrix().to_cols_array_2d();
-        self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
+        self.queue.write_buffer(&self.camera_buffer, 0, 
+            bytemuck::cast_slice(&[self.camera_uniform]));
+    }
+
+    pub fn update_target_block(&mut self, pos: Option<glam::IVec3>) {
+        match pos {
+            Some(pos) => {
+                self.queue.write_buffer(&self.color_buffer, 0, 
+                bytemuck::cast_slice(&render_target_block(pos)));
+                self.has_target_block = true;
+            }
+            None => self.has_target_block = false,
+        }
     }
 
     pub fn update_imgui(&mut self, content: impl FnOnce(&dear_imgui_rs::Ui) + 'static) {
@@ -526,11 +601,17 @@ impl Renderer {
             multiview_mask: None,
         });
 
-        render_pass.set_pipeline(&self.render_pipeline);
+        render_pass.set_pipeline(&self.chunk_render_pipeline);
         render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
         render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
 
         self.draw_chunks(&mut render_pass);
+
+        if self.has_target_block {
+            render_pass.set_pipeline(&self.color_render_pipeline);
+            render_pass.set_vertex_buffer(0, self.color_buffer.slice(..));
+            render_pass.draw(0..(3 * 8), 0..1);
+        }
 
         render_pass.set_pipeline(&self.ui_render_pipeline);
         render_pass.set_vertex_buffer(0, self.ui_buffer.slice(..));
@@ -571,7 +652,8 @@ fn make_render_pipeline(
     layout: &wgpu::PipelineLayout, 
     shader: &wgpu::ShaderModule, 
     surface_format: wgpu::TextureFormat,
-    vertex_buffer_layout: wgpu::VertexBufferLayout
+    vertex_buffer_layout: wgpu::VertexBufferLayout,
+    topology: wgpu::PrimitiveTopology,
 ) -> wgpu::RenderPipeline {
     device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: Some(label),
@@ -593,7 +675,7 @@ fn make_render_pipeline(
             })],
         }),
         primitive: wgpu::PrimitiveState {
-            topology: wgpu::PrimitiveTopology::TriangleList,
+            topology,
             strip_index_format: None,
             front_face: wgpu::FrontFace::Ccw,
             cull_mode: Some(wgpu::Face::Back),
@@ -633,5 +715,39 @@ fn render_crosshair(window_size: (u32, u32)) -> Vec<UiVertex> {
         UiVertex { position: [x     , y + dy], tex_coords: [tx    , ty    ] },
         UiVertex { position: [x + dx, y     ], tex_coords: [tx + 1, ty + 1] },
         UiVertex { position: [x + dx, y + dy], tex_coords: [tx + 1, ty    ] },
+    ]
+}
+
+fn render_target_block(pos: glam::IVec3) -> Vec<ColorVertex> {
+    let pos = pos.as_vec3() - 0.001;
+    let color = [0.0, 0.0, 0.0, 1.0];
+    
+    vec![
+        ColorVertex { position: [pos.x        , pos.y        , pos.z + 1.002], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y        , pos.z + 1.002], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y        , pos.z + 1.002], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y + 1.002, pos.z + 1.002], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y + 1.002, pos.z + 1.002], color },
+        ColorVertex { position: [pos.x        , pos.y + 1.002, pos.z + 1.002], color },
+        ColorVertex { position: [pos.x        , pos.y + 1.002, pos.z + 1.002], color },
+        ColorVertex { position: [pos.x        , pos.y        , pos.z + 1.002], color },
+
+        ColorVertex { position: [pos.x        , pos.y        , pos.z + 1.002], color },
+        ColorVertex { position: [pos.x        , pos.y        , pos.z        ], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y        , pos.z + 1.002], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y        , pos.z        ], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y + 1.002, pos.z + 1.002], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y + 1.002, pos.z        ], color },
+        ColorVertex { position: [pos.x        , pos.y + 1.002, pos.z + 1.002], color },
+        ColorVertex { position: [pos.x        , pos.y + 1.002, pos.z        ], color },
+
+        ColorVertex { position: [pos.x        , pos.y        , pos.z        ], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y        , pos.z        ], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y        , pos.z        ], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y + 1.002, pos.z        ], color },
+        ColorVertex { position: [pos.x + 1.002, pos.y + 1.002, pos.z        ], color },
+        ColorVertex { position: [pos.x        , pos.y + 1.002, pos.z        ], color },
+        ColorVertex { position: [pos.x        , pos.y + 1.002, pos.z        ], color },
+        ColorVertex { position: [pos.x        , pos.y        , pos.z        ], color },
     ]
 }

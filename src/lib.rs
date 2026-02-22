@@ -118,6 +118,9 @@ impl State {
         self.world.update(delta_time, &self.input);
         self.camera.update_from_player(self.world.get_player());
         self.renderer.update_camera(&self.camera);
+
+        self.renderer.update_target_block(self.world.get_player().get_target_pos());
+
         self.update_imgui(delta_time);
     }
 
