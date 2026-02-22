@@ -27,7 +27,7 @@ impl Vertex {
     }
 
     #[allow(unused)]
-    fn uncompress(vertex: u32) -> Self {
+    fn decompress(vertex: u32) -> Self {
         Self {
             position: [
                 (vertex & ((1 << 6) - 1)) as u8,
@@ -41,13 +41,35 @@ impl Vertex {
         }
     }
 
-    fn layout() -> wgpu::VertexBufferLayout<'static> {
+    const fn layout() -> wgpu::VertexBufferLayout<'static> {
         const ATTRIBUTES: [wgpu::VertexAttribute; 1] = wgpu::vertex_attr_array![
             0 => Uint32,
         ];
 
         wgpu::VertexBufferLayout {
-            array_stride: size_of::<u32>() as wgpu::BufferAddress,
+            array_stride: size_of::<u32>() as _,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &ATTRIBUTES,
+        }
+    }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug, Pod, Zeroable)]
+struct UiVertex {
+    position: [f32; 2],
+    tex_coords: [u32; 2],
+}
+
+impl UiVertex {
+    const fn layout() -> wgpu::VertexBufferLayout<'static> {
+        const ATTRIBUTES: [wgpu::VertexAttribute; 2] = wgpu::vertex_attr_array![
+            0 => Float32x2,
+            1 => Uint32x2,
+        ];
+
+        wgpu::VertexBufferLayout {
+            array_stride: size_of::<UiVertex>() as _,
             step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &ATTRIBUTES,
         }
@@ -94,6 +116,7 @@ pub struct Renderer {
     surface: wgpu::Surface<'static>,
     surface_format: wgpu::TextureFormat,
     render_pipeline: wgpu::RenderPipeline,
+    ui_render_pipeline: wgpu::RenderPipeline,
 
     diffuse_bind_group: wgpu::BindGroup,
 
@@ -107,6 +130,8 @@ pub struct Renderer {
     depth_texture: DepthTexture,
 
     chunks: HashMap<glam::IVec3, wgpu::Buffer>,
+
+    ui_buffer: wgpu::Buffer,
 
     imgui: ImGuiRenderer,
     imgui_content: Box<dyn FnOnce(&dear_imgui_rs::Ui)>,
@@ -132,9 +157,6 @@ impl Renderer {
         let surface_caps = surface.get_capabilities(&adapter);
         let surface_format = surface_caps.formats[0];
         surface.configure(&device, &get_surface_config(surface_format, size));
-
-        let shader = device
-            .create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
         let diffuse_bytes = include_bytes!("textures/textures.png");
         let diffuse_texture = Texture::from_bytes(
@@ -261,7 +283,18 @@ impl Renderer {
                 ],
             });
 
+        let ui_buffer = device.create_buffer_init(
+            &wgpu::util::BufferInitDescriptor {
+                label: Some("Chunk vertex buffer"),
+                contents: bytemuck::cast_slice(&render_crosshair(size.into())),
+                usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+            }
+        );
+
         let depth_texture = DepthTexture::new(&device, size.into(), "Depth texture");
+
+        let shader = device
+            .create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
 
         let render_pipeline_layout = device
             .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -274,50 +307,33 @@ impl Renderer {
                 immediate_size: 0,
             });
 
-        let render_pipeline = device
-            .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-                label: Some("Render pipeline"),
-                layout: Some(&render_pipeline_layout),
-                vertex: wgpu::VertexState {
-                    module: &shader,
-                    entry_point: Some("vs_main"),
-                    compilation_options: Default::default(),
-                    buffers: &[Vertex::layout()],
-                },
-                fragment: Some(wgpu::FragmentState {
-                    module: &shader,
-                    entry_point: Some("fs_main"),
-                    compilation_options: Default::default(),
-                    targets: &[Some(wgpu::ColorTargetState {
-                        format: surface_format,
-                        blend: Some(wgpu::BlendState::REPLACE),
-                        write_mask: wgpu::ColorWrites::ALL,
-                    })],
-                }),
-                primitive: wgpu::PrimitiveState {
-                    topology: wgpu::PrimitiveTopology::TriangleList,
-                    strip_index_format: None,
-                    front_face: wgpu::FrontFace::Ccw,
-                    cull_mode: Some(wgpu::Face::Back),
-                    unclipped_depth: false,
-                    polygon_mode: wgpu::PolygonMode::Fill,
-                    conservative: false,
-                },
-                depth_stencil: Some(wgpu::DepthStencilState {
-                    format: DepthTexture::DEPTH_FORMAT,
-                    depth_write_enabled: true,
-                    depth_compare: wgpu::CompareFunction::Less,
-                    stencil: wgpu::StencilState::default(),
-                    bias: wgpu::DepthBiasState::default(),
-                }),
-                multisample: wgpu::MultisampleState {
-                    count: 1,
-                    mask: !0,
-                    alpha_to_coverage_enabled: false,
-                },
-                multiview_mask: None,
-                cache: None,
+        let render_pipeline = make_render_pipeline(
+            "Render pipeline",
+            &device, 
+            &render_pipeline_layout, 
+            &shader, 
+            surface_format,
+            Vertex::layout()
+        );
+
+        let ui_shader = device
+            .create_shader_module(wgpu::include_wgsl!("ui.wgsl"));
+
+        let ui_render_pipeline_layout = device
+            .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("UI render pipeline layout"),
+                bind_group_layouts: &[&texture_bind_group_layout],
+                immediate_size: 0,
             });
+
+        let ui_render_pipeline = make_render_pipeline(
+            "UI render pipeline",
+            &device,
+            &ui_render_pipeline_layout,
+            &ui_shader,
+            surface_format,
+            UiVertex::layout()
+        );
 
         let imgui = ImGuiRenderer::new(&device, &queue, surface_format, &window);
 
@@ -327,6 +343,7 @@ impl Renderer {
             surface,
             surface_format,
             render_pipeline,
+            ui_render_pipeline,
             diffuse_bind_group,
             camera_uniform,
             camera_buffer,
@@ -335,6 +352,7 @@ impl Renderer {
             chunk_bind_group,
             depth_texture,
             chunks: HashMap::new(),
+            ui_buffer,
             imgui,
             imgui_content: Box::new(|_| {}),
         }
@@ -343,6 +361,8 @@ impl Renderer {
     pub fn resize(&mut self, size: winit::dpi::PhysicalSize<u32>) {
         self.surface.configure(&self.device, &get_surface_config(self.surface_format, size));
         self.depth_texture = DepthTexture::new(&self.device, size.into(), "Depth texture");
+        self.queue.write_buffer(&self.ui_buffer, 0, 
+            bytemuck::cast_slice(&render_crosshair(size.into())));
     }
 
     pub fn update_camera(&mut self, camera: &Camera) {
@@ -512,6 +532,10 @@ impl Renderer {
 
         self.draw_chunks(&mut render_pass);
 
+        render_pass.set_pipeline(&self.ui_render_pipeline);
+        render_pass.set_vertex_buffer(0, self.ui_buffer.slice(..));
+        render_pass.draw(0..6, 0..1);
+
         let imgui_content = std::mem::replace(&mut self.imgui_content, Box::new(|_| {}));
         self.imgui.render(window, &mut render_pass, imgui_content);
 
@@ -539,4 +563,75 @@ fn get_surface_config(surface_format: wgpu::TextureFormat, size: winit::dpi::Phy
         alpha_mode: wgpu::CompositeAlphaMode::Auto,
         view_formats: vec![],
     }
+}
+
+fn make_render_pipeline(
+    label: &str,
+    device: &wgpu::Device, 
+    layout: &wgpu::PipelineLayout, 
+    shader: &wgpu::ShaderModule, 
+    surface_format: wgpu::TextureFormat,
+    vertex_buffer_layout: wgpu::VertexBufferLayout
+) -> wgpu::RenderPipeline {
+    device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        label: Some(label),
+        layout: Some(layout),
+        vertex: wgpu::VertexState {
+            module: &shader,
+            entry_point: Some("vs_main"),
+            compilation_options: Default::default(),
+            buffers: &[vertex_buffer_layout],
+        },
+        fragment: Some(wgpu::FragmentState {
+            module: &shader,
+            entry_point: Some("fs_main"),
+            compilation_options: Default::default(),
+            targets: &[Some(wgpu::ColorTargetState {
+                format: surface_format,
+                blend: Some(wgpu::BlendState::PREMULTIPLIED_ALPHA_BLENDING),
+                write_mask: wgpu::ColorWrites::ALL,
+            })],
+        }),
+        primitive: wgpu::PrimitiveState {
+            topology: wgpu::PrimitiveTopology::TriangleList,
+            strip_index_format: None,
+            front_face: wgpu::FrontFace::Ccw,
+            cull_mode: Some(wgpu::Face::Back),
+            unclipped_depth: false,
+            polygon_mode: wgpu::PolygonMode::Fill,
+            conservative: false,
+        },
+        depth_stencil: Some(wgpu::DepthStencilState {
+            format: DepthTexture::DEPTH_FORMAT,
+            depth_write_enabled: true,
+            depth_compare: wgpu::CompareFunction::Less,
+            stencil: wgpu::StencilState::default(),
+            bias: wgpu::DepthBiasState::default(),
+        }),
+        multisample: wgpu::MultisampleState {
+            count: 1,
+            mask: !0,
+            alpha_to_coverage_enabled: false,
+        },
+        multiview_mask: None,
+        cache: None,
+    })
+}
+
+fn render_crosshair(window_size: (u32, u32)) -> Vec<UiVertex> {
+    const CROSSHAIR_SIZE: f32 = 40.0;
+
+    let (tx, ty) = (5, 0);
+    let dx = CROSSHAIR_SIZE / window_size.0 as f32 * 2.0;
+    let dy = CROSSHAIR_SIZE / window_size.1 as f32 * 2.0;
+    let (x, y) = (-dx / 2.0, -dy / 2.0);
+
+    vec![
+        UiVertex { position: [x     , y + dy], tex_coords: [tx    , ty    ] },
+        UiVertex { position: [x     , y     ], tex_coords: [tx    , ty + 1] },
+        UiVertex { position: [x + dx, y     ], tex_coords: [tx + 1, ty + 1] },
+        UiVertex { position: [x     , y + dy], tex_coords: [tx    , ty    ] },
+        UiVertex { position: [x + dx, y     ], tex_coords: [tx + 1, ty + 1] },
+        UiVertex { position: [x + dx, y + dy], tex_coords: [tx + 1, ty    ] },
+    ]
 }
