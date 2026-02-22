@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use glam::Vec3;
 
-use crate::{chunk::{Block, BlockFace, Chunk}, input::Input, player::Player};
+use crate::{block::{Block, BlockFace}, chunk::Chunk, input::Input, player::Player};
 
 pub struct World {
     player: Player,

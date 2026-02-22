@@ -1,7 +1,7 @@
 
 use winit::{event::MouseButton, keyboard::KeyCode};
 
-use crate::{chunk::{Block, BlockFace}, input::Input, world::World};
+use crate::{block::{Block, BlockFace}, input::Input, world::World};
 
 pub struct Player {
     pub position: glam::Vec3,

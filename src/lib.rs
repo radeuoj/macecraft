@@ -6,6 +6,7 @@ mod world;
 mod imgui_renderer;
 mod player;
 mod input;
+mod block;
 
 use crate::camera::Camera;
 use crate::input::Input;
