@@ -1,14 +1,14 @@
 
 use winit::{event::MouseButton, keyboard::KeyCode};
 
-use crate::{chunk::Block, input::Input, world::World};
+use crate::{chunk::{Block, BlockFace}, input::Input, world::World};
 
 pub struct Player {
     pub position: glam::Vec3,
     pub yaw: f32,
     pub pitch: f32,
     world: *mut World,
-    target: Option<glam::IVec3>,
+    target: Option<(glam::IVec3, BlockFace)>,
 }
 
 impl Player {
@@ -36,8 +36,12 @@ impl Player {
         unsafe { &mut *self.world }
     }
 
-    pub fn get_target(&self) -> Option<glam::IVec3> {
-        self.target
+    pub fn get_target_pos(&self) -> Option<glam::IVec3> {
+        self.target.map(|(pos, _)| pos)
+    }
+
+    pub fn get_target_face(&self) -> Option<BlockFace> {
+        self.target.map(|(_, face)| face)
     }
 
     pub fn forward(&self) -> glam::Vec3 {
@@ -91,11 +95,22 @@ impl Player {
         self.target = self.world().raycast(self.position, self.forward(), Player::REACH);
     }
 
-    // TODO: fix this so it doesnt use raw pointers
     pub fn handle_block_manip(&self, input: &Input) {
         if input.is_mouse_button_just_pressed(MouseButton::Left) && 
-                let Some(pos) = self.target {
+                let Some(pos) = self.get_target_pos() {
             self.world().set_block(pos, Block::AIR);
+        } else if input.is_mouse_button_just_pressed(MouseButton::Right) &&
+                let Some((mut pos, face)) = self.target {
+            match face {
+                BlockFace::ZN => pos.z += 1,
+                BlockFace::ZP => pos.z -= 1,
+                BlockFace::XN => pos.x += 1,
+                BlockFace::XP => pos.x -= 1,
+                BlockFace::YN => pos.y += 1,
+                BlockFace::YP => pos.y -= 1,
+            }
+
+            self.world().set_block(pos, Block::COBBLE);
         }
     }
 }

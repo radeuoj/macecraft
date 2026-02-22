@@ -125,15 +125,17 @@ impl State {
         let yaw = self.camera.yaw;
         let pitch = self.camera.pitch;
 
-        let target_block_pos = self.world.get_player().get_target();
-        let target_block = target_block_pos.map(|pos| self.world.get_block(pos));
+        let target_pos = self.world.get_player().get_target_pos();
+        let target_face = self.world.get_player().get_target_face();
+        let target_block = target_pos.map(|pos| self.world.get_block(pos));
 
         self.renderer.update_imgui(move |ui| {
             ui.text(format!("FPS: {}", 1.0 / delta_time));
             ui.text(format!("Position: {:+.2} {:+.2} {:+.2}", pos.x, pos.y, pos.z));
             ui.text(format!("Yaw: {:+.2}", yaw));
             ui.text(format!("Pitch: {:+.2}", pitch));
-            ui.text(format!("Target: {:?}", target_block_pos));
+            ui.text(format!("Target: {:?}", target_pos));
+            ui.text(format!("Target face: {:?}", target_face));
             ui.text(format!("Target block: {:?}", target_block));
         });
     }

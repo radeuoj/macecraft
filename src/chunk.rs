@@ -15,6 +15,7 @@ impl Block {
     pub const AIR: Block = Block(0);
     pub const DIRT: Block = Block(1);
     pub const GRASS: Block = Block(2);
+    pub const COBBLE: Block = Block(3);
 
     pub fn get_texture_coords(&self, face: BlockFace) -> (u8, u8) {
         match *self {
@@ -24,6 +25,7 @@ impl Block {
                 BlockFace::YP => (1, 0),
                 _ => (2, 0),
             }
+            Self::COBBLE => (4, 0),
             _ => unimplemented!("invalid block {:?}", self),
         }
     }

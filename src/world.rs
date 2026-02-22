@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use glam::Vec3;
 
-use crate::{chunk::{Block, Chunk}, input::Input, player::Player};
+use crate::{chunk::{Block, BlockFace, Chunk}, input::Input, player::Player};
 
 pub struct World {
     player: Player,
@@ -98,7 +98,7 @@ impl World {
      * https://aaaa.sh/creatures/dda-algorithm-interactive/
      * returns hit position in global coords
      */
-    pub fn raycast(&self, mut origin: glam::Vec3, dir: glam::Vec3, max_dist: f32) -> Option<glam::IVec3> {
+    pub fn raycast(&self, mut origin: glam::Vec3, dir: glam::Vec3, max_dist: f32) -> Option<(glam::IVec3, BlockFace)> {
         assert!(dir.is_normalized());
 
         let ray_unit_step_size = (1.0 / dir.abs()).map(|e| if e.is_infinite() { 0.0 } else { e }); // note division by zero gives infinity
@@ -111,24 +111,28 @@ impl World {
         );
 
         let mut dist = 0.0;
+        let mut block_face = BlockFace::YP;
         while dist <= max_dist {
             let block_pos = origin.floor().as_ivec3();
             if !self.is_air(block_pos) {
-                return Some(block_pos)
+                return Some((block_pos, block_face))
             }
 
             if step.x != 0.0 && ray_length.x < ray_length.y && ray_length.x < ray_length.z {
                 origin.x += step.x;
                 dist = f32::max(dist, ray_length.x);
                 ray_length.x += ray_unit_step_size.x;
+                block_face = if step.x > 0.0 { BlockFace::XP } else { BlockFace::XN };
             } else if step.y != 0.0 && ray_length.y < ray_length.x && ray_length.y < ray_length.z {
                 origin.y += step.y;
                 dist = f32::max(dist, ray_length.y);
                 ray_length.y += ray_unit_step_size.y;
+                block_face = if step.y > 0.0 { BlockFace::YP } else { BlockFace::YN };
             } else if step.z != 0.0 {
                 origin.z += step.z;
                 dist = f32::max(dist, ray_length.z);
                 ray_length.z += ray_unit_step_size.z;
+                block_face = if step.z > 0.0 { BlockFace::ZP } else { BlockFace::ZN };
             }
         }
 
