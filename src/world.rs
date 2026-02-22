@@ -13,9 +13,9 @@ pub struct World {
 impl World {
     pub const MAX_CHUNKS: usize = 256;
 
-    pub fn new() -> Self {
+    pub fn new(player: Player) -> Self {
         Self {
-            player: Player::new(),
+            player,
             chunks: HashMap::new(),
             last_updated_chunks: HashSet::new(),
         }
@@ -83,12 +83,14 @@ impl World {
 
     pub fn update(&mut self, delta_time: f32, input: &Input) {
         self.player.update(delta_time, input);
-        let world = self as *mut World;
-        self.player.handle_block_manip(input, world);
     }
 
     pub fn get_player(&self) -> &Player {
         &self.player
+    }
+
+    pub fn get_player_mut(&mut self) -> &mut Player {
+        &mut self.player
     }
 
     /**

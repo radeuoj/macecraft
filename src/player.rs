@@ -7,6 +7,8 @@ pub struct Player {
     pub position: glam::Vec3,
     pub yaw: f32,
     pub pitch: f32,
+    world: *mut World,
+    target: Option<glam::IVec3>,
 }
 
 impl Player {
@@ -14,13 +16,28 @@ impl Player {
     pub const SPEED: f32 = 2.0;
     pub const SPRINT_SPEED: f32 = 20.0;
     pub const SENSITIVITY: f32 = 0.001;
+    pub const REACH: f32 = 5.0;
 
     pub fn new() -> Self {
         Self {
             position: glam::Vec3::ZERO,
             yaw: -90f32.to_radians(),
             pitch: 0.0,
+            world: std::ptr::null_mut(),
+            target: None,
         }
+    }
+
+    pub fn set_world(&mut self, world: *mut World) {
+        self.world = world;
+    }
+
+    fn world(&self) -> &mut World {
+        unsafe { &mut *self.world }
+    }
+
+    pub fn get_target(&self) -> Option<glam::IVec3> {
+        self.target
     }
 
     pub fn forward(&self) -> glam::Vec3 {
@@ -38,6 +55,7 @@ impl Player {
     pub fn update(&mut self, delta_time: f32, input: &Input) {
         self.handle_moving(delta_time, input);
         self.handle_looking(input);
+        self.handle_block_manip(input);
     }
 
     fn handle_moving(&mut self, delta_time: f32, input: &Input) {
@@ -69,15 +87,15 @@ impl Player {
         self.pitch -= Self::SENSITIVITY * input.mouse_delta.y;
 
         self.pitch = self.pitch.clamp(-89f32.to_radians(), 89f32.to_radians());
+
+        self.target = self.world().raycast(self.position, self.forward(), Player::REACH);
     }
 
     // TODO: fix this so it doesnt use raw pointers
-    pub fn handle_block_manip(&self, input: &Input, world: *mut World) {
-        unsafe {
-            if input.is_mouse_button_just_pressed(MouseButton::Left) && 
-                    let Some(pos) = (*world).raycast(self.position, self.forward(), 5.0) {
-                (*world).set_block(pos, Block::AIR);
-            }
+    pub fn handle_block_manip(&self, input: &Input) {
+        if input.is_mouse_button_just_pressed(MouseButton::Left) && 
+                let Some(pos) = self.target {
+            self.world().set_block(pos, Block::AIR);
         }
     }
 }

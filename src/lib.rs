@@ -9,6 +9,7 @@ mod input;
 
 use crate::camera::Camera;
 use crate::input::Input;
+use crate::player::Player;
 use crate::renderer::Renderer;
 use crate::world::World;
 use std::sync::Arc;
@@ -38,7 +39,8 @@ impl State {
         let camera = Camera::new(size.width as f32 / size.height as f32);
         let mut renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
 
-        let mut world = World::new();
+        let player = Player::new();
+        let mut world = World::new(player);
         for i in -1..=1 {
             for j in -1..=1 {
                 let mut chunk = Chunk::new();
@@ -123,8 +125,7 @@ impl State {
         let yaw = self.camera.yaw;
         let pitch = self.camera.pitch;
 
-        let player = self.world.get_player();
-        let target_block_pos = self.world.raycast(player.position, player.forward(), 5.0);
+        let target_block_pos = self.world.get_player().get_target();
         let target_block = target_block_pos.map(|pos| self.world.get_block(pos));
 
         self.renderer.update_imgui(move |ui| {
@@ -207,6 +208,8 @@ impl ApplicationHandler for App {
         let window = Arc::new(event_loop.create_window(window_attributes).unwrap());
 
         self.state = Some(pollster::block_on(State::new(window)));
+        let world = &mut self.state().world as _;
+        self.state().world.get_player_mut().set_world(world);
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _window_id: WindowId, event: WindowEvent) {
