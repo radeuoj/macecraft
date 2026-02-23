@@ -4,27 +4,30 @@ use winit::{event::MouseButton, keyboard::KeyCode};
 use crate::{aabb::AABB, block::{Block, BlockFace}, input::Input, world::World};
 
 pub struct Player {
-    pub position: Vec3,
-    pub yaw: f32,
-    pub pitch: f32,
+    position: Vec3,
+    yaw: f32,
+    pitch: f32,
+    velocity: Vec3,
     world: *mut World,
     target: Option<(IVec3, BlockFace)>,
 }
 
 impl Player {
     pub const UP: Vec3 = Vec3::Y;
-    pub const SPEED: f32 = 2.0;
-    pub const SPRINT_SPEED: f32 = 20.0;
+    pub const ACCEL: f32 = 20.0;
+    pub const SPRINT_ACCEL: f32 = 200.0;
     pub const SENSITIVITY: f32 = 0.001;
     pub const REACH: f32 = 5.0;
     pub const WIDTH: f32 = 0.5;
     pub const HEIGHT: f32 = 2.0;
     pub const EYE_LEVEL: f32 = 1.7;
+    pub const DRAG: f32 = 5.0;
 
     pub fn new() -> Self {
         Self {
             position: vec3(0.0, 10.0, 0.0),
             yaw: -90f32.to_radians(),
+            velocity: Vec3::ZERO,
             pitch: 0.0,
             world: std::ptr::null_mut(),
             target: None,
@@ -55,19 +58,36 @@ impl Player {
         )
     }
 
+    pub fn horizontal_forward(&self) -> Vec3 {
+        vec3(self.yaw.cos(), 0.0, self.yaw.sin())
+    }
+
     pub fn right(&self) -> Vec3 {
-        self.forward().cross(Self::UP)
+        self.horizontal_forward().cross(Self::UP)
+    }
+
+    pub fn position(&self) -> Vec3 {
+        self.position
+    }
+
+    pub fn yaw(&self) -> f32 {
+        self.yaw
+    }
+
+    pub fn pitch(&self) -> f32 {
+        self.pitch
     }
 
     pub fn update(&mut self, delta_time: f32, input: &Input) {
         self.handle_moving(delta_time, input);
+        self.handle_physics(delta_time);
         self.handle_looking(input);
         self.handle_block_manip(input);
     }
 
     fn handle_moving(&mut self, delta_time: f32, input: &Input) {
         let mut move_dir = Vec3::ZERO;
-        let forward = self.forward().with_y(0.0).normalize_or_zero();
+        let forward = self.horizontal_forward();
         let right = self.right();
 
         use KeyCode::*;
@@ -77,16 +97,22 @@ impl Player {
         if input.is_key_pressed(KeyA) { move_dir -= right }
         move_dir = move_dir.normalize_or_zero();
 
-        if input.is_key_pressed(Space) { move_dir.y += 1.0 }
-        if input.is_key_pressed(ShiftLeft) { move_dir.y -= 1.0 }
+        if input.is_key_pressed(Space) { move_dir += Player::UP }
+        if input.is_key_pressed(ShiftLeft) { move_dir -= Player::UP }
 
-        let speed = if input.is_key_pressed(ControlLeft) {
-            Self::SPRINT_SPEED
+        let accel = if input.is_key_pressed(ControlLeft) {
+            Player::SPRINT_ACCEL
         } else {
-            Self::SPEED
+            Player::ACCEL
         };
 
-        self.position += move_dir * speed * delta_time;
+        let drag = -self.velocity * Player::DRAG;
+        let forces = move_dir * accel + drag;
+        self.velocity += forces * delta_time;
+    }
+
+    fn handle_physics(&mut self, delta_time: f32) {
+        self.position += self.velocity * delta_time;
     }
 
     fn handle_looking(&mut self, input: &Input) {
