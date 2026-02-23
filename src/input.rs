@@ -1,11 +1,12 @@
 use std::collections::HashSet;
 
+use glam::*;
 use winit::event::MouseButton;
 use winit::keyboard::KeyCode;
 
 pub struct Input {
     pub active_keys: HashSet<KeyCode>,
-    pub mouse_delta: glam::Vec2,
+    pub mouse_delta: Vec2,
     pub just_pressed_mouse_buttons: HashSet<MouseButton>,
     pub active_mouse_buttons: HashSet<MouseButton>,
 }
@@ -14,7 +15,7 @@ impl Input {
     pub fn new() -> Self {
         Self {
             active_keys: HashSet::new(),
-            mouse_delta: glam::Vec2::ZERO,
+            mouse_delta: Vec2::ZERO,
             just_pressed_mouse_buttons: HashSet::new(),
             active_mouse_buttons: HashSet::new(),
         }

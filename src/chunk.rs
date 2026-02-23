@@ -1,3 +1,4 @@
+use glam::*;
 use crate::block::Block;
 
 pub struct Chunk {
@@ -14,12 +15,12 @@ impl Chunk {
     }
 
     /// assumes pos is in bounds
-    pub fn get(&self, pos: glam::UVec3) -> Block {
+    pub fn get(&self, pos: UVec3) -> Block {
         self.blocks[(pos.x + pos.y * Self::SIZE + pos.z * Self::SIZE.pow(2)) as usize]
     }
 
     /// assumes pos is in bounds
-    pub fn set(&mut self, pos: glam::UVec3, block: Block) {
+    pub fn set(&mut self, pos: UVec3, block: Block) {
         self.blocks[(pos.x + pos.y * Self::SIZE + pos.z * Self::SIZE.pow(2)) as usize] = block;
     }
 
@@ -27,14 +28,14 @@ impl Chunk {
         for y in 0..4u32 {
             for x in 0..Self::SIZE {
                 for z in 0..Self::SIZE {
-                    self.set(glam::uvec3(x, y, z), Block::DIRT);
+                    self.set(uvec3(x, y, z), Block::DIRT);
                 }
             }
         }
 
         for x in 0..Self::SIZE {
             for z in 0..Self::SIZE {
-                self.set(glam::uvec3(x, 4, z), Block::GRASS);
+                self.set(uvec3(x, 4, z), Block::GRASS);
             }
         }
     }

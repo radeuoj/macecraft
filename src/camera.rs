@@ -1,29 +1,30 @@
+use glam::*;
 use crate::player::Player;
 
 pub struct Camera {
-    pub position: glam::Vec3,
+    pub position: Vec3,
     pub yaw: f32,
     pub pitch: f32,
-    proj: glam::Mat4,
+    proj: Mat4,
 }
 
 impl Camera {
-    pub const UP: glam::Vec3 = glam::Vec3::Y;
+    pub const UP: Vec3 = Vec3::Y;
     pub const FOV_Y: f32 = 60.0;
     pub const Z_NEAR: f32 = 0.1;
     pub const Z_FAR: f32 = 1000.0;
 
     pub fn new(aspect_ratio: f32) -> Self {
         Self {
-            position: glam::Vec3::ZERO,
+            position: Vec3::ZERO,
             yaw: -90f32.to_radians(),
             pitch: 0.0,
             proj: Self::build_proj_matrix(aspect_ratio),
         }
     }
 
-    pub fn forward(&self) -> glam::Vec3 {
-        glam::vec3(
+    pub fn forward(&self) -> Vec3 {
+        vec3(
             self.yaw.cos() * self.pitch.cos(),
             self.pitch.sin(),
             self.yaw.sin() * self.pitch.cos(),
@@ -40,8 +41,8 @@ impl Camera {
         self.pitch = player.pitch;
     }
 
-    fn build_proj_matrix(aspect_ratio: f32) -> glam::Mat4 {
-        glam::Mat4::perspective_rh(
+    fn build_proj_matrix(aspect_ratio: f32) -> Mat4 {
+        Mat4::perspective_rh(
             Self::FOV_Y.to_radians(),
             aspect_ratio,
             Self::Z_NEAR,
@@ -49,8 +50,8 @@ impl Camera {
         )
     }
 
-    pub fn build_view_proj_matrix(&self) -> glam::Mat4 {
-        let view = glam::Mat4::look_at_rh(
+    pub fn build_view_proj_matrix(&self) -> Mat4 {
+        let view = Mat4::look_at_rh(
             self.position,
             self.position + self.forward(),
             Self::UP,

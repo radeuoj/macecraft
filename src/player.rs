@@ -1,18 +1,18 @@
-
+use glam::*;
 use winit::{event::MouseButton, keyboard::KeyCode};
 
-use crate::{aabb::AABB, block::{self, Block, BlockFace}, input::Input, world::World};
+use crate::{aabb::AABB, block::{Block, BlockFace}, input::Input, world::World};
 
 pub struct Player {
-    pub position: glam::Vec3,
+    pub position: Vec3,
     pub yaw: f32,
     pub pitch: f32,
     world: *mut World,
-    target: Option<(glam::IVec3, BlockFace)>,
+    target: Option<(IVec3, BlockFace)>,
 }
 
 impl Player {
-    pub const UP: glam::Vec3 = glam::Vec3::Y;
+    pub const UP: Vec3 = Vec3::Y;
     pub const SPEED: f32 = 2.0;
     pub const SPRINT_SPEED: f32 = 20.0;
     pub const SENSITIVITY: f32 = 0.001;
@@ -23,7 +23,7 @@ impl Player {
 
     pub fn new() -> Self {
         Self {
-            position: glam::vec3(0.0, 10.0, 0.0),
+            position: vec3(0.0, 10.0, 0.0),
             yaw: -90f32.to_radians(),
             pitch: 0.0,
             world: std::ptr::null_mut(),
@@ -39,7 +39,7 @@ impl Player {
         unsafe { &mut *self.world }
     }
 
-    pub fn get_target_pos(&self) -> Option<glam::IVec3> {
+    pub fn get_target_pos(&self) -> Option<IVec3> {
         self.target.map(|(pos, _)| pos)
     }
 
@@ -47,15 +47,15 @@ impl Player {
         self.target.map(|(_, face)| face)
     }
 
-    pub fn forward(&self) -> glam::Vec3 {
-        glam::vec3(
+    pub fn forward(&self) -> Vec3 {
+        vec3(
             self.yaw.cos() * self.pitch.cos(),
             self.pitch.sin(),
             self.yaw.sin() * self.pitch.cos(),
         )
     }
 
-    pub fn right(&self) -> glam::Vec3 {
+    pub fn right(&self) -> Vec3 {
         self.forward().cross(Self::UP)
     }
 
@@ -66,7 +66,7 @@ impl Player {
     }
 
     fn handle_moving(&mut self, delta_time: f32, input: &Input) {
-        let mut move_dir = glam::Vec3::ZERO;
+        let mut move_dir = Vec3::ZERO;
         let forward = self.forward().with_y(0.0).normalize_or_zero();
         let right = self.right();
 
@@ -122,7 +122,7 @@ impl Player {
             for j in -1..=2 {
                 for k in -1..=1 {
                     let player = AABB::from_player(self.position);
-                    let block_pos = self.position.floor().as_ivec3() + glam::ivec3(i, j, k);
+                    let block_pos = self.position.floor().as_ivec3() + ivec3(i, j, k);
                     let block = AABB::from_block(block_pos);
 
                     if !self.world().is_air(block_pos) && AABB::collision(&player, &block) {

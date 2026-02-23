@@ -1,3 +1,4 @@
+use glam::*;
 use std::collections::HashMap;
 use std::sync::Arc;
 use bytemuck::{Pod, Zeroable};
@@ -107,7 +108,7 @@ struct CameraUniform {
 impl CameraUniform {
     fn new() -> Self {
         Self {
-            view_proj: glam::Mat4::IDENTITY.to_cols_array_2d(),
+            view_proj: Mat4::IDENTITY.to_cols_array_2d(),
         }
     }
 
@@ -127,7 +128,7 @@ impl ChunkPosUniform {
         Self { chunk_pos: [0; 3] }
     }
 
-    fn set(&mut self, pos: glam::IVec3) {
+    fn set(&mut self, pos: IVec3) {
         self.chunk_pos = pos.into();
     }
 }
@@ -153,7 +154,7 @@ pub struct Renderer {
 
     depth_texture: DepthTexture,
 
-    chunks: HashMap<glam::IVec3, wgpu::Buffer>,
+    chunks: HashMap<IVec3, wgpu::Buffer>,
 
     has_target_block: bool,
     color_buffer: wgpu::Buffer,
@@ -434,7 +435,7 @@ impl Renderer {
             bytemuck::cast_slice(&[self.camera_uniform]));
     }
 
-    pub fn update_target_block(&mut self, pos: Option<glam::IVec3>) {
+    pub fn update_target_block(&mut self, pos: Option<IVec3>) {
         match pos {
             Some(pos) => {
                 self.queue.write_buffer(&self.color_buffer, 0, 
@@ -449,20 +450,20 @@ impl Renderer {
         self.imgui_content = Box::new(content);
     }
 
-    pub fn render_chunk(&mut self, pos: glam::IVec3, world: &World) {
+    pub fn render_chunk(&mut self, pos: IVec3, world: &World) {
         let chunk = world.get_chunk(pos).unwrap();
         let mut vertices: Vec<Vertex> = vec![];
 
         for x in 0..Chunk::SIZE as u8 {
             for y in 0..Chunk::SIZE as u8 {
                 for z in 0..Chunk::SIZE as u8 {
-                    let block = chunk.get(glam::uvec3(x as u32, y as u32, z as u32));
+                    let block = chunk.get(uvec3(x as u32, y as u32, z as u32));
                     if block == Block::AIR { continue; }
-                    let pos = World::chunk_pos_to_world_pos(pos, glam::u8vec3(x, y, z).as_uvec3());
+                    let pos = World::chunk_pos_to_world_pos(pos, u8vec3(x, y, z).as_uvec3());
 
                     // -z
                     let (tx, ty) = block.get_texture_coords(BlockFace::ZN);
-                    if world.is_air(pos + glam::ivec3(0, 0, 1)) {
+                    if world.is_air(pos + ivec3(0, 0, 1)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1] },
@@ -475,7 +476,7 @@ impl Renderer {
 
                     // -x
                     let (tx, ty) = block.get_texture_coords(BlockFace::XN);
-                    if world.is_air(pos + glam::ivec3(1, 0, 0)) {
+                    if world.is_air(pos + ivec3(1, 0, 0)) {
                         vertices.extend([
                             Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1] },
@@ -488,7 +489,7 @@ impl Renderer {
 
                     // +z
                     let (tx, ty) = block.get_texture_coords(BlockFace::ZP);
-                    if world.is_air(pos + glam::ivec3(0, 0, -1)) {
+                    if world.is_air(pos + ivec3(0, 0, -1)) {
                         vertices.extend([
                             Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
@@ -501,7 +502,7 @@ impl Renderer {
 
                     // +x
                     let (tx, ty) = block.get_texture_coords(BlockFace::XP);
-                    if world.is_air(pos + glam::ivec3(-1, 0, 0)) {
+                    if world.is_air(pos + ivec3(-1, 0, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
@@ -514,7 +515,7 @@ impl Renderer {
 
                     // -y
                     let (tx, ty) = block.get_texture_coords(BlockFace::YN);
-                    if world.is_air(pos + glam::ivec3(0, 1, 0)) {
+                    if world.is_air(pos + ivec3(0, 1, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1] },
@@ -527,7 +528,7 @@ impl Renderer {
 
                     // +y
                     let (tx, ty) = block.get_texture_coords(BlockFace::YP);
-                    if world.is_air(pos + glam::ivec3(0, -1, 0)) {
+                    if world.is_air(pos + ivec3(0, -1, 0)) {
                         vertices.extend([
                             Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
                             Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
@@ -718,7 +719,7 @@ fn render_crosshair(window_size: (u32, u32)) -> Vec<UiVertex> {
     ]
 }
 
-fn render_target_block(pos: glam::IVec3) -> Vec<ColorVertex> {
+fn render_target_block(pos: IVec3) -> Vec<ColorVertex> {
     let pos = pos.as_vec3() - 0.001;
     let color = [0.0, 0.0, 0.0, 1.0];
     

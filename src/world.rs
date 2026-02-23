@@ -1,13 +1,13 @@
 use std::collections::{HashMap, HashSet};
 
-use glam::Vec3;
+use glam::*;
 
 use crate::{block::{Block, BlockFace}, chunk::Chunk, input::Input, player::Player};
 
 pub struct World {
     player: Player,
-    chunks: HashMap<glam::IVec3, Chunk>,
-    pub last_updated_chunks: HashSet<glam::IVec3>, // TODO: fix
+    chunks: HashMap<IVec3, Chunk>,
+    pub last_updated_chunks: HashSet<IVec3>, // TODO: fix
 }
 
 impl World {
@@ -21,16 +21,16 @@ impl World {
         }
     }
 
-    pub fn add_chunk(&mut self, pos: glam::IVec3, chunk: Chunk) {
+    pub fn add_chunk(&mut self, pos: IVec3, chunk: Chunk) {
         self.chunks.insert(pos, chunk);
         self.request_chunk_render_if_exists(pos);
     }
 
-    pub fn get_chunk(&self, pos: glam::IVec3) -> Option<&Chunk> {
+    pub fn get_chunk(&self, pos: IVec3) -> Option<&Chunk> {
         self.chunks.get(&pos)
     }
 
-    pub fn get_block(&self, pos: glam::IVec3) -> Block {
+    pub fn get_block(&self, pos: IVec3) -> Block {
         let (chunk_pos, local_pos) = World::world_pos_to_chunk_pos(pos);
 
         match self.chunks.get(&chunk_pos) {
@@ -39,45 +39,45 @@ impl World {
         }
     }
 
-    fn request_chunk_render_if_exists(&mut self, pos: glam::IVec3) {
+    fn request_chunk_render_if_exists(&mut self, pos: IVec3) {
         if !self.chunks.contains_key(&pos) { return; }
         self.last_updated_chunks.insert(pos);
     }
 
-    pub fn set_block(&mut self, pos: glam::IVec3, block: Block) {
+    pub fn set_block(&mut self, pos: IVec3, block: Block) {
         let (chunk_pos, local_pos) = World::world_pos_to_chunk_pos(pos);
 
         if let Some(chunk) = self.chunks.get_mut(&chunk_pos) {
             chunk.set(local_pos, block);
             self.request_chunk_render_if_exists(chunk_pos);
-            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(0, -1, 0));
-            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(0, 1, 0));
-            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(-1, 0, 0));
-            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(1, 0, 0));
-            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(0, 0, -1));
-            self.request_chunk_render_if_exists(chunk_pos + glam::ivec3(0, 0, 1));
+            self.request_chunk_render_if_exists(chunk_pos + ivec3(0, -1, 0));
+            self.request_chunk_render_if_exists(chunk_pos + ivec3(0, 1, 0));
+            self.request_chunk_render_if_exists(chunk_pos + ivec3(-1, 0, 0));
+            self.request_chunk_render_if_exists(chunk_pos + ivec3(1, 0, 0));
+            self.request_chunk_render_if_exists(chunk_pos + ivec3(0, 0, -1));
+            self.request_chunk_render_if_exists(chunk_pos + ivec3(0, 0, 1));
         } else {
             panic!("Chunk at {:?} was not loaded yet", chunk_pos);
         }
     }
 
-    pub fn is_air(&self, pos: glam::IVec3) -> bool {
+    pub fn is_air(&self, pos: IVec3) -> bool {
         self.get_block(pos) == Block::AIR
     }
 
     /**
      * returns (chunk_pos, local_pos)
      */
-    pub fn world_pos_to_chunk_pos(pos: glam::IVec3) -> (glam::IVec3, glam::UVec3) {
+    pub fn world_pos_to_chunk_pos(pos: IVec3) -> (IVec3, UVec3) {
         let mut chunk_pos = pos / Chunk::SIZE as i32;
         let mut local_pos = pos % Chunk::SIZE as i32;
-        let is_neg = local_pos.cmplt(glam::IVec3::ZERO);
-        chunk_pos -= glam::IVec3::select(is_neg, glam::IVec3::ONE, glam::IVec3::ZERO);
-        local_pos += glam::IVec3::select(is_neg, glam::IVec3::ONE * Chunk::SIZE as i32, glam::IVec3::ZERO);
+        let is_neg = local_pos.cmplt(IVec3::ZERO);
+        chunk_pos -= IVec3::select(is_neg, IVec3::ONE, IVec3::ZERO);
+        local_pos += IVec3::select(is_neg, IVec3::ONE * Chunk::SIZE as i32, IVec3::ZERO);
         (chunk_pos, local_pos.as_uvec3())
     }
 
-    pub fn chunk_pos_to_world_pos(chunk_pos: glam::IVec3, local_pos: glam::UVec3) -> glam::IVec3 {
+    pub fn chunk_pos_to_world_pos(chunk_pos: IVec3, local_pos: UVec3) -> IVec3 {
         chunk_pos * Chunk::SIZE as i32 + local_pos.as_ivec3()
     }
 
@@ -98,13 +98,13 @@ impl World {
      * https://aaaa.sh/creatures/dda-algorithm-interactive/
      * returns hit position in global coords
      */
-    pub fn raycast(&self, mut origin: glam::Vec3, dir: glam::Vec3, max_dist: f32) -> Option<(glam::IVec3, BlockFace)> {
+    pub fn raycast(&self, mut origin: Vec3, dir: Vec3, max_dist: f32) -> Option<(IVec3, BlockFace)> {
         assert!(dir.is_normalized());
 
         let ray_unit_step_size = (1.0 / dir.abs()).map(|e| if e.is_infinite() { 0.0 } else { e }); // note division by zero gives infinity
         let step = dir.signum();
 
-        let mut ray_length = ray_unit_step_size * glam::Vec3::select(
+        let mut ray_length = ray_unit_step_size * Vec3::select(
             dir.cmplt(Vec3::ZERO),
             origin - origin.floor(),
             1.0 - origin + origin.floor()
@@ -142,9 +142,11 @@ impl World {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn test_ray_unit_step_size() {
-        let dir = glam::vec3(0.5, 0.5, 0.0);
-        assert_eq!(1.0 / dir, glam::vec3(2.0, 2.0, f32::INFINITY));
+        let dir = vec3(0.5, 0.5, 0.0);
+        assert_eq!(1.0 / dir, vec3(2.0, 2.0, f32::INFINITY));
     }
 }

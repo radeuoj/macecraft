@@ -16,6 +16,7 @@ use crate::renderer::Renderer;
 use crate::world::World;
 use std::sync::Arc;
 use std::time::Instant;
+use glam::*;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalPosition;
 use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, WindowEvent};
@@ -101,7 +102,7 @@ impl State {
         }
     }
 
-    fn handle_mouse(&mut self, delta: glam::Vec2) {
+    fn handle_mouse(&mut self, delta: Vec2) {
         if !self.is_mouse_captured { return }
         self.input.mouse_delta += delta;
     }
@@ -196,7 +197,7 @@ impl App {
             Err(e) => log::error!("Render error: {}", e),
         }
 
-        state.input.mouse_delta = glam::Vec2::ZERO;
+        state.input.mouse_delta = Vec2::ZERO;
         state.input.just_pressed_mouse_buttons.clear();
 
         if state.is_mouse_captured {
@@ -253,7 +254,7 @@ impl ApplicationHandler for App {
         let state = self.state.as_mut().unwrap();
 
         if let DeviceEvent::MouseMotion { delta } = event {
-            state.handle_mouse(glam::DVec2::from(delta).as_vec2());
+            state.handle_mouse(DVec2::from(delta).as_vec2());
         }
     }
 }
