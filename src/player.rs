@@ -122,7 +122,7 @@ impl Player {
             for j in -1..=2 {
                 for k in -1..=1 {
                     let player = AABB::from_player(self.position);
-                    let block_pos = self.position.as_ivec3() + glam::ivec3(i, j, k);
+                    let block_pos = self.position.floor().as_ivec3() + glam::ivec3(i, j, k);
                     let block = AABB::from_block(block_pos);
 
                     if !self.world().is_air(block_pos) && AABB::collision(&player, &block) {
