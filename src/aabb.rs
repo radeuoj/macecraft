@@ -21,9 +21,21 @@ impl AABB {
         }
     }
 
+    pub fn center(&self) -> Vec3 {
+        self.position + self.size / 2.0
+    }
+
     pub fn collision(a: &AABB, b: &AABB) -> bool {
         a.position.x < b.position.x + b.size.x && a.position.x + a.size.x > b.position.x &&
         a.position.y < b.position.y + b.size.y && a.position.y + a.size.y > b.position.y &&
         a.position.z < b.position.z + b.size.z && a.position.z + a.size.z > b.position.z
+    }
+
+    pub fn collision_depth(a: &AABB, b: &AABB) -> Vec3 {
+        Vec3::select(
+            a.center().cmplt(b.center()),
+            a.position + a.size - b.position,
+            b.position + b.size - a.position,
+        )
     }
 }

@@ -112,7 +112,30 @@ impl Player {
     }
 
     fn handle_physics(&mut self, delta_time: f32) {
-        self.position += self.velocity * delta_time;
+        self.physics_move(self.velocity * delta_time);
+    }
+
+    fn physics_move(&mut self, delta: Vec3) {
+        for i in 0..3 {
+            self.physics_move_axis(i, delta[i]);
+        }
+    }
+
+    fn physics_move_axis(&mut self, axis: usize, delta: f32) {
+        self.position[axis] += delta;
+        let player = AABB::from_player(self.position);
+        let mut max_pen = 0.0f32;
+        
+        for block_pos in self.get_colliders() {
+            let block = AABB::from_block(block_pos);
+
+            if !self.world().is_air(block_pos) && AABB::collision(&player, &block) {
+                let depth = AABB::collision_depth(&player, &block);
+                max_pen = max_pen.max(depth[axis]);
+            }   
+        }
+
+        self.position[axis] -= delta.signum() * max_pen;
     }
 
     fn handle_looking(&mut self, input: &Input) {
@@ -144,20 +167,33 @@ impl Player {
     }
 
     pub fn is_colliding(&self) -> bool {
-        for i in -1..=1 {
-            for j in -1..=2 {
-                for k in -1..=1 {
-                    let player = AABB::from_player(self.position);
-                    let block_pos = self.position.floor().as_ivec3() + ivec3(i, j, k);
-                    let block = AABB::from_block(block_pos);
+        let player = AABB::from_player(self.position);
 
-                    if !self.world().is_air(block_pos) && AABB::collision(&player, &block) {
-                        return true;
-                    }
-                }
+        for block_pos in self.get_colliders() {
+            let block = AABB::from_block(block_pos);
+
+            if !self.world().is_air(block_pos) && AABB::collision(&player, &block) {
+                return true;
             }
         }
 
         false
+    }
+
+    fn get_colliders(&self) -> [IVec3; 36] {
+        let mut result = [IVec3::ZERO; _];
+        let mut next_index = 0usize;
+
+        for i in -1..=1 {
+            for j in -1..=2 {
+                for k in -1..=1 {
+                    let block_pos = self.position.floor().as_ivec3() + ivec3(i, j, k);
+                    result[next_index] = block_pos;
+                    next_index += 1;
+                }
+            }
+        }
+
+        result
     }
 }
