@@ -22,8 +22,8 @@ impl Player {
     pub const HEIGHT: f32 = 2.0;
     pub const EYE_LEVEL: f32 = 1.7;
     pub const DRAG: f32 = 5.0;
-    pub const GRAVITY: f32 = 9.8;
-    pub const JUMP_FORCE: f32 = 20.0;
+    pub const GRAVITY: f32 = 18.0;
+    pub const JUMP_FORCE: f32 = 8.0;
     pub const PHYSICS_EPSILON: f32 = 0.01;
 
     pub fn new() -> Self {
@@ -144,6 +144,10 @@ impl Player {
                 let depth = AABB::collision_depth(&player, &block);
                 max_pen = max_pen.max(depth[axis]);
             }   
+        }
+
+        if max_pen > 0.0 {
+            self.velocity[axis] = 0.0;
         }
 
         moved -= moved.signum() * max_pen;
