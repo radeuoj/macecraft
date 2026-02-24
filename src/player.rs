@@ -22,6 +22,9 @@ impl Player {
     pub const HEIGHT: f32 = 2.0;
     pub const EYE_LEVEL: f32 = 1.7;
     pub const DRAG: f32 = 5.0;
+    pub const GRAVITY: f32 = 9.8;
+    pub const JUMP_FORCE: f32 = 20.0;
+    pub const PHYSICS_EPSILON: f32 = 0.01;
 
     pub fn new() -> Self {
         Self {
@@ -97,8 +100,13 @@ impl Player {
         if input.is_key_pressed(KeyA) { move_dir -= right }
         move_dir = move_dir.normalize_or_zero();
 
-        if input.is_key_pressed(Space) { move_dir += Player::UP }
-        if input.is_key_pressed(ShiftLeft) { move_dir -= Player::UP }
+        // if input.is_key_pressed(Space) { move_dir += Player::UP }
+        // if input.is_key_pressed(ShiftLeft) { move_dir -= Player::UP }
+        let jump_force = if input.is_key_just_pressed(Space) {
+            Player::UP * Player::JUMP_FORCE
+        } else {
+            Vec3::ZERO
+        };
 
         let accel = if input.is_key_pressed(ControlLeft) {
             Player::SPRINT_ACCEL
@@ -106,12 +114,13 @@ impl Player {
             Player::ACCEL
         };
 
-        let drag = -self.velocity * Player::DRAG;
+        let drag = -self.velocity.with_y(0.0) * Player::DRAG;
         let forces = move_dir * accel + drag;
-        self.velocity += forces * delta_time;
+        self.velocity += forces * delta_time + jump_force;
     }
 
     fn handle_physics(&mut self, delta_time: f32) {
+        self.velocity.y -= Player::GRAVITY * delta_time;
         self.physics_move(self.velocity * delta_time);
     }
 
@@ -122,8 +131,10 @@ impl Player {
     }
 
     fn physics_move_axis(&mut self, axis: usize, delta: f32) {
-        self.position[axis] += delta;
-        let player = AABB::from_player(self.position);
+        let mut moved = delta;
+        let mut new_pos = self.position;
+        new_pos[axis] += moved;
+        let player = AABB::from_player(new_pos);
         let mut max_pen = 0.0f32;
         
         for block_pos in self.get_colliders() {
@@ -135,7 +146,9 @@ impl Player {
             }   
         }
 
-        self.position[axis] -= delta.signum() * max_pen;
+        moved -= moved.signum() * max_pen;
+        // moved = if moved.abs() <= Player::PHYSICS_EPSILON { 0.0 } else { moved };
+        self.position[axis] += moved;
     }
 
     fn handle_looking(&mut self, input: &Input) {

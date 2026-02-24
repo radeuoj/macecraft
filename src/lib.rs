@@ -96,6 +96,7 @@ impl State {
     fn handle_key(&mut self, code: KeyCode, is_pressed: bool) {
         if is_pressed {
             self.input.active_keys.insert(code);
+            self.input.just_pressed_keys.insert(code);
             if code == KeyCode::AltLeft { self.toggle_mouse_capture() }
         } else {
             self.input.active_keys.remove(&code);
@@ -198,6 +199,7 @@ impl App {
         }
 
         state.input.mouse_delta = Vec2::ZERO;
+        state.input.just_pressed_keys.clear();
         state.input.just_pressed_mouse_buttons.clear();
 
         if state.is_mouse_captured {

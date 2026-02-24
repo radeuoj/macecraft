@@ -101,7 +101,7 @@ impl World {
     pub fn raycast(&self, mut origin: Vec3, dir: Vec3, max_dist: f32) -> Option<(IVec3, BlockFace)> {
         assert!(dir.is_normalized());
 
-        let ray_unit_step_size = (1.0 / dir.abs()).map(|e| if e.is_infinite() { 0.0 } else { e }); // note division by zero gives infinity
+        let ray_unit_step_size = 1.0 / dir.abs(); // note division by zero gives infinity
         let step = dir.signum();
 
         let mut ray_length = ray_unit_step_size * Vec3::select(
