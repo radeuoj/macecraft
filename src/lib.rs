@@ -94,8 +94,6 @@ impl State {
     }
 
     fn handle_key(&mut self, code: KeyCode, is_pressed: bool) {
-        println!("{:?} {}", code, is_pressed);
-
         if is_pressed {
             self.input.active_keys.insert(code);
             self.input.just_pressed_keys.insert(code);
@@ -155,10 +153,9 @@ impl State {
     }
 
     fn render(&mut self) -> anyhow::Result<()> {
-        for pos in &self.world.dirty_chunks {
-            self.renderer.render_chunk(*pos, &self.world);
+        for pos in self.world.dirty_chunks() {
+            self.renderer.render_chunk(pos, &self.world);
         }
-        self.world.dirty_chunks.clear();
 
         self.renderer.draw(&self.window)?;
 

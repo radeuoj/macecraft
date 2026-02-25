@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, mem};
 
 use glam::*;
 
@@ -7,7 +7,7 @@ use crate::{block::{Block, BlockFace}, chunk::Chunk, input::Input, player::Playe
 pub struct World {
     player: Player,
     chunks: HashMap<IVec3, Chunk>,
-    pub dirty_chunks: HashSet<IVec3>, // TODO: fix
+    dirty_chunks: HashSet<IVec3>,
 }
 
 impl World {
@@ -23,7 +23,7 @@ impl World {
 
     pub fn add_chunk(&mut self, pos: IVec3, chunk: Chunk) {
         self.chunks.insert(pos, chunk);
-        self.request_chunk_render_if_exists(pos);
+        self.mark_dirty(pos);
     }
 
     pub fn get_chunk(&self, pos: IVec3) -> Option<&Chunk> {
@@ -39,9 +39,22 @@ impl World {
         }
     }
 
-    fn request_chunk_render_if_exists(&mut self, pos: IVec3) {
-        if !self.chunks.contains_key(&pos) { return; }
-        self.dirty_chunks.insert(pos);
+    pub fn get_player(&self) -> &Player {
+        &self.player
+    }
+
+    pub fn get_player_mut(&mut self) -> &mut Player {
+        &mut self.player
+    }
+
+    fn mark_dirty(&mut self, pos: IVec3) {
+        if self.chunks.contains_key(&pos) { 
+            self.dirty_chunks.insert(pos);
+        }
+    }
+
+    pub fn dirty_chunks(&mut self) -> HashSet<IVec3> {
+        mem::replace(&mut self.dirty_chunks, HashSet::new())
     }
 
     pub fn set_block(&mut self, pos: IVec3, block: Block) {
@@ -49,13 +62,13 @@ impl World {
 
         if let Some(chunk) = self.chunks.get_mut(&chunk_pos) {
             chunk.set(local_pos, block);
-            self.request_chunk_render_if_exists(chunk_pos);
-            self.request_chunk_render_if_exists(chunk_pos + ivec3(0, -1, 0));
-            self.request_chunk_render_if_exists(chunk_pos + ivec3(0, 1, 0));
-            self.request_chunk_render_if_exists(chunk_pos + ivec3(-1, 0, 0));
-            self.request_chunk_render_if_exists(chunk_pos + ivec3(1, 0, 0));
-            self.request_chunk_render_if_exists(chunk_pos + ivec3(0, 0, -1));
-            self.request_chunk_render_if_exists(chunk_pos + ivec3(0, 0, 1));
+            self.mark_dirty(chunk_pos);
+            self.mark_dirty(chunk_pos + ivec3(0, -1, 0));
+            self.mark_dirty(chunk_pos + ivec3(0, 1, 0));
+            self.mark_dirty(chunk_pos + ivec3(-1, 0, 0));
+            self.mark_dirty(chunk_pos + ivec3(1, 0, 0));
+            self.mark_dirty(chunk_pos + ivec3(0, 0, -1));
+            self.mark_dirty(chunk_pos + ivec3(0, 0, 1));
         } else {
             panic!("Chunk at {:?} was not loaded yet", chunk_pos);
         }
@@ -83,14 +96,6 @@ impl World {
 
     pub fn update(&mut self, delta_time: f32, input: &Input) {
         self.player.update(delta_time, input);
-    }
-
-    pub fn get_player(&self) -> &Player {
-        &self.player
-    }
-
-    pub fn get_player_mut(&mut self) -> &mut Player {
-        &mut self.player
     }
 
     /**

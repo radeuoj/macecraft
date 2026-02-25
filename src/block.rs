@@ -1,3 +1,5 @@
+use glam::*;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Block(pub u8);
 
@@ -27,6 +29,17 @@ impl Block {
             }
             Self::COBBLE => (4, 0),
             _ => unimplemented!("invalid block {:?}", self),
+        }
+    }
+
+    pub fn get_neighbour(pos: IVec3, face: BlockFace) -> IVec3 {
+        match face {
+            BlockFace::ZN => pos + IVec3::Z,
+            BlockFace::ZP => pos - IVec3::Z,
+            BlockFace::XN => pos + IVec3::X,
+            BlockFace::XP => pos - IVec3::X,
+            BlockFace::YN => pos + IVec3::Y,
+            BlockFace::YP => pos - IVec3::Y,
         }
     }
 }

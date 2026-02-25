@@ -10,6 +10,8 @@ pub struct Player {
     velocity: Vec3,
     world: *mut World,
     target: Option<(IVec3, BlockFace)>,
+    grounded: bool,
+    can_place: bool,
 }
 
 impl Player {
@@ -33,6 +35,8 @@ impl Player {
             pitch: 0.0,
             world: std::ptr::null_mut(),
             target: None,
+            grounded: false,
+            can_place: false,
         }
     }
 
@@ -101,17 +105,11 @@ impl Player {
 
         // if input.is_key_pressed(Space) { move_dir += Player::UP }
         // if input.is_key_pressed(ShiftLeft) { move_dir -= Player::UP }
-        let jump_force = if input.is_key_just_pressed(Space) {
-            Player::UP * Player::JUMP_FORCE
-        } else {
-            Vec3::ZERO
-        };
+        let jump_force = (self.grounded && input.is_key_pressed(Space))
+            .then_some(Player::UP * Player::JUMP_FORCE).unwrap_or(Vec3::ZERO);
 
-        let accel = if input.is_key_pressed(ControlLeft) {
-            Player::SPRINT_ACCEL
-        } else {
-            Player::ACCEL
-        };
+        let accel = input.is_key_pressed(ControlLeft)
+            .then_some(Player::SPRINT_ACCEL).unwrap_or(Player::ACCEL);
 
         let drag = -self.velocity.with_y(0.0) * Player::DRAG;
         let forces = move_dir * accel + drag;
@@ -120,16 +118,37 @@ impl Player {
 
     fn handle_physics(&mut self, delta_time: f32) {
         self.velocity.y -= Player::GRAVITY * delta_time;
-        self.physics_move(self.velocity * delta_time);
-    }
+        let delta = self.velocity * delta_time;
+        let moved = self.physics_move(delta);
+        let mut stopped = BVec3::FALSE;
 
-    fn physics_move(&mut self, delta: Vec3) {
         for i in 0..3 {
-            self.physics_move_axis(i, delta[i]);
+            if (moved[i] - delta[i]).abs() > 0.0 {
+                stopped.set(i, true);
+                self.velocity[i] = 0.0;
+            }
         }
+
+        self.grounded = stopped.y;
     }
 
-    fn physics_move_axis(&mut self, axis: usize, delta: f32) {
+    /**
+     * returns how much it was actually moved
+     */
+    fn physics_move(&mut self, delta: Vec3) -> Vec3 {
+        let mut res = Vec3::ZERO;
+
+        for i in 0..3 {
+            res[i] = self.physics_move_axis(i, delta[i]);
+        }
+
+        res
+    }
+
+    /**
+     * returns how much it was actually moved
+     */
+    fn physics_move_axis(&mut self, axis: usize, delta: f32) -> f32 {
         let mut moved = delta;
         let mut new_pos = self.position;
         new_pos[axis] += moved;
@@ -145,13 +164,15 @@ impl Player {
             }   
         }
 
-        if max_pen > 0.0 {
-            self.velocity[axis] = 0.0;
-        }
+        // if max_pen > 0.0 {
+        //     self.velocity[axis] = 0.0;
+        // }
 
         moved -= moved.signum() * max_pen;
         // moved = if moved.abs() <= Player::PHYSICS_EPSILON { 0.0 } else { moved };
         self.position[axis] += moved;
+
+        moved
     }
 
     fn handle_looking(&mut self, input: &Input) {
@@ -161,23 +182,17 @@ impl Player {
         self.pitch = self.pitch.clamp(-89f32.to_radians(), 89f32.to_radians());
 
         self.target = self.world().raycast(self.position + Player::UP * Player::EYE_LEVEL, self.forward(), Player::REACH);
+        self.can_place = self.dry_place();
     }
 
     pub fn handle_block_manip(&self, input: &Input) {
         if input.is_mouse_button_just_pressed(MouseButton::Left) && 
                 let Some(pos) = self.get_target_pos() {
             self.world().set_block(pos, Block::AIR);
-        } else if input.is_mouse_button_just_pressed(MouseButton::Right) &&
-                let Some((mut pos, face)) = self.target {
-            match face {
-                BlockFace::ZN => pos.z += 1,
-                BlockFace::ZP => pos.z -= 1,
-                BlockFace::XN => pos.x += 1,
-                BlockFace::XP => pos.x -= 1,
-                BlockFace::YN => pos.y += 1,
-                BlockFace::YP => pos.y -= 1,
-            }
-
+        } else if self.can_place && 
+                input.is_mouse_button_just_pressed(MouseButton::Right) &&
+                let Some((pos, face)) = self.target {
+            let pos = Block::get_neighbour(pos, face);
             self.world().set_block(pos, Block::COBBLE);
         }
     }
@@ -211,5 +226,16 @@ impl Player {
         }
 
         result
+    }
+
+    fn dry_place(&self) -> bool {
+        if let Some((pos, face)) = self.target {
+            let pos = Block::get_neighbour(pos, face);
+            let player = AABB::from_player(self.position);
+            let block = AABB::from_block(pos);
+            !AABB::collision(&player, &block)
+        } else {
+            false
+        }
     }
 }
