@@ -7,7 +7,7 @@ use crate::{block::{Block, BlockFace}, chunk::Chunk, input::Input, player::Playe
 pub struct World {
     player: Player,
     chunks: HashMap<IVec3, Chunk>,
-    pub last_updated_chunks: HashSet<IVec3>, // TODO: fix
+    pub dirty_chunks: HashSet<IVec3>, // TODO: fix
 }
 
 impl World {
@@ -17,7 +17,7 @@ impl World {
         Self {
             player,
             chunks: HashMap::new(),
-            last_updated_chunks: HashSet::new(),
+            dirty_chunks: HashSet::new(),
         }
     }
 
@@ -41,7 +41,7 @@ impl World {
 
     fn request_chunk_render_if_exists(&mut self, pos: IVec3) {
         if !self.chunks.contains_key(&pos) { return; }
-        self.last_updated_chunks.insert(pos);
+        self.dirty_chunks.insert(pos);
     }
 
     pub fn set_block(&mut self, pos: IVec3, block: Block) {

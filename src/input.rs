@@ -12,6 +12,7 @@ pub struct Input {
     pub active_mouse_buttons: HashSet<MouseButton>,
 }
 
+#[allow(unused)]
 impl Input {
     pub fn new() -> Self {
         Self {

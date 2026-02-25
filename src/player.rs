@@ -23,8 +23,7 @@ impl Player {
     pub const EYE_LEVEL: f32 = 1.7;
     pub const DRAG: f32 = 5.0;
     pub const GRAVITY: f32 = 18.0;
-    pub const JUMP_FORCE: f32 = 8.0;
-    pub const PHYSICS_EPSILON: f32 = 0.01;
+    pub const JUMP_FORCE: f32 = 6.4;
 
     pub fn new() -> Self {
         Self {
