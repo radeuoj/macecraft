@@ -177,7 +177,7 @@ impl Player {
         let player = AABB::from_player(new_pos);
         let mut max_pen = 0.0f32;
         
-        for block_pos in self.get_colliders() {
+        for block_pos in Player::get_colliders(new_pos) {
             let block = AABB::from_block(block_pos);
 
             if !self.world().is_air(block_pos) && AABB::collision(&player, &block) {
@@ -222,7 +222,7 @@ impl Player {
     pub fn is_colliding(&self) -> bool {
         let player = AABB::from_player(self.position);
 
-        for block_pos in self.get_colliders() {
+        for block_pos in Player::get_colliders(self.position) {
             let block = AABB::from_block(block_pos);
 
             if !self.world().is_air(block_pos) && AABB::collision(&player, &block) {
@@ -233,14 +233,14 @@ impl Player {
         false
     }
 
-    fn get_colliders(&self) -> [IVec3; 45] {
+    fn get_colliders(position: Vec3) -> [IVec3; 36] {
         let mut result = [IVec3::ZERO; _];
         let mut next_index = 0usize;
 
         for i in -1..=1 {
-            for j in -1..=3 {
+            for j in -1..=2 {
                 for k in -1..=1 {
-                    let block_pos = self.position.floor().as_ivec3() + ivec3(i, j, k);
+                    let block_pos = position.floor().as_ivec3() + ivec3(i, j, k);
                     result[next_index] = block_pos;
                     next_index += 1;
                 }
