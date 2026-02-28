@@ -151,6 +151,7 @@ pub struct Renderer {
 
     chunk_pos_buffer: wgpu::Buffer,
     chunk_bind_group: wgpu::BindGroup,
+    chunk_bind_group_layout: wgpu::BindGroupLayout,
 
     depth_texture: DepthTexture,
 
@@ -272,14 +273,7 @@ impl Renderer {
                 ],
             });
         
-        assert!(size_of::<ChunkPosUniform>() as u32 <= device.limits().min_uniform_buffer_offset_alignment);
-        let chunk_pos_buffer = device
-            .create_buffer(&wgpu::BufferDescriptor {
-                label: Some("Chunk pos buffer"),
-                size: device.limits().min_uniform_buffer_offset_alignment as u64 * World::MAX_CHUNKS as u64,
-                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-                mapped_at_creation: false,
-            });
+        let chunk_pos_buffer = create_chunk_pos_buffer(&device, World::MAX_CHUNKS);
 
         let chunk_bind_group_layout = device
             .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
@@ -298,17 +292,11 @@ impl Renderer {
                 ],
             });
 
-        let chunk_bind_group = device
-            .create_bind_group(&wgpu::BindGroupDescriptor {
-                label: Some("Chunk bind group"),
-                layout: &chunk_bind_group_layout,
-                entries: &[
-                    wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: chunk_pos_buffer.slice(0..256).into(),
-                    },
-                ],
-            });
+        let chunk_bind_group = create_chunk_pos_bind_ground(
+            &device, 
+            &chunk_bind_group_layout,  
+            &chunk_pos_buffer,
+        );
 
         let color_buffer = device.create_buffer(
             &wgpu::BufferDescriptor {
@@ -412,6 +400,7 @@ impl Renderer {
             camera_bind_group,
             chunk_pos_buffer,
             chunk_bind_group,
+            chunk_bind_group_layout,
             depth_texture,
             chunks: HashMap::new(),
             has_target_block: false,
@@ -555,6 +544,21 @@ impl Renderer {
                 usage: wgpu::BufferUsages::VERTEX,
             }
         ));
+
+        self.try_resize_chunk_pos_buffer();
+    }
+
+    fn try_resize_chunk_pos_buffer(&mut self) {
+        let buf_count = chunk_pos_buffer_count(&self.device, &self.chunk_pos_buffer);
+
+        if self.chunks.len() > buf_count {
+            self.chunk_pos_buffer = create_chunk_pos_buffer(&self.device, buf_count * 2);
+            self.chunk_bind_group = create_chunk_pos_bind_ground(
+                &self.device,
+                &self.chunk_bind_group_layout,
+                &self.chunk_pos_buffer,
+            );
+        }
     }
 
     fn draw_chunks(&mut self, render_pass: &mut wgpu::RenderPass) {
@@ -755,4 +759,31 @@ fn render_target_block(pos: IVec3) -> Vec<ColorVertex> {
         ColorVertex { position: [pos.x        , pos.y + 1.002, pos.z        ], color },
         ColorVertex { position: [pos.x        , pos.y        , pos.z        ], color },
     ]
+}
+
+fn create_chunk_pos_buffer(device: &wgpu::Device, chunks: usize) -> wgpu::Buffer {
+    assert!(size_of::<ChunkPosUniform>() as u32 <= device.limits().min_uniform_buffer_offset_alignment);
+    device.create_buffer(&wgpu::BufferDescriptor {
+        label: Some("Chunk pos buffer"),
+        size: device.limits().min_uniform_buffer_offset_alignment as u64 * chunks as u64,
+        usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        mapped_at_creation: false,
+    })
+}
+
+fn chunk_pos_buffer_count(device: &wgpu::Device, buf: &wgpu::Buffer) -> usize {
+    buf.size() as usize / device.limits().min_uniform_buffer_offset_alignment as usize
+}
+
+fn create_chunk_pos_bind_ground(device: &wgpu::Device, layout: &wgpu::BindGroupLayout, buf: &wgpu::Buffer) -> wgpu::BindGroup {
+    device.create_bind_group(&wgpu::BindGroupDescriptor {
+        label: Some("Chunk bind group"),
+        layout: layout,
+        entries: &[
+            wgpu::BindGroupEntry {
+                binding: 0,
+                resource: buf.slice(0..device.limits().min_uniform_buffer_offset_alignment as u64).into(),
+            },
+        ],
+    })
 }

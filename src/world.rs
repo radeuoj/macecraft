@@ -31,6 +31,10 @@ impl World {
         self.chunks.get(&pos)
     }
 
+    pub fn chunk_count(&self) -> usize {
+        self.chunks.len()
+    }
+
     pub fn get_block(&self, pos: IVec3) -> Block {
         let (chunk_pos, local_pos) = World::world_pos_to_chunk_pos(pos);
 

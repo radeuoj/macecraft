@@ -124,6 +124,8 @@ impl State {
         let target_face = player.get_target_face();
         let target_block = target_pos.map(|pos| self.world.get_block(pos));
 
+        let chunk_count = self.world.chunk_count();
+
         self.renderer.update_imgui(move |ui| {
             ui.text(format!("FPS: {}", 1.0 / delta_time));
             ui.text(format!("Position: {:+.2} {:+.2} {:+.2}", pos.x, pos.y, pos.z));
@@ -133,10 +135,12 @@ impl State {
             ui.text(format!("Target face: {:?}", target_face));
             ui.text(format!("Target block: {:?}", target_block));
             ui.text(format!("Colision: {}", collision));
+            ui.text(format!("Chunk count: {}", chunk_count));
 
             unsafe {
                 ui.checkbox("Flying", &mut *flying);
             }
+
         });
     }
 
