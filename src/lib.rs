@@ -119,6 +119,7 @@ impl State {
         let player = self.world.player_mut();
         let collision = player.is_colliding();
         let flying = player.flying_mut() as *mut bool;
+        let colliding = player.colliding_mut() as *mut bool;
 
         let target_pos = player.get_target_pos();
         let target_face = player.get_target_face();
@@ -139,6 +140,7 @@ impl State {
 
             unsafe {
                 ui.checkbox("Flying", &mut *flying);
+                ui.checkbox("Colliding", &mut *colliding);
             }
 
         });

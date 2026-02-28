@@ -13,6 +13,7 @@ pub struct Player {
     grounded: bool,
     can_place: bool,
     flying: bool,
+    colliding: bool,
 }
 
 impl Player {
@@ -39,6 +40,7 @@ impl Player {
             grounded: false,
             can_place: false,
             flying: false,
+            colliding: true,
         }
     }
 
@@ -88,6 +90,10 @@ impl Player {
 
     pub fn flying_mut(&mut self) -> &mut bool {
         &mut self.flying
+    }
+
+    pub fn colliding_mut(&mut self) -> &mut bool {
+        &mut self.colliding
     }
 
     pub fn update(&mut self, delta_time: f32, input: &Input) {
@@ -178,9 +184,9 @@ impl Player {
             }   
         }
 
-        // if max_pen > 0.0 {
-        //     self.velocity[axis] = 0.0;
-        // }
+        if !self.colliding {
+            max_pen = 0.0;
+        }
 
         moved -= moved.signum() * max_pen;
         // moved = if moved.abs() <= Player::PHYSICS_EPSILON { 0.0 } else { moved };

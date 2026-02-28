@@ -24,7 +24,7 @@ impl World {
 
     pub fn add_chunk(&mut self, pos: IVec3, chunk: Chunk) {
         self.chunks.insert(pos, chunk);
-        self.mark_dirty(pos);
+        self.mark_very_dirty(pos);
     }
 
     pub fn get_chunk(&self, pos: IVec3) -> Option<&Chunk> {
@@ -58,6 +58,14 @@ impl World {
         }
     }
 
+    fn mark_very_dirty(&mut self, pos: IVec3) {
+        self.mark_dirty(pos);
+
+        for neighbour in Chunk::get_neighbours(pos) {
+            self.mark_dirty(neighbour);
+        }
+    }
+
     pub fn dirty_chunks(&mut self) -> HashSet<IVec3> {
         mem::replace(&mut self.dirty_chunks, HashSet::new())
     }
@@ -67,11 +75,7 @@ impl World {
 
         if let Some(chunk) = self.chunks.get_mut(&chunk_pos) {
             chunk.set(local_pos, block);
-            self.mark_dirty(chunk_pos);
-
-            for neighbour in Chunk::get_neighbours(chunk_pos) {
-                self.mark_dirty(neighbour);
-            }
+            self.mark_very_dirty(chunk_pos);
         } else {
             panic!("Chunk at {:?} was not loaded yet", chunk_pos);
         }
