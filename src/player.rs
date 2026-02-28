@@ -23,7 +23,7 @@ impl Player {
     pub const SENSITIVITY: f32 = 0.001;
     pub const REACH: f32 = 5.0;
     pub const WIDTH: f32 = 0.5;
-    pub const HEIGHT: f32 = 2.0;
+    pub const HEIGHT: f32 = 1.9;
     pub const EYE_LEVEL: f32 = 1.7;
     pub const DRAG: f32 = 5.0;
     pub const GRAVITY: f32 = 32.0;
@@ -141,6 +141,7 @@ impl Player {
         let delta = self.velocity * delta_time;
         let moved = self.physics_move(delta);
         let mut stopped = BVec3::FALSE;
+        let old_vel_y = self.velocity.y;
 
         for i in 0..3 {
             if (moved[i] - delta[i]).abs() > 0.0 {
@@ -149,7 +150,7 @@ impl Player {
             }
         }
 
-        self.grounded = stopped.y;
+        self.grounded = stopped.y && old_vel_y < 0.0;
     }
 
     /**

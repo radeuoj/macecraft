@@ -169,6 +169,7 @@ impl World {
                     if self.chunks.contains_key(&pos) { continue }
 
                     self.add_chunk(pos, Chunk::new());
+                    return;
                 }
             }
         }
