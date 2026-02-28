@@ -12,6 +12,7 @@ pub struct Player {
     target: Option<(IVec3, BlockFace)>,
     grounded: bool,
     can_place: bool,
+    flying: bool,
 }
 
 impl Player {
@@ -37,6 +38,7 @@ impl Player {
             target: None,
             grounded: false,
             can_place: false,
+            flying: false,
         }
     }
 
@@ -84,6 +86,10 @@ impl Player {
         self.pitch
     }
 
+    pub fn flying_mut(&mut self) -> &mut bool {
+        &mut self.flying
+    }
+
     pub fn update(&mut self, delta_time: f32, input: &Input) {
         self.handle_moving(delta_time, input);
         self.handle_physics(delta_time);
@@ -103,21 +109,29 @@ impl Player {
         if input.is_key_pressed(KeyA) { move_dir -= right }
         move_dir = move_dir.normalize_or_zero();
 
-        // if input.is_key_pressed(Space) { move_dir += Player::UP }
-        // if input.is_key_pressed(ShiftLeft) { move_dir -= Player::UP }
-        let jump_force = (self.grounded && input.is_key_pressed(Space))
+        if self.flying {
+            if input.is_key_pressed(Space) { move_dir += Player::UP }
+            if input.is_key_pressed(ShiftLeft) { move_dir -= Player::UP }
+        }
+
+        let jump_force = (self.grounded && !self.flying && input.is_key_pressed(Space))
             .then_some(Player::UP * Player::JUMP_FORCE).unwrap_or(Vec3::ZERO);
 
         let accel = input.is_key_pressed(ControlLeft)
             .then_some(Player::SPRINT_ACCEL).unwrap_or(Player::ACCEL);
 
-        let drag = -self.velocity.with_y(0.0) * Player::DRAG;
+        let mut drag = -self.velocity * Player::DRAG;
+        if !self.flying { drag.y = 0.0 }
+
         let forces = move_dir * accel + drag;
         self.velocity += forces * delta_time + jump_force;
     }
 
     fn handle_physics(&mut self, delta_time: f32) {
-        self.velocity.y -= Player::GRAVITY * delta_time;
+        if !self.flying {
+            self.velocity.y -= Player::GRAVITY * delta_time;
+        }
+
         let delta = self.velocity * delta_time;
         let moved = self.physics_move(delta);
         let mut stopped = BVec3::FALSE;

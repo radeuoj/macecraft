@@ -39,4 +39,15 @@ impl Chunk {
             }
         }
     }
+
+    pub fn get_neighbours(pos: IVec3) -> [IVec3; 6] {
+        [
+            pos + ivec3( 0, -1,  0),
+            pos + ivec3( 0,  1,  0),
+            pos + ivec3(-1,  0,  0),
+            pos + ivec3( 1,  0,  0),
+            pos + ivec3( 0,  0, -1),
+            pos + ivec3( 0,  0,  1),
+        ]
+    }
 }

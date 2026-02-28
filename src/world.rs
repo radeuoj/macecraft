@@ -40,11 +40,11 @@ impl World {
         }
     }
 
-    pub fn get_player(&self) -> &Player {
+    pub fn player(&self) -> &Player {
         &self.player
     }
 
-    pub fn get_player_mut(&mut self) -> &mut Player {
+    pub fn player_mut(&mut self) -> &mut Player {
         &mut self.player
     }
 
@@ -64,12 +64,10 @@ impl World {
         if let Some(chunk) = self.chunks.get_mut(&chunk_pos) {
             chunk.set(local_pos, block);
             self.mark_dirty(chunk_pos);
-            self.mark_dirty(chunk_pos + ivec3(0, -1, 0));
-            self.mark_dirty(chunk_pos + ivec3(0, 1, 0));
-            self.mark_dirty(chunk_pos + ivec3(-1, 0, 0));
-            self.mark_dirty(chunk_pos + ivec3(1, 0, 0));
-            self.mark_dirty(chunk_pos + ivec3(0, 0, -1));
-            self.mark_dirty(chunk_pos + ivec3(0, 0, 1));
+
+            for neighbour in Chunk::get_neighbours(chunk_pos) {
+                self.mark_dirty(neighbour);
+            }
         } else {
             panic!("Chunk at {:?} was not loaded yet", chunk_pos);
         }
@@ -158,8 +156,7 @@ impl World {
 
                     let mut chunk = Chunk::new();
                     chunk.generate_superflat();
-                    self.chunks.insert(pos, chunk);
-                    self.dirty_chunks.insert(pos);
+                    self.add_chunk(pos, chunk);
                 }
             }
         }

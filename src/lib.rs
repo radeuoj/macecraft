@@ -23,7 +23,6 @@ use winit::event::{DeviceEvent, DeviceId, MouseButton, RawKeyEvent, WindowEvent}
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
-use crate::chunk::Chunk;
 
 struct State {
     window: Arc<Window>,
@@ -40,25 +39,10 @@ impl State {
     async fn new(window: Arc<Window>) -> State {
         let size = window.inner_size();
         let camera = Camera::new(size.width as f32 / size.height as f32);
-        let mut renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
+        let renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
 
         let player = Player::new();
-        let mut world = World::new(player);
-        for i in -1..=1 {
-            for j in -1..=1 {
-                let mut chunk = Chunk::new();
-                chunk.generate_superflat();
-                let pos = (i, 0, j).into();
-                world.add_chunk(pos, chunk);
-            }
-        }
-
-        for i in -1..=1 {
-            for j in -1..=1 {
-                let pos = (i, 0, j).into();
-                renderer.render_chunk(pos, &world);
-            }
-        }
+        let world = World::new(player);
 
         Self {
             window,
@@ -119,10 +103,10 @@ impl State {
 
     fn update(&mut self, delta_time: f32) {
         self.world.update(delta_time, &self.input);
-        self.camera.update_from_player(self.world.get_player());
+        self.camera.update_from_player(self.world.player());
         self.renderer.update_camera(&self.camera);
 
-        self.renderer.update_target_block(self.world.get_player().get_target_pos());
+        self.renderer.update_target_block(self.world.player().get_target_pos());
 
         self.update_imgui(delta_time);
     }
@@ -132,13 +116,13 @@ impl State {
         let yaw = self.camera.yaw;
         let pitch = self.camera.pitch;
 
-        let player = self.world.get_player();
+        let player = self.world.player_mut();
+        let collision = player.is_colliding();
+        let flying = player.flying_mut() as *mut bool;
 
         let target_pos = player.get_target_pos();
         let target_face = player.get_target_face();
         let target_block = target_pos.map(|pos| self.world.get_block(pos));
-
-        let collision = player.is_colliding();
 
         self.renderer.update_imgui(move |ui| {
             ui.text(format!("FPS: {}", 1.0 / delta_time));
@@ -149,6 +133,10 @@ impl State {
             ui.text(format!("Target face: {:?}", target_face));
             ui.text(format!("Target block: {:?}", target_block));
             ui.text(format!("Colision: {}", collision));
+
+            unsafe {
+                ui.checkbox("Flying", &mut *flying);
+            }
         });
     }
 
@@ -223,7 +211,7 @@ impl ApplicationHandler for App {
 
         self.state = Some(pollster::block_on(State::new(window)));
         let world = &mut self.state().world as _;
-        self.state().world.get_player_mut().set_world(world);
+        self.state().world.player_mut().set_world(world);
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _window_id: WindowId, event: WindowEvent) {
