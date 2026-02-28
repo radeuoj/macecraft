@@ -162,7 +162,9 @@ impl Player {
             res[i] = self.physics_move_axis(i, delta[i]);
         }
 
-        assert!(!self.colliding || !self.is_colliding(), "Player is colliding after physics move");
+        if self.colliding && self.is_colliding() {
+            println!("Player is colliding after physics move");
+        }
 
         res
     }

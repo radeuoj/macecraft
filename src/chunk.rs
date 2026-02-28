@@ -40,6 +40,10 @@ impl Chunk {
         }
     }
 
+    pub fn generate_fill(&mut self, block: Block) {
+        self.blocks.fill(block);
+    }
+
     pub fn get_neighbours(pos: IVec3) -> [IVec3; 6] {
         [
             pos + ivec3( 0, -1,  0),

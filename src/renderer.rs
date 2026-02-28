@@ -562,7 +562,9 @@ impl Renderer {
     }
 
     fn draw_chunks(&mut self, render_pass: &mut wgpu::RenderPass) {
-        for (i, (pos, chunk)) in self.chunks.iter().enumerate() {
+        for (i, (pos, chunk)) in self.chunks.iter()
+                .filter(|(_, chunk)| chunk.size() > 0).enumerate() {
+                    
             let mut chunk_pos_uniform = ChunkPosUniform::new();
             chunk_pos_uniform.set(*pos);
             let offset = i as u64 * self.device.limits().min_uniform_buffer_offset_alignment as u64;

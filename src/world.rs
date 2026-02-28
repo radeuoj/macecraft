@@ -22,7 +22,13 @@ impl World {
         }
     }
 
-    pub fn add_chunk(&mut self, pos: IVec3, chunk: Chunk) {
+    pub fn add_chunk(&mut self, pos: IVec3, mut chunk: Chunk) {
+        match pos.y {
+            0 => chunk.generate_superflat(),
+            y if y < 0 => chunk.generate_fill(Block::DIRT),
+            _ => (),
+        }
+
         self.chunks.insert(pos, chunk);
         self.mark_very_dirty(pos);
     }
@@ -162,9 +168,7 @@ impl World {
                     let pos = origin + ivec3(i, j, k);
                     if self.chunks.contains_key(&pos) { continue }
 
-                    let mut chunk = Chunk::new();
-                    chunk.generate_superflat();
-                    self.add_chunk(pos, chunk);
+                    self.add_chunk(pos, Chunk::new());
                 }
             }
         }
