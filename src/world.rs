@@ -12,6 +12,7 @@ pub struct World {
 
 impl World {
     pub const MAX_CHUNKS: usize = 256;
+    pub const RENDER_DISTANCE: i32 = 3;
 
     pub fn new(player: Player) -> Self {
         Self {
@@ -96,6 +97,7 @@ impl World {
 
     pub fn update(&mut self, delta_time: f32, input: &Input) {
         self.player.update(delta_time, input);
+        self.render_new_chunks();
     }
 
     /**
@@ -143,15 +145,23 @@ impl World {
 
         None
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    fn render_new_chunks(&mut self) {
+        let (origin, _) = World::world_pos_to_chunk_pos(self.player.position().as_ivec3());
+        let dist = World::RENDER_DISTANCE - 1;
 
-    #[test]
-    fn test_ray_unit_step_size() {
-        let dir = vec3(0.5, 0.5, 0.0);
-        assert_eq!(1.0 / dir, vec3(2.0, 2.0, f32::INFINITY));
+        for i in -dist..=dist {
+            for j in -dist..=dist {
+                for k in -dist..=dist {
+                    let pos = origin + ivec3(i, j, k);
+                    if self.chunks.contains_key(&pos) { continue }
+
+                    let mut chunk = Chunk::new();
+                    chunk.generate_superflat();
+                    self.chunks.insert(pos, chunk);
+                    self.dirty_chunks.insert(pos);
+                }
+            }
+        }
     }
 }

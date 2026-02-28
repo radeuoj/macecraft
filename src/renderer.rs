@@ -451,7 +451,11 @@ impl Renderer {
     }
 
     pub fn render_chunk(&mut self, pos: IVec3, world: &World) {
-        let chunk = world.get_chunk(pos).unwrap();
+        let Some(chunk) = world.get_chunk(pos) else {
+            self.chunks.remove(&pos);
+            return;
+        };
+
         let mut vertices: Vec<Vertex> = vec![];
 
         for x in 0..Chunk::SIZE as u8 {
