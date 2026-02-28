@@ -31,7 +31,7 @@ impl Player {
 
     pub fn new() -> Self {
         Self {
-            position: vec3(0.0, 10.0, 0.0),
+            position: vec3(0.0, 20.0, 0.0),
             yaw: -90f32.to_radians(),
             velocity: Vec3::ZERO,
             pitch: 0.0,
@@ -162,6 +162,8 @@ impl Player {
             res[i] = self.physics_move_axis(i, delta[i]);
         }
 
+        assert!(!self.colliding || !self.is_colliding(), "Player is colliding after physics move");
+
         res
     }
 
@@ -189,7 +191,7 @@ impl Player {
         }
 
         moved -= moved.signum() * max_pen;
-        // moved = if moved.abs() <= Player::PHYSICS_EPSILON { 0.0 } else { moved };
+        // moved = if moved.abs() <= 0.0001 { 0.0 } else { moved };
         self.position[axis] += moved;
 
         moved
@@ -231,12 +233,12 @@ impl Player {
         false
     }
 
-    fn get_colliders(&self) -> [IVec3; 36] {
+    fn get_colliders(&self) -> [IVec3; 45] {
         let mut result = [IVec3::ZERO; _];
         let mut next_index = 0usize;
 
         for i in -1..=1 {
-            for j in -1..=2 {
+            for j in -1..=3 {
                 for k in -1..=1 {
                     let block_pos = self.position.floor().as_ivec3() + ivec3(i, j, k);
                     result[next_index] = block_pos;
