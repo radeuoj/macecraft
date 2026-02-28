@@ -81,7 +81,8 @@ impl World {
 
         if let Some(chunk) = self.chunks.get_mut(&chunk_pos) {
             chunk.set(local_pos, block);
-            self.mark_very_dirty(chunk_pos);
+            self.mark_dirty(chunk_pos);
+            self.mark_dirty_if_pos_on_edge(chunk_pos, local_pos);
         } else {
             panic!("Chunk at {:?} was not loaded yet", chunk_pos);
         }
@@ -171,6 +172,21 @@ impl World {
                     self.add_chunk(pos, Chunk::new());
                     return;
                 }
+            }
+        }
+    }
+
+    fn mark_dirty_if_pos_on_edge(&mut self, chunk_pos: IVec3, local_pos: UVec3) {
+        const MAX: u32 = Chunk::SIZE - 1;
+
+        for i in 0..3 {
+            let mut delta = IVec3::ZERO;
+            delta[i] = 1;
+
+            match local_pos[i] {
+                0 => self.mark_dirty(chunk_pos - delta),
+                MAX => self.mark_dirty(chunk_pos + delta),
+                _ => (),
             }
         }
     }
