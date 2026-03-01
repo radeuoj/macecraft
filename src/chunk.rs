@@ -15,27 +15,42 @@ impl Chunk {
     }
 
     /// assumes pos is in bounds
-    pub fn get(&self, pos: UVec3) -> Block {
+    pub unsafe fn get_unchecked(&self, pos: UVec3) -> Block {
         self.blocks[(pos.x + pos.y * Self::SIZE + pos.z * Self::SIZE.pow(2)) as usize]
     }
 
     /// assumes pos is in bounds
-    pub fn set(&mut self, pos: UVec3, block: Block) {
+    pub unsafe fn set_unchecked(&mut self, pos: UVec3, block: Block) {
         self.blocks[(pos.x + pos.y * Self::SIZE + pos.z * Self::SIZE.pow(2)) as usize] = block;
+    }
+
+    // returns none if local_pos is out of bounds
+    pub fn get(&self, local_pos: IVec3) -> Option<Block> {
+        for i in 0..3 {
+            if local_pos[i] < 0 || local_pos[i] >= Chunk::SIZE as i32 {
+                return None;
+            }
+        }
+
+        unsafe { Some(self.get_unchecked(local_pos.as_uvec3())) }
     }
 
     pub fn generate_superflat(&mut self) {
         for y in 0..4u32 {
             for x in 0..Self::SIZE {
                 for z in 0..Self::SIZE {
-                    self.set(uvec3(x, y, z), Block::DIRT);
+                    unsafe {
+                        self.set_unchecked(uvec3(x, y, z), Block::DIRT);
+                    }
                 }
             }
         }
 
         for x in 0..Self::SIZE {
             for z in 0..Self::SIZE {
-                self.set(uvec3(x, 4, z), Block::GRASS);
+                unsafe {
+                    self.set_unchecked(uvec3(x, 4, z), Block::GRASS);
+                }
             }
         }
     }

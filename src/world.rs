@@ -12,7 +12,7 @@ pub struct World {
 
 impl World {
     pub const MAX_CHUNKS: usize = 256;
-    pub const RENDER_DISTANCE: i32 = 3;
+    pub const RENDER_DISTANCE: i32 = 8;
 
     pub fn new(player: Player) -> Self {
         Self {
@@ -45,7 +45,7 @@ impl World {
         let (chunk_pos, local_pos) = World::world_pos_to_chunk_pos(pos);
 
         match self.chunks.get(&chunk_pos) {
-            Some(chunk) => chunk.get(local_pos),
+            Some(chunk) => unsafe { chunk.get_unchecked(local_pos) },
             None => Block::AIR,
         }
     }
@@ -80,7 +80,7 @@ impl World {
         let (chunk_pos, local_pos) = World::world_pos_to_chunk_pos(pos);
 
         if let Some(chunk) = self.chunks.get_mut(&chunk_pos) {
-            chunk.set(local_pos, block);
+            unsafe { chunk.set_unchecked(local_pos, block) }
             self.mark_dirty(chunk_pos);
             self.mark_dirty_if_pos_on_edge(chunk_pos, local_pos);
         } else {
