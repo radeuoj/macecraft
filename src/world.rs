@@ -163,14 +163,44 @@ impl World {
         let (origin, _) = World::world_pos_to_chunk_pos(self.player.position().as_ivec3());
         let dist = World::RENDER_DISTANCE - 1;
 
-        for i in -dist..=dist {
-            for j in -dist..=dist {
-                for k in -dist..=dist {
-                    let pos = origin + ivec3(i, j, k);
-                    if self.chunks.contains_key(&pos) { continue }
+        for i in 0..=dist {
+            for j in -i..=i {
+                for k in -i..=i {
+                    let pos = origin + ivec3(-i, j, k);
+                    if !self.chunks.contains_key(&pos) {
+                        self.add_chunk(pos, Chunk::new());
+                        return;
+                    }
 
-                    self.add_chunk(pos, Chunk::new());
-                    return;
+                    let pos = origin + ivec3(i, j, k);
+                    if !self.chunks.contains_key(&pos) {
+                        self.add_chunk(pos, Chunk::new());
+                        return;
+                    }
+
+                    let pos = origin + ivec3(j, -i, k);
+                    if !self.chunks.contains_key(&pos) {
+                        self.add_chunk(pos, Chunk::new());
+                        return;
+                    }
+
+                    let pos = origin + ivec3(j, i, k);
+                    if !self.chunks.contains_key(&pos) {
+                        self.add_chunk(pos, Chunk::new());
+                        return;
+                    }
+
+                    let pos = origin + ivec3(j,k, -i);
+                    if !self.chunks.contains_key(&pos) {
+                        self.add_chunk(pos, Chunk::new());
+                        return;
+                    }
+
+                    let pos = origin + ivec3(j, k, i);
+                    if !self.chunks.contains_key(&pos) {
+                        self.add_chunk(pos, Chunk::new());
+                        return;
+                    }
                 }
             }
         }

@@ -10,7 +10,6 @@ mod block;
 mod aabb;
 
 use crate::camera::Camera;
-use crate::chunk::Chunk;
 use crate::input::Input;
 use crate::player::Player;
 use crate::renderer::Renderer;
@@ -43,15 +42,7 @@ impl State {
         let renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
 
         let player = Player::new();
-        let mut world = World::new(player);
-
-        for i in -1..=1 {
-            for j in -1..=1 {
-                let mut chunk = Chunk::new();
-                chunk.generate_superflat();
-                world.add_chunk(ivec3(i, 0, j), chunk);
-            }
-        }
+        let world = World::new(player);
 
         Self {
             window,
