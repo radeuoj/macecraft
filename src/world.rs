@@ -2,7 +2,7 @@ use std::{collections::{HashMap, HashSet}, mem};
 
 use glam::*;
 
-use crate::{block::{Block, BlockFace}, chunk::Chunk, input::Input, player::Player, terrain::{SuperflatGen, TerrainGen}};
+use crate::{block::{Block, BlockFace}, chunk::Chunk, input::Input, player::Player, terrain::TerrainGen};
 
 pub struct World {
     player: Player,
@@ -15,12 +15,12 @@ impl World {
     pub const MAX_CHUNKS: usize = 256;
     pub const RENDER_DISTANCE: i32 = 8;
 
-    pub fn new(player: Player) -> Self {
+    pub fn new(player: Player, terrain_gen: impl TerrainGen + 'static) -> Self {
         Self {
             player,
             chunks: HashMap::new(),
             dirty_chunks: HashSet::new(),
-            terrain_gen: Box::new(SuperflatGen),
+            terrain_gen: Box::new(terrain_gen),
         }
     }
 

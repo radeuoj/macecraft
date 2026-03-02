@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod texture;
 mod camera;
 mod renderer;
@@ -14,6 +16,7 @@ use crate::camera::Camera;
 use crate::input::Input;
 use crate::player::Player;
 use crate::renderer::Renderer;
+use crate::terrain::NiceTerrainGen;
 use crate::world::World;
 use std::sync::Arc;
 use std::time::Instant;
@@ -43,7 +46,8 @@ impl State {
         let renderer = pollster::block_on(Renderer::new(window.clone(), &camera));
 
         let player = Player::new();
-        let world = World::new(player);
+        let terrain_gen = NiceTerrainGen::new();
+        let world = World::new(player, terrain_gen);
 
         Self {
             window,
