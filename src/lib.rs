@@ -8,6 +8,7 @@ mod player;
 mod input;
 mod block;
 mod aabb;
+mod terrain;
 
 use crate::camera::Camera;
 use crate::input::Input;

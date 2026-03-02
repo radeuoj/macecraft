@@ -35,30 +35,6 @@ impl Chunk {
         unsafe { Some(self.get_unchecked(local_pos.as_uvec3())) }
     }
 
-    pub fn generate_superflat(&mut self) {
-        for y in 0..4u32 {
-            for x in 0..Self::SIZE {
-                for z in 0..Self::SIZE {
-                    unsafe {
-                        self.set_unchecked(uvec3(x, y, z), Block::DIRT);
-                    }
-                }
-            }
-        }
-
-        for x in 0..Self::SIZE {
-            for z in 0..Self::SIZE {
-                unsafe {
-                    self.set_unchecked(uvec3(x, 4, z), Block::GRASS);
-                }
-            }
-        }
-    }
-
-    pub fn generate_fill(&mut self, block: Block) {
-        self.blocks.fill(block);
-    }
-
     pub fn get_neighbours(pos: IVec3) -> [IVec3; 6] {
         [
             pos + ivec3( 0, -1,  0),

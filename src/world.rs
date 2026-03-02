@@ -2,12 +2,13 @@ use std::{collections::{HashMap, HashSet}, mem};
 
 use glam::*;
 
-use crate::{block::{Block, BlockFace}, chunk::Chunk, input::Input, player::Player};
+use crate::{block::{Block, BlockFace}, chunk::Chunk, input::Input, player::Player, terrain::{SuperflatGen, TerrainGen}};
 
 pub struct World {
     player: Player,
     chunks: HashMap<IVec3, Chunk>,
     dirty_chunks: HashSet<IVec3>,
+    terrain_gen: Box<dyn TerrainGen>,
 }
 
 impl World {
@@ -19,16 +20,12 @@ impl World {
             player,
             chunks: HashMap::new(),
             dirty_chunks: HashSet::new(),
+            terrain_gen: Box::new(SuperflatGen),
         }
     }
 
     pub fn add_chunk(&mut self, pos: IVec3, mut chunk: Chunk) {
-        match pos.y {
-            0 => chunk.generate_superflat(),
-            y if y < 0 => chunk.generate_fill(Block::DIRT),
-            _ => (),
-        }
-
+        self.generate_chunk(pos, &mut chunk);
         self.chunks.insert(pos, chunk);
         self.mark_very_dirty(pos);
     }
@@ -39,6 +36,21 @@ impl World {
 
     pub fn chunk_count(&self) -> usize {
         self.chunks.len()
+    }
+
+    fn generate_chunk(&self, chunk_pos: IVec3, chunk: &mut Chunk) {
+        for x in 0..Chunk::SIZE {
+            for y in 0..Chunk::SIZE {
+                for z in 0..Chunk::SIZE {
+                    let local_pos = uvec3(x, y, z);
+                    let global_pos = World::chunk_pos_to_world_pos(chunk_pos, local_pos);
+
+                    unsafe {
+                        chunk.set_unchecked(local_pos, self.terrain_gen.get(global_pos));
+                    }
+                }
+            }
+        }
     }
 
     pub fn get_block(&self, pos: IVec3) -> Block {
