@@ -18,16 +18,16 @@ pub struct Player {
 
 impl Player {
     pub const UP: Vec3 = Vec3::Y;
-    pub const ACCEL: f32 = 20.0;
+    pub const ACCEL: f32 = 30.0;
     pub const SPRINT_ACCEL: f32 = 200.0;
     pub const SENSITIVITY: f32 = 0.001;
     pub const REACH: f32 = 5.0;
     pub const WIDTH: f32 = 0.5;
     pub const HEIGHT: f32 = 1.9;
     pub const EYE_LEVEL: f32 = 1.7;
-    pub const DRAG: f32 = 5.0;
+    pub const DRAG: f32 = 7.0;
     pub const GRAVITY: f32 = 32.0;
-    pub const JUMP_FORCE: f32 = 9.0;
+    pub const JUMP_FORCE: f32 = 8.5;
 
     pub fn new() -> Self {
         Self {

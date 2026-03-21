@@ -117,11 +117,11 @@ impl State {
     }
 
     fn update_imgui(&mut self, delta_time: f32) {
-        let pos = self.camera.position;
-        let yaw = self.camera.yaw;
-        let pitch = self.camera.pitch;
-
         let player = self.world.player_mut();
+        let pos = player.position();
+        let yaw = player.yaw();
+        let pitch = player.pitch();
+
         let collision = player.is_colliding();
         let flying = player.flying_mut() as *mut bool;
         let colliding = player.colliding_mut() as *mut bool;
