@@ -23,7 +23,7 @@ use std::time::Instant;
 use glam::*;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalPosition;
-use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, RawKeyEvent, WindowEvent};
+use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
@@ -253,7 +253,7 @@ impl ApplicationHandler for App {
         state.renderer.handle_imgui_window_event(&state.window, &event);
     }
 
-    fn device_event(&mut self, event_loop: &ActiveEventLoop, _device_id: DeviceId, event: DeviceEvent) {
+    fn device_event(&mut self, _event_loop: &ActiveEventLoop, _device_id: DeviceId, event: DeviceEvent) {
         let state = self.state.as_mut().unwrap();
 
         match event {
