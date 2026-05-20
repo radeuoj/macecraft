@@ -23,7 +23,7 @@ use std::time::Instant;
 use glam::*;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalPosition;
-use winit::event::{DeviceEvent, DeviceId, MouseButton, RawKeyEvent, WindowEvent};
+use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, RawKeyEvent, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
@@ -71,10 +71,11 @@ impl State {
         self.is_mouse_captured = !self.is_mouse_captured;
 
         if self.is_mouse_captured {
-            self.window
-                .set_cursor_grab(CursorGrabMode::Confined)
-                .or_else(|_| self.window.set_cursor_grab(CursorGrabMode::Locked))
-                .unwrap();
+            // self.window
+            //     .set_cursor_grab(CursorGrabMode::Confined)
+            //     .or_else(|_| self.window.set_cursor_grab(CursorGrabMode::Locked))
+            //     .unwrap();
+            self.window.set_cursor_grab(CursorGrabMode::Locked).unwrap();
             self.window.set_cursor_visible(false);
         } else {
             self.window.set_cursor_grab(CursorGrabMode::None).unwrap();
@@ -228,6 +229,16 @@ impl ApplicationHandler for App {
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _window_id: WindowId, event: WindowEvent) {
         match event {
             WindowEvent::CloseRequested => event_loop.exit(),
+            WindowEvent::KeyboardInput { 
+                event: KeyEvent { 
+                    physical_key: PhysicalKey::Code(code), 
+                    state: key_state, 
+                    .. 
+                },
+                ..
+            } => self.handle_key(event_loop, code, key_state.is_pressed()),
+            // WindowEvent::CursorMoved { position, .. } =>
+            //     w
             WindowEvent::MouseInput { 
                 button, 
                 state: button_state,
@@ -248,10 +259,6 @@ impl ApplicationHandler for App {
         match event {
             DeviceEvent::MouseMotion { delta }
                 => state.handle_mouse(DVec2::from(delta).as_vec2()),
-            DeviceEvent::Key(RawKeyEvent { 
-                physical_key: PhysicalKey::Code(code), 
-                state: key_state 
-            }) => self.handle_key(event_loop, code, key_state.is_pressed()),
             _ => (),
         }
     }
