@@ -29,10 +29,10 @@ use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 
 struct State {
+    renderer: Renderer,
     window: Arc<Window>,
     size: winit::dpi::PhysicalSize<u32>,
     camera: Camera,
-    renderer: Renderer,
     input: Input,
     is_mouse_captured: bool,
 
