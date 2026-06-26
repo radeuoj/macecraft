@@ -11,6 +11,7 @@ mod input;
 mod block;
 mod aabb;
 mod terrain;
+mod entity;
 
 use crate::camera::Camera;
 use crate::input::Input;
@@ -111,21 +112,20 @@ impl State {
         self.world.update(delta_time, &self.input);
         self.camera.update_from_player(self.world.player());
         self.renderer.update_camera(&self.camera);
-
         self.renderer.update_target_block(self.world.player().get_target_pos());
-
         self.update_imgui(delta_time);
+        self.input.update();
     }
 
     fn update_imgui(&mut self, delta_time: f32) {
         let player = self.world.player_mut();
-        let pos = player.position();
-        let yaw = player.yaw();
-        let pitch = player.pitch();
+        let pos = player.entity_mut().position;
+        let yaw = player.entity_mut().yaw;
+        let pitch = player.entity_mut().pitch;
 
-        let collision = player.is_colliding();
-        let flying = player.flying_mut() as *mut bool;
-        let colliding = player.colliding_mut() as *mut bool;
+        let collision = player.entity_mut().is_colliding();
+        let flying = &mut player.entity_mut().flying as *mut bool;
+        let colliding = &mut player.entity_mut().colliding as *mut bool;
 
         let target_pos = player.get_target_pos();
         let target_face = player.get_target_face();
@@ -197,10 +197,6 @@ impl App {
             Err(e) => log::error!("Render error: {}", e),
         }
 
-        state.input.mouse_delta = Vec2::ZERO;
-        state.input.just_pressed_keys.clear();
-        state.input.just_pressed_mouse_buttons.clear();
-
         if state.is_mouse_captured {
             state.window.set_cursor_position(PhysicalPosition::new(
                 state.size.width / 2, state.size.height / 2)).unwrap();
@@ -223,7 +219,7 @@ impl ApplicationHandler for App {
 
         self.state = Some(pollster::block_on(State::new(window)));
         let world = &mut self.state().world as _;
-        self.state().world.player_mut().set_world(world);
+        self.state().world.player_mut().entity_mut().set_world(world);
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _window_id: WindowId, event: WindowEvent) {

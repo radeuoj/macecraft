@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, mem};
+use std::{collections::{HashMap, HashSet}, mem, time::{Duration, Instant}};
 
 use glam::*;
 
@@ -9,11 +9,15 @@ pub struct World {
     chunks: HashMap<IVec3, Chunk>,
     dirty_chunks: HashSet<IVec3>,
     terrain_gen: Box<dyn TerrainGen>,
+    last_tick: Instant,
 }
 
 impl World {
     pub const MAX_CHUNKS: usize = 256;
     pub const RENDER_DISTANCE: i32 = 8;
+    pub const TPS: i32 = 50;
+    pub const TICK_DELTA_TIME: f32 = 1.0 / Self::TPS as f32;
+    pub const TICK_DURATION: Duration = Duration::from_millis(1000 / Self::TPS as u64);
 
     pub fn new(player: Player, terrain_gen: impl TerrainGen + 'static) -> Self {
         Self {
@@ -21,6 +25,7 @@ impl World {
             chunks: HashMap::new(),
             dirty_chunks: HashSet::new(),
             terrain_gen: Box::new(terrain_gen),
+            last_tick: Instant::now(),
         }
     }
 
@@ -76,6 +81,9 @@ impl World {
         }
     }
 
+    /**
+     * also marks the neighbours dirty
+     */
     fn mark_very_dirty(&mut self, pos: IVec3) {
         self.mark_dirty(pos);
 
@@ -121,8 +129,19 @@ impl World {
     }
 
     pub fn update(&mut self, delta_time: f32, input: &Input) {
-        self.player.update(delta_time, input);
+        self.player.before_update(delta_time, input);
+        
+        while Instant::now() - self.last_tick >= Self::TICK_DURATION {
+            self.last_tick += Self::TICK_DURATION;
+            self.tick();
+        }
+
+        self.player.update(input);
         self.render_new_chunks();
+    }
+
+    pub fn tick(&mut self) {
+        self.player.tick();
     }
 
     /**
@@ -171,8 +190,11 @@ impl World {
         None
     }
 
+    /**
+     * returns when it finds an ungenerated chunk
+     */
     fn render_new_chunks(&mut self) {
-        let (origin, _) = World::world_pos_to_chunk_pos(self.player.position().as_ivec3());
+        let (origin, _) = World::world_pos_to_chunk_pos(self.player.entity_mut().position.as_ivec3());
         let dist = World::RENDER_DISTANCE - 1;
 
         for i in 0..=dist {

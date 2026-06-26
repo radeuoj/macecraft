@@ -170,7 +170,10 @@ impl Renderer {
         let instance = wgpu::Instance::new(&wgpu::InstanceDescriptor::from_env_or_default());
 
         let adapter = instance
-            .request_adapter(&wgpu::RequestAdapterOptions::default())
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::HighPerformance,
+                ..Default::default()
+            })
             .await
             .unwrap();
 

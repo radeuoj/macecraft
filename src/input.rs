@@ -12,7 +12,6 @@ pub struct Input {
     pub active_mouse_buttons: HashSet<MouseButton>,
 }
 
-#[allow(dead_code)]
 impl Input {
     pub fn new() -> Self {
         Self {
@@ -38,5 +37,31 @@ impl Input {
 
     pub fn is_mouse_button_just_pressed(&self, button: MouseButton) -> bool {
         self.just_pressed_mouse_buttons.contains(&button)
+    }
+
+    /**
+     * this clears the just pressed keys and mouse buttons and should
+     * be called at the end of the frame
+     */
+    pub fn update(&mut self) {
+        self.mouse_delta = Vec2::ZERO;
+        self.just_pressed_keys.clear();
+        self.just_pressed_mouse_buttons.clear();
+    }
+
+    pub fn clear(&mut self) {
+        self.just_pressed_keys.clear();
+        self.active_keys.clear();
+        self.mouse_delta = Vec2::ZERO;
+        self.just_pressed_mouse_buttons.clear();
+        self.active_mouse_buttons.clear();
+    }
+
+    pub fn extend(&mut self, other: &Self) {
+        self.just_pressed_keys.extend(&other.just_pressed_keys);
+        self.active_keys.extend(&other.active_keys);
+        self.mouse_delta += other.mouse_delta;
+        self.just_pressed_mouse_buttons.extend(&other.just_pressed_mouse_buttons);
+        self.active_mouse_buttons.extend(&other.active_mouse_buttons);
     }
 }
