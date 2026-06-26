@@ -196,12 +196,7 @@ impl App {
             Ok(_) => (),
             Err(e) => log::error!("Render error: {}", e),
         }
-
-        if state.is_mouse_captured {
-            state.window.set_cursor_position(PhysicalPosition::new(
-                state.size.width / 2, state.size.height / 2)).unwrap();
-        }
-
+        
         state.window.request_redraw();
     }
 
