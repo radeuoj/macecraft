@@ -19,7 +19,7 @@ impl Player {
     pub const HEIGHT: f32 = 1.9;
     pub const EYE_LEVEL: f32 = 1.7;
     pub const DRAG: f32 = 7.0;
-    pub const JUMP_FORCE: f32 = 8.5;
+    pub const JUMP_FORCE: f32 = 9.0;
 
     pub fn new() -> Self {
         Self {
@@ -103,8 +103,8 @@ impl Player {
 
         self.entity.pitch = self.entity.pitch.clamp(-89f32.to_radians(), 89f32.to_radians());
 
-        self.target = self.entity.world_mut().raycast(self.entity.position + Entity::UP * Player::EYE_LEVEL, self.entity.forward(), Player::REACH);
-        self.can_place = self.dry_place();
+        self.target = self.entity.world_mut().raycast(self.entity.position() + Entity::UP * Player::EYE_LEVEL, self.entity.forward(), Player::REACH);
+        self.can_place = self.try_place();
     }
 
     pub fn handle_block_manip(&self) {
@@ -119,7 +119,7 @@ impl Player {
         }
     }
 
-    fn dry_place(&self) -> bool {
+    fn try_place(&self) -> bool {
         if let Some((pos, face)) = self.target {
             let pos = Block::get_neighbour(pos, face);
             let player = AABB::from_player(self.entity.position);

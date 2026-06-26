@@ -4,6 +4,7 @@ use crate::{aabb::AABB, world::World};
 
 pub struct Entity {
     pub position: Vec3,
+    prev_position: Vec3,
     pub yaw: f32,
     pub pitch: f32,
     pub velocity: Vec3,
@@ -22,6 +23,7 @@ impl Entity {
     pub fn new(position: Vec3, yaw: f32, pitch: f32, width: f32, height: f32) -> Self {
         Self {
             position,
+            prev_position: position,
             yaw,
             pitch,
             velocity: Vec3::ZERO,
@@ -40,6 +42,25 @@ impl Entity {
 
     pub fn world_mut(&self) -> &mut World {
         unsafe { &mut *self.world }
+    }
+
+    pub fn position(&self) -> Vec3 {
+        self.prev_position.lerp(self.position, self.world_mut().get_tick_alpha())
+    }
+
+    /**
+     * this also updates prev_position
+     */
+    pub fn set_position(&mut self, position: Vec3) {
+        self.position = position;
+        self.prev_position = position;
+    }
+
+    /**
+     * this does not update prev position
+     */
+    pub fn update_position(&mut self, position: Vec3) {
+        self.position = position;
     }
 
     pub fn forward(&self) -> Vec3 {
@@ -63,6 +84,7 @@ impl Entity {
     }
 
     pub fn tick(&mut self) {
+        self.prev_position = self.position;
         self.handle_physics();
     }
 

@@ -10,6 +10,7 @@ pub struct World {
     dirty_chunks: HashSet<IVec3>,
     terrain_gen: Box<dyn TerrainGen>,
     last_tick: Instant,
+    last_frame: Instant,
 }
 
 impl World {
@@ -26,6 +27,7 @@ impl World {
             dirty_chunks: HashSet::new(),
             terrain_gen: Box::new(terrain_gen),
             last_tick: Instant::now(),
+            last_frame: Instant::now(),
         }
     }
 
@@ -129,9 +131,10 @@ impl World {
     }
 
     pub fn update(&mut self, delta_time: f32, input: &Input) {
+        self.last_frame = Instant::now();
         self.player.before_update(delta_time, input);
         
-        while Instant::now() - self.last_tick >= Self::TICK_DURATION {
+        while self.last_frame - self.last_tick >= Self::TICK_DURATION {
             self.last_tick += Self::TICK_DURATION;
             self.tick();
         }
@@ -142,6 +145,11 @@ impl World {
 
     pub fn tick(&mut self) {
         self.player.tick();
+    }
+
+    pub fn get_tick_alpha(&self) -> f32 {
+        ((self.last_frame - self.last_tick).as_secs_f32() / Self::TICK_DURATION.as_secs_f32())
+            .clamp(0.0, 1.0)
     }
 
     /**
