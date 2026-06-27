@@ -38,8 +38,8 @@ impl TerrainGen for NiceTerrainGen {
         let coords = position.xz().as_dvec2() / 32.0;
         let h = (self.perlin.get(coords.into()) * 10.0) as i32;
 
-        if position.y == h { Block::GRASS }
-        else if position.y < h { Block::DIRT }
+        if position.y == h && h >= -1 { Block::GRASS }
+        else if position.y < h || (h < -1 && position.y == h) { Block::DIRT }
         else { Block::AIR }
     }
 }

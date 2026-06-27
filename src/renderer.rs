@@ -342,6 +342,7 @@ impl Renderer {
             surface_format,
             Vertex::layout(),
             wgpu::PrimitiveTopology::TriangleList,
+            true,
         );
 
         let ui_shader = device
@@ -362,6 +363,7 @@ impl Renderer {
             surface_format,
             UiVertex::layout(),
             wgpu::PrimitiveTopology::TriangleList,
+            true,
         );
 
         let color_shader = device
@@ -385,6 +387,7 @@ impl Renderer {
             surface_format,
             ColorVertex::layout(),
             wgpu::PrimitiveTopology::LineList,
+            true,
         );
 
         let imgui = ImGuiRenderer::new(&device, &queue, surface_format, &window);
@@ -458,7 +461,9 @@ impl Renderer {
                     if block == Block::AIR { continue }
 
                     let is_air = |local_pos| {
-                        is_air_in_chunk_or_fallback(pos, local_pos, chunk, world)  
+                        let target = get_block_in_chunk_or_fallback(pos, local_pos, chunk, world);
+                        target == Block::AIR ||
+                        (block != Block::WATER && target == Block::WATER)
                     };
 
                     // -z
@@ -672,6 +677,7 @@ fn make_render_pipeline(
     surface_format: wgpu::TextureFormat,
     vertex_buffer_layout: wgpu::VertexBufferLayout,
     topology: wgpu::PrimitiveTopology,
+    depth_write_enabled: bool,
 ) -> wgpu::RenderPipeline {
     device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: Some(label),
@@ -703,7 +709,7 @@ fn make_render_pipeline(
         },
         depth_stencil: Some(wgpu::DepthStencilState {
             format: DepthTexture::DEPTH_FORMAT,
-            depth_write_enabled: true,
+            depth_write_enabled,
             depth_compare: wgpu::CompareFunction::Less,
             stencil: wgpu::StencilState::default(),
             bias: wgpu::DepthBiasState::default(),
@@ -812,8 +818,4 @@ fn get_block_in_chunk_or_fallback(mut chunk_pos: IVec3, mut local_pos: IVec3, ch
             world.get_block(global_pos)
         }
     }
-}
-
-fn is_air_in_chunk_or_fallback(chunk_pos: IVec3, local_pos: IVec3, chunk: &Chunk, world: &World) -> bool {
-    get_block_in_chunk_or_fallback(chunk_pos, local_pos, chunk, world) == Block::AIR
 }

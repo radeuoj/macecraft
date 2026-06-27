@@ -8,6 +8,7 @@ pub struct Player {
     target: Option<(IVec3, BlockFace)>,
     can_place: bool,
     input: Input,
+    pub hand: Block,
 }
 
 impl Player {
@@ -33,6 +34,7 @@ impl Player {
             target: None,
             can_place: false,
             input: Input::new(),
+            hand: Block::COBBLE,
         }
     }
 
@@ -115,14 +117,14 @@ impl Player {
                 self.input.is_mouse_button_just_pressed(MouseButton::Right) &&
                 let Some((pos, face)) = self.target {
             let pos = Block::get_neighbour(pos, face);
-            self.entity.world_mut().set_block(pos, Block::COBBLE);
+            self.entity.world_mut().set_block(pos, self.hand);
         }
     }
 
     fn try_place(&self) -> bool {
         if let Some((pos, face)) = self.target {
             let pos = Block::get_neighbour(pos, face);
-            let player = AABB::from_player(self.entity.position);
+            let player = AABB::from_player(self.entity.position());
             let block = AABB::from_block(pos);
             !AABB::collision(&player, &block)
         } else {

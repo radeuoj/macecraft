@@ -23,7 +23,6 @@ use std::sync::Arc;
 use std::time::Instant;
 use glam::*;
 use winit::application::ApplicationHandler;
-use winit::dpi::PhysicalPosition;
 use winit::event::{DeviceEvent, DeviceId, KeyEvent, MouseButton, WindowEvent};
 use winit::event_loop::ActiveEventLoop;
 use winit::keyboard::{KeyCode, PhysicalKey};
@@ -126,6 +125,7 @@ impl State {
         let collision = player.entity_mut().is_colliding();
         let flying = &mut player.entity_mut().flying as *mut bool;
         let colliding = &mut player.entity_mut().colliding as *mut bool;
+        let hand = &mut player.hand.0 as *mut u8;
 
         let target_pos = player.get_target_pos();
         let target_face = player.get_target_face();
@@ -147,8 +147,8 @@ impl State {
             unsafe {
                 ui.checkbox("Flying", &mut *flying);
                 ui.checkbox("Colliding", &mut *colliding);
+                ui.input_scalar("Hand", &mut *hand).build();
             }
-
         });
     }
 
@@ -196,7 +196,7 @@ impl App {
             Ok(_) => (),
             Err(e) => log::error!("Render error: {}", e),
         }
-        
+
         state.window.request_redraw();
     }
 
