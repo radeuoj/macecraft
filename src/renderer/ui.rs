@@ -64,6 +64,7 @@ impl UiRenderer {
             Vertex::layout(),
             wgpu::PrimitiveTopology::TriangleList,
             true,
+            Some(wgpu::Face::Back),
         );
 
         Self {

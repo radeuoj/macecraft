@@ -34,6 +34,14 @@ impl Block {
         }
     }
 
+    pub fn is_opaque(&self) -> bool {
+        !self.is_translucent()
+    }
+
+    pub fn is_translucent(&self) -> bool {
+        *self == Self::WATER
+    }
+
     pub fn get_neighbour(pos: IVec3, face: BlockFace) -> IVec3 {
         match face {
             BlockFace::ZN => pos + IVec3::Z,

@@ -40,6 +40,7 @@ impl TerrainGen for NiceTerrainGen {
 
         if position.y == h && h >= -1 { Block::GRASS }
         else if position.y < h || (h < -1 && position.y == h) { Block::DIRT }
+        else if position.y < 0 { Block::WATER }
         else { Block::AIR }
     }
 }

@@ -281,6 +281,14 @@ impl Renderer {
             &self.camera_bind_group,
         );
 
+        self.chunks.draw_translucent(
+            &mut render_pass, 
+            &self.device, 
+            &self.queue, 
+            &self.texture_bind_group, 
+            &self.camera_bind_group,
+        );
+
         self.ui.draw(
             &mut render_pass, 
             &self.texture_bind_group,
@@ -323,6 +331,7 @@ fn create_render_pipeline(
     vertex_buffer_layout: wgpu::VertexBufferLayout,
     topology: wgpu::PrimitiveTopology,
     depth_write_enabled: bool,
+    cull_mode: Option<wgpu::Face>,
 ) -> wgpu::RenderPipeline {
     device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: Some(label),
@@ -347,7 +356,7 @@ fn create_render_pipeline(
             topology,
             strip_index_format: None,
             front_face: wgpu::FrontFace::Ccw,
-            cull_mode: Some(wgpu::Face::Back),
+            cull_mode,
             unclipped_depth: false,
             polygon_mode: wgpu::PolygonMode::Fill,
             conservative: false,

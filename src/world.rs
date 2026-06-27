@@ -110,8 +110,11 @@ impl World {
         }
     }
 
-    pub fn is_air(&self, pos: IVec3) -> bool {
-        self.get_block(pos) == Block::AIR
+    pub fn is_solid(&self, pos: IVec3) -> bool {
+        match self.get_block(pos) {
+            Block::AIR | Block::WATER => false,
+            _ => true,
+        }
     }
 
     /**
@@ -173,7 +176,7 @@ impl World {
         let mut block_face = BlockFace::YP;
         while dist <= max_dist {
             let block_pos = origin.floor().as_ivec3();
-            if !self.is_air(block_pos) {
+            if self.is_solid(block_pos) {
                 return Some((block_pos, block_face))
             }
 

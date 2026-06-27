@@ -5,6 +5,7 @@ use crate::{block::{Block, BlockFace}, chunk::Chunk, renderer::chunk::Vertex, wo
 
 pub struct ChunkMesh {
     pub opaque: wgpu::Buffer,
+    pub translucent: wgpu::Buffer,
 }
 
 impl ChunkMesh {
@@ -16,7 +17,8 @@ impl ChunkMesh {
             return None;
         };
 
-        let mut vertices: Vec<Vertex> = vec![];
+        let mut opaque_vertices: Vec<Vertex> = vec![];
+        let mut translucent_vertices: Vec<Vertex> = vec![];
 
         for x in 0..Chunk::SIZE as u8 {
             for y in 0..Chunk::SIZE as u8 {
@@ -28,8 +30,11 @@ impl ChunkMesh {
                     let is_air = |local_pos| {
                         let target = get_block_in_chunk_or_fallback(pos, local_pos, chunk, world);
                         target == Block::AIR ||
-                        (block != Block::WATER && target == Block::WATER)
+                        (block.is_opaque() && target.is_translucent())
                     };
+
+                    let vertices = if block.is_opaque() { &mut opaque_vertices } 
+                        else { &mut translucent_vertices };
 
                     // -z
                     let (tx, ty) = block.get_texture_coords(BlockFace::ZN);
@@ -112,18 +117,28 @@ impl ChunkMesh {
             }
         }
 
-        let vertices = vertices.iter().map(|v| v.compress()).collect::<Vec<_>>();
+        let opaque_vertices = opaque_vertices.iter().map(|v| v.compress()).collect::<Vec<_>>();
+        let translucent_vertices = translucent_vertices.iter().map(|v| v.compress()).collect::<Vec<_>>();
 
-        let buffer = device.create_buffer_init(
+        let opaque_buffer = device.create_buffer_init(
             &wgpu::util::BufferInitDescriptor {
-                label: Some("Chunk vertex buffer"),
-                contents: bytemuck::cast_slice(&vertices),
+                label: Some("Chunk opaque vertex buffer"),
+                contents: bytemuck::cast_slice(&opaque_vertices),
+                usage: wgpu::BufferUsages::VERTEX,
+            }
+        );
+
+        let translucent_buffer = device.create_buffer_init(
+            &wgpu::util::BufferInitDescriptor {
+                label: Some("Chunk translucent vertex buffer"),
+                contents: bytemuck::cast_slice(&translucent_vertices),
                 usage: wgpu::BufferUsages::VERTEX,
             }
         );
 
         Some(Self {
-            opaque: buffer,
+            opaque: opaque_buffer,
+            translucent: translucent_buffer,
         })
     }
 }

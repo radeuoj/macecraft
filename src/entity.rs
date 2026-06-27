@@ -116,7 +116,7 @@ impl Entity {
         for block_pos in Self::get_colliders(self.position) {
             let block = AABB::from_block(block_pos);
 
-            if !self.world_mut().is_air(block_pos) && AABB::collision(&player, &block) {
+            if self.world_mut().is_solid(block_pos) && AABB::collision(&player, &block) {
                 return true;
             }
         }
@@ -174,7 +174,7 @@ impl Entity {
         for block_pos in Self::get_colliders(new_pos) {
             let block = AABB::from_block(block_pos);
 
-            if !self.world_mut().is_air(block_pos) && AABB::collision(&player, &block) {
+            if self.world_mut().is_solid(block_pos) && AABB::collision(&player, &block) {
                 let depth = AABB::collision_depth(&player, &block);
                 max_pen = max_pen.max(depth[axis]);
             }   

@@ -66,6 +66,7 @@ impl ChunkPosUniform {
 
 pub struct ChunkRenderer {
     opaque_pipeline: wgpu::RenderPipeline,
+    translucent_pipeline: wgpu::RenderPipeline,
 
     chunk_pos_buffer: wgpu::Buffer,
     chunk_pos_bind_group: wgpu::BindGroup,
@@ -104,7 +105,7 @@ impl ChunkRenderer {
             });
 
         let opaque_pipeline = create_render_pipeline(
-            "Chunk render pipeline",
+            "Chunk opaque render pipeline",
             device, 
             &pipeline_layout, 
             &shader, 
@@ -112,10 +113,24 @@ impl ChunkRenderer {
             Vertex::layout(),
             wgpu::PrimitiveTopology::TriangleList,
             true,
+            Some(wgpu::Face::Back),
+        );
+
+        let translucent_pipeline = create_render_pipeline(
+            "Chunk translucent render pipeline",
+            device, 
+            &pipeline_layout, 
+            &shader, 
+            surface_format,
+            Vertex::layout(),
+            wgpu::PrimitiveTopology::TriangleList,
+            false,
+            None,
         );
 
         Self {
             opaque_pipeline,
+            translucent_pipeline,
             chunk_pos_buffer,
             chunk_pos_bind_group_layout,
             chunk_pos_bind_group,
@@ -159,8 +174,34 @@ impl ChunkRenderer {
         render_pass.set_bind_group(1, camera_bind_group, &[]);
 
         for (i, (pos, buf)) in self.chunks.iter()
-                .map(|(pos, mesh)| (pos, &mesh.opaque))
-                .filter(|(_, buf)| buf.size() > 0).enumerate() {
+                .map(|(pos, mesh)| (pos, &mesh.opaque)).enumerate() {
+            if buf.size() == 0 { continue }
+                    
+            let mut chunk_pos_uniform = ChunkPosUniform::new();
+            chunk_pos_uniform.set(*pos);
+            let offset = i as u64 * device.limits().min_uniform_buffer_offset_alignment as u64;
+            queue.write_buffer(&self.chunk_pos_buffer, offset, bytemuck::cast_slice(&[chunk_pos_uniform]));
+            render_pass.set_bind_group(2, &self.chunk_pos_bind_group, &[offset as u32]);
+            render_pass.set_vertex_buffer(0, buf.slice(..));
+            render_pass.draw(0..(buf.size() as u32 / 4), 0..1);
+        }
+    }
+
+    pub fn draw_translucent(
+        &mut self, 
+        render_pass: &mut wgpu::RenderPass,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        texture_bind_group: &wgpu::BindGroup,
+        camera_bind_group: &wgpu::BindGroup,
+    ) {
+        render_pass.set_pipeline(&self.translucent_pipeline);
+        render_pass.set_bind_group(0, texture_bind_group, &[]);
+        render_pass.set_bind_group(1, camera_bind_group, &[]);
+
+        for (i, (pos, buf)) in self.chunks.iter()
+                .map(|(pos, mesh)| (pos, &mesh.translucent)).enumerate() {
+            if buf.size() == 0 { continue }
                     
             let mut chunk_pos_uniform = ChunkPosUniform::new();
             chunk_pos_uniform.set(*pos);

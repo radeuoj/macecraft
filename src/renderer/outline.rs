@@ -67,6 +67,7 @@ impl OutlineRenderer {
             Vertex::layout(),
             wgpu::PrimitiveTopology::LineList,
             true,
+            Some(wgpu::Face::Back),
         );
 
         Self {
