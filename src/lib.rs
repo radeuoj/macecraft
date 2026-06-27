@@ -5,7 +5,6 @@ mod camera;
 mod renderer;
 mod chunk;
 mod world;
-mod imgui_renderer;
 mod player;
 mod input;
 mod block;
@@ -111,7 +110,7 @@ impl State {
         self.world.update(delta_time, &self.input);
         self.camera.update_from_player(self.world.player());
         self.renderer.update_camera(&self.camera);
-        self.renderer.update_target_block(self.world.player().get_target_pos());
+        self.renderer.set_target_block(self.world.player().get_target_pos());
         self.update_imgui(delta_time);
         self.input.update();
     }
@@ -154,7 +153,7 @@ impl State {
 
     fn render(&mut self) -> anyhow::Result<()> {
         for pos in self.world.dirty_chunks() {
-            self.renderer.render_chunk(pos, &self.world);
+            self.renderer.upload_chunk(pos, &self.world);
         }
 
         self.renderer.draw(&self.window)?;

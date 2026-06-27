@@ -8,6 +8,7 @@ pub struct ImGuiRenderer {
     context: Context,
     platform: WinitPlatform,
     renderer: WgpuRenderer,
+    content: Box<dyn FnOnce(&Ui)>,
 }
 
 impl ImGuiRenderer {
@@ -43,12 +44,22 @@ impl ImGuiRenderer {
             context,
             platform,
             renderer,
+            content: get_empty_content(),
         }
     }
 
-    pub fn render(&mut self, window: &Window, render_pass: &mut wgpu::RenderPass, content: impl FnOnce(&Ui)) {
+    pub fn handle_window_event(&mut self, window: &Window, event: &WindowEvent) {
+        self.platform.handle_window_event(&mut self.context, window, event);
+    }
+
+    pub fn set_content(&mut self, content: impl FnOnce(&dear_imgui_rs::Ui) + 'static) {
+        self.content = Box::new(content);
+    }
+
+    pub fn draw(&mut self, window: &Window, render_pass: &mut wgpu::RenderPass) {
         self.platform.prepare_frame(window, &mut self.context);
         let ui = self.context.frame();
+        let content = std::mem::replace(&mut self.content, Box::new(|_| {}));
 
         ui.window("Macecraft").build(|| {
             content(ui);
@@ -59,10 +70,10 @@ impl ImGuiRenderer {
         self.renderer.new_frame().unwrap();
         self.renderer.render_draw_data(draw_data, render_pass).unwrap();
     }
+}
 
-    pub fn handle_window_event(&mut self, window: &Window, event: &WindowEvent) {
-        self.platform.handle_window_event(&mut self.context, window, event);
-    }
+fn get_empty_content() -> Box<dyn FnOnce(&Ui)> {
+    Box::new(|_| {})
 }
 
 static PROGGY_FOREVER_MINIMAL_TTF_COMPRESSED_DATA: [u8; 14562] = [
