@@ -9,6 +9,7 @@ use crate::{renderer::{chunk_mesh::ChunkMesh, create_render_pipeline}, world::Wo
 pub struct Vertex {
     pub position: [u8; 3], // chunk pos 6 bits each
     pub tex_coords: [u8; 2], // texture coords 5 bits each
+    pub top_block: bool, // top block 1 bit
 }
 
 impl Vertex {
@@ -18,6 +19,7 @@ impl Vertex {
             | ((self.position[2] as u32) << 12)
             | ((self.tex_coords[0] as u32) << 18)
             | ((self.tex_coords[1] as u32) << 23)
+            | ((self.top_block as u32) << 28)
     }
 
     #[allow(unused)]
@@ -32,6 +34,7 @@ impl Vertex {
                 ((vertex >> 18) & ((1 << 5) - 1)) as u8,
                 ((vertex >> 23) & ((1 << 5) - 1)) as u8
             ],
+            top_block: (vertex >> 28) != 0,
         }
     }
 

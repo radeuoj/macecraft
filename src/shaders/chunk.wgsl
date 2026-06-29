@@ -17,16 +17,24 @@ const CHUNK_SIZE: i32 = 32;
 
 @vertex
 fn vs_main(@location(0) in: u32) -> VertexOutput {
-    let position = chunk_pos * CHUNK_SIZE + vec3<i32>(
+    let iposition = chunk_pos * CHUNK_SIZE + vec3<i32>(
         i32(in & ((1 << 6) - 1)),
         i32((in >> 6) & ((1 << 6) - 1)),
         i32((in >> 12) & ((1 << 6) - 1)),
     );
 
+    var position = vec3<f32>(iposition);
+
     let tex_coords = vec2<u32>(
         (in >> 18) & ((1 << 5) - 1),
         (in >> 23) & ((1 << 5) - 1),
     );
+
+    let top_block = bool(in >> 28);
+
+    if top_block {
+        position.y -= 0.1;
+    }
 
     var out: VertexOutput;
     out.tex_coords = vec2<f32>(f32(tex_coords.x) / 16.0, f32(tex_coords.y) / 16.0);

@@ -36,16 +36,19 @@ impl ChunkMesh {
                     let vertices = if block.is_opaque() { &mut opaque_vertices } 
                         else { &mut translucent_vertices };
 
+                    let top_block = block == Block::WATER && 
+                        get_block_in_chunk_or_fallback(pos, local_pos + ivec3(0, 1, 0), chunk, world) != Block::WATER;
+
                     // -z
                     let (tx, ty) = block.get_texture_coords(BlockFace::ZN);
                     if is_air(local_pos + ivec3(0, 0, 1)) {
                         vertices.extend([
-                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1] },
-                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty + 1], top_block: false },
+                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty    ], top_block        },
                         ]);
                     }
 
@@ -53,12 +56,12 @@ impl ChunkMesh {
                     let (tx, ty) = block.get_texture_coords(BlockFace::XN);
                     if is_air(local_pos + ivec3(1, 0, 0)) {
                         vertices.extend([
-                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1] },
-                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx    , ty + 1], top_block: false },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ], top_block        },
                         ]);
                     }
 
@@ -66,12 +69,12 @@ impl ChunkMesh {
                     let (tx, ty) = block.get_texture_coords(BlockFace::ZP);
                     if is_air(local_pos + ivec3(0, 0, -1)) {
                         vertices.extend([
-                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1] },
-                            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx    , ty + 1], top_block: false },
+                            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x    , y    , z    ], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx + 1, ty    ], top_block        },
                         ]);
                     }
 
@@ -79,25 +82,25 @@ impl ChunkMesh {
                     let (tx, ty) = block.get_texture_coords(BlockFace::XP);
                     if is_air(local_pos + ivec3(-1, 0, 0)) {
                         vertices.extend([
-                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
-                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx + 1, ty    ] },
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1], top_block: false },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx + 1, ty    ], top_block        },
                         ]);
                     }
 
                     // -y
                     let (tx, ty) = block.get_texture_coords(BlockFace::YN);
-                    if is_air(local_pos + ivec3(0, 1, 0)) {
+                    if is_air(local_pos + ivec3(0, 1, 0)) || top_block {
                         vertices.extend([
-                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1] },
-                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ] },
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x    , y + 1, z + 1], tex_coords: [tx    , ty + 1], top_block        },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1], top_block        },
+                            Vertex { position: [x    , y + 1, z    ], tex_coords: [tx    , ty    ], top_block        },
+                            Vertex { position: [x + 1, y + 1, z + 1], tex_coords: [tx + 1, ty + 1], top_block        },
+                            Vertex { position: [x + 1, y + 1, z    ], tex_coords: [tx + 1, ty    ], top_block        },
                         ]);
                     }
 
@@ -105,12 +108,12 @@ impl ChunkMesh {
                     let (tx, ty) = block.get_texture_coords(BlockFace::YP);
                     if is_air(local_pos + ivec3(0, -1, 0)) {
                         vertices.extend([
-                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1] },
-                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ] },
-                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1] },
-                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty    ] },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ], top_block: false },
+                            Vertex { position: [x    , y    , z    ], tex_coords: [tx    , ty + 1], top_block: false },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x    , y    , z + 1], tex_coords: [tx    , ty    ], top_block: false },
+                            Vertex { position: [x + 1, y    , z    ], tex_coords: [tx + 1, ty + 1], top_block: false },
+                            Vertex { position: [x + 1, y    , z + 1], tex_coords: [tx + 1, ty    ], top_block: false },
                         ]);
                     }
                 }
