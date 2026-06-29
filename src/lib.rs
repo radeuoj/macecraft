@@ -109,6 +109,7 @@ impl State {
     fn update(&mut self, delta_time: f32) {
         self.world.update(delta_time, &self.input);
         self.camera.update_from_player(self.world.player());
+        if self.camera.changed_block_last_update() {  }
         self.renderer.update_camera(&self.camera);
         self.renderer.set_target_block(self.world.player().get_target_pos());
         self.update_imgui(delta_time);

@@ -3,6 +3,7 @@ use crate::player::Player;
 
 pub struct Camera {
     pub position: Vec3,
+    pub prev_position: Vec3,
     pub yaw: f32,
     pub pitch: f32,
     proj: Mat4,
@@ -17,6 +18,7 @@ impl Camera {
     pub fn new(aspect_ratio: f32) -> Self {
         Self {
             position: Vec3::ZERO,
+            prev_position: Vec3::ZERO,
             yaw: -90f32.to_radians(),
             pitch: 0.0,
             proj: Self::build_proj_matrix(aspect_ratio),
@@ -36,6 +38,7 @@ impl Camera {
     }
 
     pub fn update_from_player(&mut self, player: &Player) {
+        self.prev_position = self.position;
         self.position = player.entity().position() + Camera::UP * Player::EYE_LEVEL;
         self.yaw = player.entity().yaw;
         self.pitch = player.entity().pitch;
@@ -58,5 +61,9 @@ impl Camera {
         );
 
         self.proj * view
+    }
+
+    pub fn changed_block_last_update(&self) -> bool {
+        self.position.floor() != self.prev_position.floor()
     }
 }
